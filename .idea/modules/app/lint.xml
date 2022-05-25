@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="GifUsage">
+        <ignore path="/home/mohamed/AndroidStudioProjects/TaskManagement/app/src/main/res/drawable-v24/logo.gif" />
+    </issue>
+</lint>
