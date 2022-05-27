@@ -1,18 +1,15 @@
 package com.example.taskmanagement.domain.data_models
 
 import com.example.taskmanagement.domain.utils.custom_serializers.DateSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
 
 @Serializable
-data class Task(
-    @SerialName("publicId")
-    val id: String,
+data class TaskDetails(
     val title: String,
     val description: String,
-    val owner: String,
-    val assigned: List<String>,
+    val owner: User,
+    val assigned: List<User>,
     val status: TaskStatus,
     @Serializable(with = DateSerializer::class)
     val finishDate: Date?,
@@ -20,7 +17,6 @@ data class Task(
     val completeDate: Date?,
     val estimatedTime: Int?,
     val taskItems: List<TaskItem>,
-    val comments: List<Comment>,
-    val priority: TaskPriority
-
+    val comments: List<Comment>
 )
+

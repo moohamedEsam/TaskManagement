@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.taskmanagement.domain.data_models.Task
+import com.example.taskmanagement.domain.data_models.TaskDetails
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -20,7 +20,7 @@ import java.util.*
 fun TaskScreen(
     navHostController: NavHostController,
     taskId: UUID?,
-    task: Task
+    task: TaskDetails
 ) {
     Column(
         modifier = Modifier

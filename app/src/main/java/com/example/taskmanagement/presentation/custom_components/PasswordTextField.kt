@@ -1,5 +1,6 @@
 package com.example.taskmanagement.presentation.custom_components
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
@@ -27,13 +29,13 @@ fun PasswordTextField(
     var showPassword by remember {
         mutableStateOf(false)
     }
-    Column {
+    Column(modifier=Modifier.animateContentSize()) {
         TextField(
             value = value,
             onValueChange = { onValueChange(it) },
             label = { Text(text = "Password") },
             modifier = Modifier.fillMaxWidth(),
-            leadingIcon = {
+            trailingIcon = {
                 Icon(
                     imageVector = if (showPassword)
                         Icons.Default.VisibilityOff
@@ -51,7 +53,7 @@ fun PasswordTextField(
             isError = !validationResult.success
         )
         if (!validationResult.message.isNullOrBlank())
-            Text(text = validationResult.message, color = Color.Red)
+            Text(text = validationResult.message, color = MaterialTheme.colorScheme.error)
     }
 
 }

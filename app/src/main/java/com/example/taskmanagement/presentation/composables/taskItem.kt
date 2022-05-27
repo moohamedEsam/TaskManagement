@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import com.example.taskmanagement.presentation.custom_components.CircleCheckbox
 import com.example.taskmanagement.R
-import com.example.taskmanagement.domain.data_models.Task
+import com.example.taskmanagement.domain.data_models.TaskDetails
 import com.example.taskmanagement.domain.data_models.TaskStatus
 import org.koin.androidx.compose.get
 import java.text.SimpleDateFormat
@@ -22,7 +22,7 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskItem(
-    task: Task,
+    task: TaskDetails,
     onCompleteClick: (Boolean) -> Unit
 ) {
     Card(

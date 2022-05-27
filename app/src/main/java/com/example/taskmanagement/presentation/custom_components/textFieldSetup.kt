@@ -1,7 +1,9 @@
 package com.example.taskmanagement.presentation.custom_components
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -14,10 +16,10 @@ fun TextFieldSetup(
     value: String,
     label: String,
     validationResult: ValidationResult,
-    leadingIcon: @Composable () -> Unit,
+    leadingIcon: @Composable (() -> Unit)?,
     onValueChange: (String) -> Unit
 ) {
-    Column {
+    Column(modifier = Modifier.animateContentSize()) {
         TextField(
             value = value,
             onValueChange = { onValueChange(it) },
@@ -27,6 +29,6 @@ fun TextFieldSetup(
             leadingIcon = leadingIcon
         )
         if (!validationResult.message.isNullOrBlank())
-            Text(text = validationResult.message, color = Color.Red)
+            Text(text = validationResult.message, color = MaterialTheme.colorScheme.error)
     }
 }
