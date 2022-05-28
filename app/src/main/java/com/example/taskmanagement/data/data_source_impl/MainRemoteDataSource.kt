@@ -8,8 +8,10 @@ import com.example.taskmanagement.domain.utils.Urls
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import java.io.File
 
 class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
     override suspend fun loginUser(credentials: Credentials): UserStatus {
@@ -292,10 +294,35 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
 
     override suspend fun registerUser(registerUser: RegisterUser): UserStatus {
         return try {
-            val response = client.post(Urls.SIGN_UP) {
-                setBody(registerUser)
-                contentType(ContentType.Application.Json)
-            }
+            var file: File? = null
+            if (registerUser.photoPath != null)
+                file = File(registerUser.photoPath)
+            val response = client.submitFormWithBinaryData(
+                Urls.SIGN_UP,
+                formData = formData {
+                    append(
+                        "username",
+                        registerUser.username
+                    )
+                    append(
+                        "email",
+                        registerUser.email
+                    )
+                    append(
+                        "password",
+                        registerUser.password
+                    )
+                    if (file != null)
+                        append(
+                            "photo",
+                            file.readBytes(),
+                            headers = Headers.build {
+                                append(HttpHeaders.ContentType, "image/png")
+                                append(HttpHeaders.ContentDisposition, "filename=${file.name}")
+                            }
+                        )
+                }
+            )
             if (response.status == HttpStatusCode.OK)
                 return UserStatus.Authorized(response.body())
             else

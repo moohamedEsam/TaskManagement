@@ -1,4 +1,4 @@
-package com.example.taskManagementWithMongoDB.presentation.navigation
+package com.example.taskmanagement.presentation.navigation
 
 sealed class Screens(val route: String) {
     object Login : Screens("login")
@@ -7,4 +7,7 @@ sealed class Screens(val route: String) {
     object Teams : Screens("teams")
     object Projects : Screens("projects")
     object Profile : Screens("profile")
+    object Task : Screens("task")
+    object TaskList : Screens("taskList")
+
 }

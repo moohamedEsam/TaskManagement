@@ -1,6 +1,6 @@
 package com.example.taskmanagement.presentation.screens.login
 
-import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.taskManagementWithMongoDB.presentation.navigation.Screens
+import com.example.taskmanagement.presentation.navigation.Screens
 import com.example.taskmanagement.domain.data_models.utils.UserStatus
 import com.example.taskmanagement.presentation.custom_components.PasswordTextField
 import com.example.taskmanagement.presentation.custom_components.TextFieldSetup
@@ -38,7 +38,7 @@ fun BoxScope.LoginScreen(
         }
     }
 
-    LoginScreenContent(viewModel)
+    LoginScreenContent(navHostController, viewModel)
     SnackbarHost(
         hostState = snackbarHostState,
         modifier = Modifier
@@ -52,7 +52,7 @@ fun BoxScope.LoginScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BoxScope.LoginScreenContent(viewModel: LoginViewModel) {
+fun BoxScope.LoginScreenContent(navHostController: NavHostController, viewModel: LoginViewModel) {
     val userCredentials by viewModel.userCredentials
     val usernameValidation by viewModel.usernameValidation
     val passwordValidation by viewModel.passwordValidation
@@ -107,6 +107,9 @@ fun BoxScope.LoginScreenContent(viewModel: LoginViewModel) {
                 }.toString(),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(start = 8.dp)
+                    .clickable {
+                        navHostController.navigate(Screens.SignUp.route)
+                    }
             )
         }
     }

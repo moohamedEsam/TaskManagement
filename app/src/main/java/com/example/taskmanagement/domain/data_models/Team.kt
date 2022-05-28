@@ -5,9 +5,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Team(
-    @SerialName("publicId")
-    val id: String,
     val name: String,
-    val description: String?,
+    val description: String? = null,
+    val owner: String = "",
     val members: List<String>,
+    @SerialName("publicId")
+    val id: String
 )

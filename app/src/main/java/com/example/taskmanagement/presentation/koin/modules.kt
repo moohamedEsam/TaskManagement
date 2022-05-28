@@ -14,6 +14,7 @@ import com.example.taskmanagement.domain.validatorsImpl.MainLoginValidator
 import com.example.taskmanagement.domain.vallidators.LoginValidator
 import com.example.taskmanagement.presentation.screens.home.HomeViewModel
 import com.example.taskmanagement.presentation.screens.login.LoginViewModel
+import com.example.taskmanagement.presentation.screens.signUp.SignUpViewModel
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -46,6 +47,7 @@ val viewModelModule = module {
     viewModel { SplashViewModel(get()) }
     viewModel { HomeViewModel(get()) }
     viewModel { LoginViewModel(get(), get()) }
+    viewModel { SignUpViewModel(get(), get()) }
 
 }
 

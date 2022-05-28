@@ -2,7 +2,6 @@ package com.example.taskmanagement.presentation.screens.shared_layout
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -13,7 +12,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.example.taskmanagement.presentation.navigation.Navigation
-import com.example.taskManagementWithMongoDB.presentation.navigation.Screens
+import com.example.taskmanagement.presentation.navigation.Screens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

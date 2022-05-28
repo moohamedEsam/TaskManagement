@@ -23,6 +23,7 @@ import com.example.taskmanagement.domain.data_models.utils.ValidationResult
 @Composable
 fun PasswordTextField(
     value: String,
+    label: String = "Password",
     validationResult: ValidationResult,
     onValueChange: (String) -> Unit
 ) {
@@ -33,7 +34,7 @@ fun PasswordTextField(
         TextField(
             value = value,
             onValueChange = { onValueChange(it) },
-            label = { Text(text = "Password") },
+            label = { Text(text = label) },
             modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
                 Icon(

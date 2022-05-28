@@ -5,11 +5,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Project(
-    @SerialName("publicId")
-    val id: String,
     val name: String,
-    val owner: String,
+    val owner: String = "",
     val description: String,
     val members: List<String>,
     val team: String,
+    @SerialName("publicId")
+    val id: String
 )
