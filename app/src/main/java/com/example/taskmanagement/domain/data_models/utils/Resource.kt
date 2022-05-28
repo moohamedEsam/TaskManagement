@@ -11,4 +11,12 @@ sealed class Resource<T>(val data: T?, val message: String? = null) {
         if (this is Success && data != null)
             code(data)
     }
+
+    fun copy(data: T?): Resource<T> {
+        return when (this) {
+            is Success -> if (data != null) Success(data) else Initialized()
+            is Error -> Error(message, data)
+            is Initialized -> Initialized()
+        }
+    }
 }

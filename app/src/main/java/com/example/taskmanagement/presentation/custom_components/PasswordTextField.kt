@@ -4,6 +4,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardOptions
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -14,7 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.example.taskmanagement.domain.data_models.utils.ValidationResult
@@ -30,7 +31,7 @@ fun PasswordTextField(
     var showPassword by remember {
         mutableStateOf(false)
     }
-    Column(modifier=Modifier.animateContentSize()) {
+    Column(modifier = Modifier.animateContentSize()) {
         TextField(
             value = value,
             onValueChange = { onValueChange(it) },
@@ -51,7 +52,8 @@ fun PasswordTextField(
             else
                 PasswordVisualTransformation(),
             maxLines = 1,
-            isError = !validationResult.success
+            isError = !validationResult.isValid,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
         if (!validationResult.message.isNullOrBlank())
             Text(text = validationResult.message, color = MaterialTheme.colorScheme.error)

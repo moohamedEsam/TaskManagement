@@ -173,7 +173,7 @@ fun SignUpForm(viewModel: SignUpViewModel) {
         Spacer(modifier = Modifier.height(8.dp))
         Button(
             onClick = {
-                viewModel.submit()
+                viewModel.submit(context)
             },
             modifier = Modifier.align(Alignment.End)
         ) {

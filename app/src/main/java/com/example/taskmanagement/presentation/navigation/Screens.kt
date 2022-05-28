@@ -1,7 +1,7 @@
 package com.example.taskmanagement.presentation.navigation
 
 sealed class Screens(val route: String) {
-    object Login : Screens("login")
+    object SignIn : Screens("login")
     object SignUp : Screens("signUp")
     object Home : Screens("home")
     object Teams : Screens("teams")

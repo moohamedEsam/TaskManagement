@@ -8,8 +8,7 @@ import java.util.*
 @Serializable
 data class Token(
     val token: String,
-//    @Serializable(with = DateSerializer::class)
-//    val expiresIn: Date,
-//    @Transient
-//    val expired: Boolean = expiresIn.before(Date())
+    val expiresIn: Long,
+    @Transient
+    val expired: Boolean = Date(expiresIn).before(Date())
 ) 

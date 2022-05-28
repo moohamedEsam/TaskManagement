@@ -1,10 +1,11 @@
 package com.example.taskmanagement.domain.validatorsImpl
 
 import android.util.Patterns
+import com.example.taskmanagement.domain.data_models.User
 import com.example.taskmanagement.domain.data_models.utils.ValidationResult
-import com.example.taskmanagement.domain.vallidators.LoginValidator
+import com.example.taskmanagement.domain.vallidators.Validator
 
-class MainLoginValidator : LoginValidator {
+class ProfileValidator : Validator {
     override fun validateEmail(email: String): ValidationResult {
         return when {
             email.isBlank() || email.isEmpty() -> ValidationResult(false, "email empty or blank")
@@ -39,6 +40,10 @@ class MainLoginValidator : LoginValidator {
             phone.length < 10 -> ValidationResult(false, "phone length must be at least 10")
             else -> ValidationResult(true)
         }
+    }
+
+    override fun validateUser(user: User): ValidationResult {
+        return ValidationResult(true)
     }
 
     override fun validatePassword(password: String): ValidationResult {

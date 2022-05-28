@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -89,9 +90,10 @@ fun BoxScope.LoginScreenContent(navHostController: NavHostController, viewModel:
                 viewModel.setPassword(it)
             }
             Spacer(modifier = Modifier.height(16.dp))
+            val context = LocalContext.current
             Button(
                 onClick = {
-                    viewModel.submit()
+                    viewModel.submit(context)
                 },
                 modifier = Modifier.align(Alignment.End)
             ) {

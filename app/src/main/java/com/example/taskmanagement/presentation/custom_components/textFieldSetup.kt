@@ -8,7 +8,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import com.example.taskmanagement.domain.data_models.utils.ValidationResult
 
 @Composable
@@ -25,7 +24,7 @@ fun TextFieldSetup(
             onValueChange = { onValueChange(it) },
             label = { Text(text = label) },
             modifier = Modifier.fillMaxWidth(),
-            isError = !validationResult.success,
+            isError = !validationResult.isValid,
             leadingIcon = leadingIcon
         )
         if (!validationResult.message.isNullOrBlank())

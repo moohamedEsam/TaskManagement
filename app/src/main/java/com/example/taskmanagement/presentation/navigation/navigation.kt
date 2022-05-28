@@ -11,7 +11,7 @@ import com.example.taskmanagement.presentation.screens.signUp.SignUpScreen
 @Composable
 fun Navigation(navHostController: NavHostController, startDestination: Screens) {
     NavHost(navController = navHostController, startDestination = startDestination.route) {
-        composable(Screens.Login.route) {
+        composable(Screens.SignIn.route) {
             LoginScreenWrapper(navHostController)
         }
 

@@ -3,7 +3,7 @@ package com.example.taskmanagement.domain.data_models.utils
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RegisterUser(
+data class UserProfile(
     val username: String,
     val email: String,
     val password: String,

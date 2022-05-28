@@ -1,5 +1,6 @@
 package com.example.taskmanagement.data.data_source_impl
 
+import android.content.Context
 import android.util.Log
 import com.example.taskmanagement.data.data_source.RemoteDataSource
 import com.example.taskmanagement.domain.data_models.*
@@ -14,47 +15,49 @@ import io.ktor.http.*
 import java.io.File
 
 class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
-    override suspend fun loginUser(credentials: Credentials): UserStatus {
+    override suspend fun loginUser(credentials: Credentials, context: Context): UserStatus {
         return try {
             val response = client.post(Urls.SIGN_IN) {
                 setBody(credentials)
                 contentType(ContentType.Application.Json)
             }
             if (response.status == HttpStatusCode.OK)
-                UserStatus.Authorized(response.body())
+                UserStatus.Authorized(response.body()).also {
+                    saveToken(context, it.token!!)
+                }
             else
                 UserStatus.Forbidden(response.body())
         } catch (exception: Exception) {
+            Log.i("MainRemoteDataSource", "loginUser: ${exception.message}")
             UserStatus.Forbidden(exception.message)
         }
     }
 
-    override suspend fun getUserTasks(token: Token): Resource<List<Task>> {
+    override fun isUserStillLoggedIn(context: Context): Boolean {
+        return loadToken(context).token.isBlank().not()
+    }
+
+    override suspend fun getUserTasks(): Resource<List<Task>> {
         return try {
-            val response = client.get(Urls.TASKS) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
-            }
+            val response = client.get(Urls.TASKS)
             getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
         }
     }
 
-    override suspend fun getUserTask(token: Token, taskId: String): Resource<Task> {
+    override suspend fun getUserTask(taskId: String): Resource<Task> {
         return try {
-            val response = client.get(Urls.getTaskUrl(taskId)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
-            }
+            val response = client.get(Urls.getTaskUrl(taskId))
             getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
         }
     }
 
-    override suspend fun createTask(token: Token, task: Task): Resource<Task> {
+    override suspend fun createTask(task: Task): Resource<Task> {
         return try {
             val response = client.post(Urls.TASKS) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
                 setBody(task)
                 contentType(ContentType.Application.Json)
             }
@@ -64,10 +67,9 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         }
     }
 
-    override suspend fun updateTask(token: Token, task: Task): Resource<Task> {
+    override suspend fun updateTask(task: Task): Resource<Task> {
         return try {
             val response = client.put(Urls.getTaskUrl(task.id)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
                 setBody(task)
                 contentType(ContentType.Application.Json)
             }
@@ -77,11 +79,9 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         }
     }
 
-    override suspend fun deleteTask(token: Token, taskId: String): Resource<ConfirmationResponse> {
+    override suspend fun deleteTask(taskId: String): Resource<ConfirmationResponse> {
         return try {
-            val response = client.delete(Urls.getTaskUrl(taskId)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
-            }
+            val response = client.delete(Urls.getTaskUrl(taskId))
             getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
@@ -89,13 +89,10 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
     }
 
     override suspend fun getUserTasksByStatus(
-        token: Token,
         status: TaskStatus
     ): Resource<List<Task>> {
         return try {
-            val response = client.get(Urls.getTasksByStatusUrl(status)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
-            }
+            val response = client.get(Urls.getTasksByStatusUrl(status))
             getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
@@ -103,13 +100,10 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
     }
 
     override suspend fun getUserTasksByPriority(
-        token: Token,
         priority: TaskPriority
     ): Resource<List<Task>> {
         return try {
-            val response = client.get(Urls.getTasksByPriorityUrl(priority)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
-            }
+            val response = client.get(Urls.getTasksByPriorityUrl(priority))
             getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
@@ -117,13 +111,11 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
     }
 
     override suspend fun createTaskComment(
-        token: Token,
         taskId: String,
         comment: Comment
     ): Resource<Task> {
         return try {
             val response = client.post(Urls.getTaskCommentsUrl(taskId)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
                 setBody(comment)
                 contentType(ContentType.Application.Json)
             }
@@ -134,14 +126,11 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
     }
 
     override suspend fun deleteTaskComment(
-        token: Token,
         taskId: String,
         commentId: String
     ): Resource<Task> {
         return try {
-            val response = client.delete(Urls.getTaskCommentUrl(taskId, commentId)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
-            }
+            val response = client.delete(Urls.getTaskCommentUrl(taskId, commentId))
             getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
@@ -149,13 +138,11 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
     }
 
     override suspend fun updateTaskComment(
-        token: Token,
         taskId: String,
         comment: Comment
     ): Resource<Task> {
         return try {
             val response = client.put(Urls.getTaskCommentUrl(taskId, comment.id)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
                 setBody(comment)
                 contentType(ContentType.Application.Json)
             }
@@ -165,32 +152,27 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         }
     }
 
-    override suspend fun getUserProjects(token: Token): Resource<List<Project>> {
+    override suspend fun getUserProjects(): Resource<List<Project>> {
         return try {
-            val response = client.get(Urls.PROJECTS) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
-            }
+            val response = client.get(Urls.PROJECTS)
             getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
         }
     }
 
-    override suspend fun getUserProject(token: Token, projectId: String): Resource<Project> {
+    override suspend fun getUserProject(projectId: String): Resource<Project> {
         return try {
-            val response = client.get(Urls.getProjectUrl(projectId)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
-            }
+            val response = client.get(Urls.getProjectUrl(projectId))
             getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
         }
     }
 
-    override suspend fun createProject(token: Token, project: Project): Resource<Project> {
+    override suspend fun createProject(project: Project): Resource<Project> {
         return try {
             val response = client.post(Urls.PROJECTS) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
                 setBody(project)
                 contentType(ContentType.Application.Json)
             }
@@ -200,10 +182,9 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         }
     }
 
-    override suspend fun updateProject(token: Token, project: Project): Resource<Project> {
+    override suspend fun updateProject(project: Project): Resource<Project> {
         return try {
             val response = client.put(Urls.getProjectUrl(project.id)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
                 setBody(project)
                 contentType(ContentType.Application.Json)
             }
@@ -214,45 +195,37 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
     }
 
     override suspend fun deleteProject(
-        token: Token,
         projectId: String
     ): Resource<ConfirmationResponse> {
         return try {
-            val response = client.delete(Urls.getProjectUrl(projectId)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
-            }
+            val response = client.delete(Urls.getProjectUrl(projectId))
             getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
         }
     }
 
-    override suspend fun getUserTeams(token: Token): Resource<List<Team>> {
+    override suspend fun getUserTeams(): Resource<List<Team>> {
         return try {
-            val response = client.get(Urls.TEAMS) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
-            }
+            val response = client.get(Urls.TEAMS)
             getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
         }
     }
 
-    override suspend fun getUserTeam(token: Token, teamId: String): Resource<Team> {
+    override suspend fun getUserTeam(teamId: String): Resource<Team> {
         return try {
-            val response = client.get(Urls.getTeamUrl(teamId)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
-            }
+            val response = client.get(Urls.getTeamUrl(teamId))
             getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
         }
     }
 
-    override suspend fun createTeam(token: Token, team: Team): Resource<Team> {
+    override suspend fun createTeam(team: Team): Resource<Team> {
         return try {
             val response = client.post(Urls.TEAMS) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
                 setBody(team)
                 contentType(ContentType.Application.Json)
             }
@@ -262,10 +235,9 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         }
     }
 
-    override suspend fun updateTeam(token: Token, team: Team): Resource<Team> {
+    override suspend fun updateTeam(team: Team): Resource<Team> {
         return try {
             val response = client.put(Urls.getTeamUrl(team.id)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
                 setBody(team)
                 contentType(ContentType.Application.Json)
             }
@@ -275,11 +247,9 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         }
     }
 
-    override suspend fun deleteTeam(token: Token, teamId: String): Resource<Team> {
+    override suspend fun deleteTeam(teamId: String): Resource<Team> {
         return try {
-            val response = client.delete(Urls.getTaskUrl(teamId)) {
-                header(HttpHeaders.Authorization, "Bearer ${token.token}")
-            }
+            val response = client.delete(Urls.getTaskUrl(teamId))
             getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
@@ -292,25 +262,25 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         else
             Resource.Error(response.body())
 
-    override suspend fun registerUser(registerUser: RegisterUser): UserStatus {
+    override suspend fun registerUser(userProfile: UserProfile, context: Context): UserStatus {
         return try {
             var file: File? = null
-            if (registerUser.photoPath != null)
-                file = File(registerUser.photoPath)
+            if (userProfile.photoPath != null)
+                file = File(userProfile.photoPath)
             val response = client.submitFormWithBinaryData(
                 Urls.SIGN_UP,
                 formData = formData {
                     append(
                         "username",
-                        registerUser.username
+                        userProfile.username
                     )
                     append(
                         "email",
-                        registerUser.email
+                        userProfile.email
                     )
                     append(
                         "password",
-                        registerUser.password
+                        userProfile.password
                     )
                     if (file != null)
                         append(
@@ -331,4 +301,23 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
             UserStatus.Forbidden(exception.message)
         }
     }
+
+    private fun saveToken(context: Context, token: Token) {
+        Log.i("MainRemoteDataSource", "saveToken: $token")
+        context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
+            .edit()
+            .putString("token", token.token)
+            .putLong("expiresIn", token.expiresIn)
+            .apply()
+
+    }
+
+    private fun loadToken(context: Context): Token {
+        val preferences = context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
+        val token = preferences.getString("token", null)
+        val expiresIn = preferences.getLong("expiresIn", 0)
+        Log.i("MainRemoteDataSource", "getToken: $token")
+        return Token(token ?: "", expiresIn)
+    }
+
 }

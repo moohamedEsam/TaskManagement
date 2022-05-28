@@ -5,6 +5,7 @@ import com.example.taskmanagement.domain.data_models.TaskStatus
 
 object Urls {
     private const val BASE_URL = "http://192.168.1.6:8080"
+    const val REFRESH_TOKEN = "$BASE_URL/auth/refresh"
     const val SIGN_IN = "$BASE_URL/user/signIn"
     const val SIGN_UP = "$BASE_URL/user/signUp"
     const val TASKS = "$BASE_URL/tasks"

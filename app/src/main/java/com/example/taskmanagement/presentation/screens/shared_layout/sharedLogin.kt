@@ -39,18 +39,3 @@ fun SharedLogin(
         ui()
     }
 }
-
-
-@Composable
-fun DividerRow() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Divider(modifier = Modifier.fillMaxWidth(0.45f))
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(text = "OR")
-        Spacer(modifier = Modifier.width(4.dp))
-        Divider(modifier = Modifier.fillMaxWidth())
-    }
-}

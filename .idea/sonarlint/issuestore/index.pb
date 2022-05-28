@@ -32,16 +32,12 @@ o
 Tapp/src/main/java/com/example/taskmanagement/presentation/screens/home/homeScreen.kt,f/4/f46ae24e3104b80347a514300eea60216bff9966
 n
 >app/src/main/java/com/example/taskmanagement/ui/theme/Shape.kt,8/8/88b1061c0394219aeb9ad700753dfa80aa5010aa
-Ç
-Rapp/src/main/java/com/example/taskmanagement/presentation/utils/SplashViewModel.kt,7/6/76edcab1aa18d8c491d5f2debf6e4022c0418139
 }
 Mapp/src/main/java/com/example/taskmanagement/domain/data_models/TaskStatus.kt,d/6/d6859582f128b663d5fbed18c2a037d193ee75e9
 n
 >app/src/main/java/com/example/taskmanagement/ui/theme/Theme.kt,8/0/805ea777f82541b8326a3dac75ee4c4b884f60fe
 m
 =app/src/main/java/com/example/taskmanagement/ui/theme/Type.kt,6/4/64d8ce69ded9e81c949d68425a5fbf17c719e8fb
-Å
-Qapp/src/main/java/com/example/taskmanagement/domain/data_models/utils/Resource.kt,1/0/101c08071f1a6f2458aac9f7e3751f60290f7986
 <
 build.gradle,f/0/f07866736216be0ee2aba49e392191aeae700a35
 @
@@ -62,14 +58,6 @@ Mapp/src/main/java/com/example/taskmanagement/domain/data_models/utils/Fail.kt,
 Wapp/src/main/java/com/example/taskmanagement/presentation/screens/home/HomeViewModel.kt,8/e/8edf254f8b16665e466f940c8ffbe4d28df00f29
 è
 _app/src/main/java/com/example/taskmanagement/presentation/screens/login/login_screen_wrapper.kt,1/6/16233f3c5505fd877afce73a4d0a51e708b9200f
-Ä
-Papp/src/main/java/com/example/taskmanagement/domain/repository/MainRepository.kt,6/a/6a380524191a9d06c639a3fa77c73bfcf519dff3
-Ç
-Rapp/src/main/java/com/example/taskmanagement/data/repository/MainRepositoryImpl.kt,5/7/57482cc3e3848ca58020bf2f12b58078eac9cb3d
-Ö
-Uapp/src/main/java/com/example/taskmanagement/domain/data_models/utils/RegisterUser.kt,5/3/5341c7bc3959fe7cfddae7dc5fe6f95beebbdbb4
-é
-^app/src/main/java/com/example/taskmanagement/presentation/screens/shared_layout/sharedLogin.kt,9/7/97870f7f7445376ef4f1635a7133221a9298e0f6
 {
 Kapp/src/main/java/com/example/taskmanagement/domain/data_models/TaskItem.kt,4/4/44e2d6c7fc305295c02328fc7f413bdc01d3d887
 Å
@@ -78,11 +66,5 @@ Qapp/src/main/java/com/example/taskmanagement/presentation/composables/taskItem.
 Oapp/src/main/java/com/example/taskmanagement/domain/data_models/TaskPriority.kt,f/2/f22da8cd00bbb77647e17b0ae7db400c0287a3fe
 Ñ
 Tapp/src/main/java/com/example/taskmanagement/presentation/screens/task/taskScreen.kt,3/0/30db685ef43d7dc1ed61f7183ff1eeb79564372e
-ç
-]app/src/main/java/com/example/taskmanagement/presentation/custom_components/textFieldSetup.kt,b/6/b697ca0a64287603ec5c04fdabf07914193d249b
-x
-Happ/src/main/java/com/example/taskmanagement/domain/data_models/Token.kt,8/0/805d90fff8ab4dbd648bc50adad0755487340a29
-q
-Aapp/src/main/java/com/example/taskmanagement/domain/utils/Urls.kt,3/6/367c2d08ea0fe1ab197bf780db43da8daed795f0
-â
-Yapp/src/main/java/com/example/taskmanagement/domain/data_models/utils/ValidationResult.kt,3/5/358d4bcc7dcc4c4f69549b60df6ce2daa6f8d898
+w
+Gapp/src/main/java/com/example/taskmanagement/domain/data_models/User.kt,a/8/a8aab0c3fb8032114322102ee9de0dd86beeb717
