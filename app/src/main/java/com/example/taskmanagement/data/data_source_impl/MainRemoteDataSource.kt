@@ -22,8 +22,8 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
                 contentType(ContentType.Application.Json)
             }
             if (response.status == HttpStatusCode.OK)
-                UserStatus.Authorized(response.body()).also {
-                    saveToken(context, it.token!!)
+                UserStatus.Authorized.also {
+                    saveToken(context, response.body())
                 }
             else
                 UserStatus.Forbidden(response.body())
@@ -34,7 +34,9 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
     }
 
     override fun isUserStillLoggedIn(context: Context): Boolean {
-        return loadToken(context).token.isBlank().not()
+        return loadToken(context).token.run {
+            isEmpty() || isBlank()
+        }.not()
     }
 
     override suspend fun getUserTasks(): Resource<List<Task>> {
@@ -46,7 +48,7 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         }
     }
 
-    override suspend fun getUserTask(taskId: String): Resource<Task> {
+    override suspend fun getUserTask(taskId: String): Resource<TaskDetails> {
         return try {
             val response = client.get(Urls.getTaskUrl(taskId))
             getResponseResource(response)
@@ -294,7 +296,9 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
                 }
             )
             if (response.status == HttpStatusCode.OK)
-                return UserStatus.Authorized(response.body())
+                UserStatus.Authorized.also {
+                    saveToken(context, response.body())
+                }
             else
                 UserStatus.Forbidden(response.body())
         } catch (exception: Exception) {

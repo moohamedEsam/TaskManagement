@@ -6,6 +6,7 @@ sealed class Resource<T>(val data: T?, val message: String? = null) {
     class Error<T>(message: String?, data: T? = null) : Resource<T>(data, message)
 
     class Initialized<T>() : Resource<T>(null, null)
+    class Loading<T> : Resource<T>(null, null)
 
     suspend fun onSuccess(code: suspend (T) -> Unit) {
         if (this is Success && data != null)
@@ -17,6 +18,7 @@ sealed class Resource<T>(val data: T?, val message: String? = null) {
             is Success -> if (data != null) Success(data) else Initialized()
             is Error -> Error(message, data)
             is Initialized -> Initialized()
+            else -> Loading()
         }
     }
 }

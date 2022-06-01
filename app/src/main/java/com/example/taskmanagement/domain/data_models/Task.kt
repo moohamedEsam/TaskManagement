@@ -7,18 +7,18 @@ import java.util.*
 
 @Serializable
 data class Task(
-    val name: String,
+    val title: String,
     val owner: String = "",
     val description: String? = null,
     val assigned: MutableList<String>? = null,
     val project: String,
-    val taskStatus: TaskStatus = TaskStatus.Pending,
+    val taskStatus: TaskStatus = TaskStatus.InProgress,
     val taskItems: MutableList<TaskItem>,
     val comments: MutableList<Comment>? = null,
     val estimatedTime: Int? = null,
-    val priority: Priority = Priority.MEDIUM,
+    val priority: Priority = Priority.Medium,
     @Serializable(with = DateSerializer::class)
-    val completedDate: Date? = null,
+    val completeDate: Date? = null,
     @Serializable(with = DateSerializer::class)
     val finishDate: Date? = null,
     @SerialName("publicId")

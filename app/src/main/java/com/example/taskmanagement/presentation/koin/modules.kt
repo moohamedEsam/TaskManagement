@@ -18,6 +18,7 @@ import com.example.taskmanagement.domain.vallidators.Validator
 import com.example.taskmanagement.presentation.screens.home.HomeViewModel
 import com.example.taskmanagement.presentation.screens.login.LoginViewModel
 import com.example.taskmanagement.presentation.screens.signUp.SignUpViewModel
+import com.example.taskmanagement.presentation.screens.task.TaskViewModel
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -56,6 +57,7 @@ val viewModelModule = module {
     viewModel { HomeViewModel(get()) }
     viewModel { LoginViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get()) }
+    viewModel { params -> TaskViewModel(get(), params.get()) }
 
 }
 
@@ -112,6 +114,7 @@ private fun Scope.provideCoilImageLoader() = ImageLoader
     }
     .crossfade(true)
     .build()
+
 private fun saveToken(context: Context, token: Token) {
     Log.i("modules", "saveToken: ${token.token}")
     context.getSharedPreferences("user_data", Context.MODE_PRIVATE)

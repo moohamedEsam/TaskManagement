@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import com.example.taskmanagement.presentation.screens.home.HomeScreen
 import com.example.taskmanagement.presentation.screens.login.LoginScreenWrapper
 import com.example.taskmanagement.presentation.screens.signUp.SignUpScreen
+import com.example.taskmanagement.presentation.screens.task.TaskScreen
 
 @Composable
 fun Navigation(navHostController: NavHostController, startDestination: Screens) {
@@ -19,10 +20,13 @@ fun Navigation(navHostController: NavHostController, startDestination: Screens) 
             SignUpScreen(navHostController = navHostController)
         }
         composable(Screens.Home.route) {
-            HomeScreen()
+            HomeScreen(navHostController)
         }
-        composable(Screens.Task.route) {
-
+        composable("${Screens.Task.route}/{taskId}") {
+            val id = it.arguments?.getString("taskId")
+            if (id != null) {
+                TaskScreen(navHostController, id)
+            }
         }
 
         composable(Screens.TaskList.route) {

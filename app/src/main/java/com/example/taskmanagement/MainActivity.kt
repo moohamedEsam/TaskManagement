@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         viewModel.isUserStillLoggedIn(this)
         installSplashScreen().apply {
             setKeepOnScreenCondition {
-                viewModel.userStatus.value != UserStatus.Loading
+                viewModel.userStatus.value == UserStatus.Loading
             }
         }
         super.onCreate(savedInstanceState)

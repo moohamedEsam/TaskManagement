@@ -13,7 +13,7 @@ interface RemoteDataSource {
 
 
     suspend fun getUserTasks(): Resource<List<Task>>
-    suspend fun getUserTask(taskId: String): Resource<Task>
+    suspend fun getUserTask(taskId: String): Resource<TaskDetails>
     suspend fun createTask(task: Task): Resource<Task>
     suspend fun updateTask(task: Task): Resource<Task>
     suspend fun deleteTask(taskId: String): Resource<ConfirmationResponse>

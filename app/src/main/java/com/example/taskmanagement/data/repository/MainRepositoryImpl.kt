@@ -3,6 +3,7 @@ package com.example.taskmanagement.data.repository
 import android.content.Context
 import com.example.taskmanagement.data.data_source.RemoteDataSource
 import com.example.taskmanagement.domain.data_models.Task
+import com.example.taskmanagement.domain.data_models.TaskDetails
 import com.example.taskmanagement.domain.data_models.Token
 import com.example.taskmanagement.domain.data_models.User
 import com.example.taskmanagement.domain.data_models.utils.Credentials
@@ -23,8 +24,12 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
         return remote.getUserTasks()
     }
 
-    override fun isUserStillLoggedIn(context: Context): Boolean {
+    override suspend fun isUserStillLoggedIn(context: Context): Boolean {
         return remote.isUserStillLoggedIn(context)
+    }
+
+    override suspend fun getTask(taskId: String): Resource<TaskDetails> {
+        return remote.getUserTask(taskId)
     }
 
     override suspend fun loginUser(credentials: Credentials, context: Context): UserStatus {

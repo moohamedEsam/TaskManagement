@@ -1,11 +1,12 @@
 package com.example.taskmanagement.presentation.composables
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -13,7 +14,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import com.example.taskmanagement.presentation.custom_components.CircleCheckbox
 import com.example.taskmanagement.R
-import com.example.taskmanagement.domain.data_models.TaskDetails
+import com.example.taskmanagement.domain.data_models.Priority
+import com.example.taskmanagement.domain.data_models.Task
 import com.example.taskmanagement.domain.data_models.TaskStatus
 import org.koin.androidx.compose.get
 import java.text.SimpleDateFormat
@@ -22,50 +24,76 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskItem(
-    task: TaskDetails,
-    onCompleteClick: (Boolean) -> Unit
+    task: Task,
+    onCompleteClick: (Boolean) -> Unit,
+    onclick: () -> Unit
 ) {
+    var completed by remember {
+        mutableStateOf(task.taskStatus == TaskStatus.Completed)
+    }
     Card(
         modifier = Modifier
-            .fillMaxWidth()
             .padding(8.dp)
+            .clickable { onclick() },
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Row {
-                CircleCheckbox(selected = task.status == TaskStatus.Completed) {}
+                CircleCheckbox(selected = completed) {
+                    completed = !completed
+                    onCompleteClick(completed)
+                }
                 Column {
                     Text(
                         text = task.title,
                         style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1
+                        maxLines = 1,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = task.description,
+                        text = task.description ?: "",
                         style = MaterialTheme.typography.bodySmall,
                         maxLines = 1
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        SubcomposeAsyncImage(
-                            model = R.drawable.date,
-                            contentDescription = null,
-                            imageLoader = get(),
-                            modifier = Modifier.size(14.dp)
+                        TaskDate(task, task.finishDate)
+                        Text(
+                            text = task.priority.toString(),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = when (task.priority) {
+                                Priority.High, Priority.Urgent -> Color.Red
+                                Priority.Medium -> Color.Yellow
+                                Priority.Low -> Color.Green
+                            }
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        if (task.finishDate != null)
-                            Text(
-                                text = SimpleDateFormat.getDateInstance().format(task.finishDate),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = if (task.status == TaskStatus.Completed && task.finishDate.before(Date()))
-                                    Color.Red
-                                else
-                                    MaterialTheme.colorScheme.onSurface
-                            )
-
 
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun TaskDate(
+    task: Task,
+    finishDate: Date?
+) {
+    if (task.finishDate != null) {
+        SubcomposeAsyncImage(
+            model = R.drawable.date,
+            contentDescription = null,
+            imageLoader = get(),
+            modifier = Modifier.size(14.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = SimpleDateFormat.getDateInstance().format(task.finishDate),
+            style = MaterialTheme.typography.bodySmall,
+            color = if (task.taskStatus == TaskStatus.Completed && finishDate?.before(Date()) == true)
+                Color.Red
+            else
+                MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.width(4.dp))
     }
 }

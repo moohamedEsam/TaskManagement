@@ -10,13 +10,15 @@ data class TaskDetails(
     val description: String,
     val owner: User,
     val assigned: List<User>,
-    val status: TaskStatus,
+    val taskStatus: TaskStatus,
+    val priority: Priority,
     @Serializable(with = DateSerializer::class)
     val finishDate: Date?,
     @Serializable(with = DateSerializer::class)
     val completeDate: Date?,
     val estimatedTime: Int?,
     val taskItems: List<TaskItem>,
-    val comments: List<Comment>
+    val comments: List<Comment>,
+    val publicId: String
 )
 
