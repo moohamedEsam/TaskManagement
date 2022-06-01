@@ -32,5 +32,19 @@ fun Navigation(navHostController: NavHostController, startDestination: Screens) 
         composable(Screens.TaskList.route) {
 
         }
+
+
+        composable(Screens.Projects.route) {
+
+        }
+
+        composable(Screens.Teams.route) {
+
+        }
+
+        composable(Screens.Profile.route) {
+
+        }
+
     }
 }
