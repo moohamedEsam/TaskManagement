@@ -18,12 +18,12 @@ val Typography = Typography(
     ),
     bodyMedium = TextStyle(Color.DarkGray, fontSize = 14.sp),
     headlineLarge = TextStyle(
-        color = Purple80,
+        color = Green80,
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp
     ),
-    headlineMedium = TextStyle(Purple80, fontSize = 18.sp),
-    labelLarge = TextStyle(Purple80, textDecoration = TextDecoration.Underline)
+    headlineMedium = TextStyle(Green80, fontSize = 18.sp),
+    labelLarge = TextStyle(Green80, textDecoration = TextDecoration.Underline)
     /* Other default text styles to override
     button = TextStyle(
         fontFamily = FontFamily.Default,

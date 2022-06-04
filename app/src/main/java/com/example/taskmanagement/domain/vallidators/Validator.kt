@@ -1,7 +1,7 @@
 package com.example.taskmanagement.domain.vallidators
 
-import com.example.taskmanagement.domain.data_models.User
-import com.example.taskmanagement.domain.data_models.utils.ValidationResult
+import com.example.taskmanagement.domain.dataModels.User
+import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 
 interface Validator {
     fun validateEmail(email: String): ValidationResult

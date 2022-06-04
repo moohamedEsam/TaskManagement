@@ -22,24 +22,21 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.SubcomposeAsyncImage
 import com.example.taskmanagement.R
-import com.example.taskmanagement.domain.data_models.utils.UserStatus
-import com.example.taskmanagement.presentation.custom_components.PasswordTextField
-import com.example.taskmanagement.presentation.custom_components.TextFieldSetup
+import com.example.taskmanagement.domain.dataModels.utils.UserStatus
+import com.example.taskmanagement.presentation.customComponents.PasswordTextField
+import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
 import com.example.taskmanagement.presentation.navigation.Screens
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.inject
 
 @Composable
-fun SignUpScreen(navHostController: NavHostController) {
+fun SignUpScreen(navHostController: NavHostController, snackbarHostState: SnackbarHostState) {
     val viewModel: SignUpViewModel by inject()
     val userStatus by viewModel.userStatus
-    val snackBarHostState by remember {
-        mutableStateOf(SnackbarHostState())
-    }
     LaunchedEffect(key1 = userStatus) {
         when (userStatus) {
             is UserStatus.Forbidden -> {
-                snackBarHostState.showSnackbar(message = userStatus.message ?: "")
+                snackbarHostState.showSnackbar(message = userStatus.message ?: "")
             }
             is UserStatus.Authorized -> {
                 navHostController.navigate(Screens.Home.route)
@@ -53,12 +50,6 @@ fun SignUpScreen(navHostController: NavHostController) {
             .padding(8.dp)
     ) {
         SignUpForm(viewModel)
-        SnackbarHost(
-            hostState = snackBarHostState,
-            modifier = Modifier
-                .padding(8.dp)
-                .align(Alignment.BottomCenter)
-        )
     }
 
 }

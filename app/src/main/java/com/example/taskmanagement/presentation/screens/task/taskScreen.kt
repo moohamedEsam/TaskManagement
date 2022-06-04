@@ -12,10 +12,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.taskmanagement.domain.data_models.TaskDetails
-import com.example.taskmanagement.domain.data_models.TaskItem
-import com.example.taskmanagement.domain.data_models.utils.Resource
-import com.example.taskmanagement.presentation.custom_components.CircleCheckbox
+import com.example.taskmanagement.domain.dataModels.TaskItem
+import com.example.taskmanagement.domain.dataModels.views.TaskView
+import com.example.taskmanagement.presentation.customComponents.CircleCheckbox
+import com.example.taskmanagement.presentation.customComponents.HandleResourceChange
 import org.koin.androidx.compose.inject
 import org.koin.core.parameter.parametersOf
 import java.text.SimpleDateFormat
@@ -23,35 +23,29 @@ import java.text.SimpleDateFormat
 @Composable
 fun TaskScreen(
     navHostController: NavHostController,
-    taskId: String
+    taskId: String,
+    snackbarHostState: SnackbarHostState
 ) {
     val viewModel by inject<TaskViewModel> { parametersOf(taskId) }
     val taskResource by viewModel.task
     val task = taskResource.data ?: return
-    val snackBarHostState by remember {
-        mutableStateOf(SnackbarHostState())
-    }
-    LaunchedEffect(key1 = taskResource) {
-        if (taskResource !is Resource.Error) return@LaunchedEffect
-        val result =
-            snackBarHostState.showSnackbar(taskResource.message ?: "", actionLabel = "Retry")
-        if (result == SnackbarResult.ActionPerformed) {
+    HandleResourceChange(
+        resource = taskResource,
+        onSuccess = {},
+        snackbarHostState = snackbarHostState,
+        onSnackbarClick = {
             viewModel.getTask()
-        }
-    }
+        })
     Box {
         TaskScreenContent(navHostController, task)
-        SnackbarHost(
-            hostState = snackBarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+
     }
 }
 
 @Composable
 private fun TaskScreenContent(
     navHostController: NavHostController,
-    task: TaskDetails
+    task: TaskView
 ) {
     Column(
         modifier = Modifier
@@ -78,18 +72,18 @@ private fun TaskScreenContent(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Status", style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.padding(4.dp))
-                Text(text = task.taskStatus.toString(), style = MaterialTheme.typography.bodyLarge)
+                Text(text = task.status.toString(), style = MaterialTheme.typography.bodyLarge)
             }
 
         }
         Spacer(modifier = Modifier.padding(8.dp))
         Text(text = "Description", style = MaterialTheme.typography.bodyLarge)
-        Text(text = task.description, style = MaterialTheme.typography.bodyMedium)
+        Text(text = task.description ?: "", style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.padding(8.dp))
         Text(text = "task items", style = MaterialTheme.typography.bodyLarge)
         Spacer(modifier = Modifier.padding(8.dp))
         LazyColumn {
-            items(task.taskItems) {
+            items(task.taskItems ?: emptyList()) {
                 TaskItemCard(it)
             }
         }
@@ -97,7 +91,7 @@ private fun TaskScreenContent(
 }
 
 @Composable
-private fun TaskMainInfo(task: TaskDetails) {
+private fun TaskMainInfo(task: TaskView) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -150,7 +144,7 @@ private fun ActionRow(navHostController: NavHostController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskItemCard(taskItem: TaskItem) {
-    OutlinedCard(modifier = Modifier.padding(8.dp)) {
+    OutlinedCard(modifier = Modifier.padding(vertical = 8.dp)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

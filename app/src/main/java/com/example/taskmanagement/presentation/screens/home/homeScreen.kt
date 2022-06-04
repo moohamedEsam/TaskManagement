@@ -20,27 +20,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.taskmanagement.domain.data_models.Task
-import com.example.taskmanagement.domain.data_models.utils.Resource
+import com.example.taskmanagement.domain.dataModels.Task
+import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.presentation.composables.TaskItem
+import com.example.taskmanagement.presentation.customComponents.HandleResourceChange
 import com.example.taskmanagement.presentation.navigation.Screens
 import org.koin.androidx.compose.get
 
 @Composable
-fun HomeScreen(navHostController: NavHostController) {
+fun HomeScreen(navHostController: NavHostController, snackbarHostState: SnackbarHostState) {
     val viewModel: HomeViewModel = get()
     val tasks by viewModel.tasks
-    val snackbarHostState by remember { mutableStateOf(SnackbarHostState()) }
+
     TaskResourceHandler(tasks, snackbarHostState, viewModel)
     Box {
         HomeScreenContent(viewModel, navHostController)
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(vertical = 64.dp, horizontal = 16.dp)
-        )
-
     }
 }
 
@@ -65,17 +59,14 @@ private fun TaskResourceHandler(
     snackbarHostState: SnackbarHostState,
     viewModel: HomeViewModel
 ) {
-    LaunchedEffect(key1 = tasks) {
-        if (tasks is Resource.Error) {
-            val result = snackbarHostState.showSnackbar(
-                message = tasks.message ?: "something went wrong",
-                actionLabel = "Retry"
-            )
-            if (result == SnackbarResult.ActionPerformed) {
-                viewModel.getUserTasks()
-            }
+    HandleResourceChange(
+        resource = tasks,
+        onSuccess = { },
+        snackbarHostState = snackbarHostState,
+        onSnackbarClick = {
+            viewModel.getUserTasks()
         }
-    }
+    )
 }
 
 @Composable

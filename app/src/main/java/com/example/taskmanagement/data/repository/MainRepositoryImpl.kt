@@ -2,16 +2,15 @@ package com.example.taskmanagement.data.repository
 
 import android.content.Context
 import com.example.taskmanagement.data.data_source.RemoteDataSource
-import com.example.taskmanagement.domain.data_models.Task
-import com.example.taskmanagement.domain.data_models.TaskDetails
-import com.example.taskmanagement.domain.data_models.Token
-import com.example.taskmanagement.domain.data_models.User
-import com.example.taskmanagement.domain.data_models.utils.Credentials
-import com.example.taskmanagement.domain.data_models.utils.Resource
-import com.example.taskmanagement.domain.data_models.utils.UserProfile
-import com.example.taskmanagement.domain.data_models.utils.UserStatus
+import com.example.taskmanagement.domain.dataModels.*
+import com.example.taskmanagement.domain.dataModels.utils.Credentials
+import com.example.taskmanagement.domain.dataModels.utils.Resource
+import com.example.taskmanagement.domain.dataModels.utils.UserProfile
+import com.example.taskmanagement.domain.dataModels.utils.UserStatus
+import com.example.taskmanagement.domain.dataModels.views.ProjectView
+import com.example.taskmanagement.domain.dataModels.views.TaskView
+import com.example.taskmanagement.domain.dataModels.views.UserView
 import com.example.taskmanagement.domain.repository.MainRepository
-import java.util.*
 
 class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository {
     private lateinit var userStatus: UserStatus
@@ -28,7 +27,7 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
         return remote.isUserStillLoggedIn(context)
     }
 
-    override suspend fun getTask(taskId: String): Resource<TaskDetails> {
+    override suspend fun getTask(taskId: String): Resource<TaskView> {
         return remote.getUserTask(taskId)
     }
 
@@ -40,5 +39,21 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
     override suspend fun logoutUser(): UserStatus {
         userStatus = UserStatus.LoggedOut
         return userStatus
+    }
+
+    override suspend fun getUserProfile(): Resource<UserView> {
+        return remote.getUserProfile()
+    }
+
+    override suspend fun getUserProjects(): Resource<List<Project>> {
+        return remote.getUserProjects()
+    }
+
+    override suspend fun getProject(projectId: String): Resource<ProjectView> {
+        return remote.getProject(projectId)
+    }
+
+    override suspend fun saveTask(task: Task): Resource<Task> {
+        return remote.saveTask(task)
     }
 }

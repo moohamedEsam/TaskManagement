@@ -10,13 +10,16 @@ import com.example.taskmanagement.MainActivityViewModel
 import com.example.taskmanagement.data.data_source.RemoteDataSource
 import com.example.taskmanagement.data.data_source_impl.MainRemoteDataSource
 import com.example.taskmanagement.data.repository.MainRepositoryImpl
-import com.example.taskmanagement.domain.data_models.Token
+import com.example.taskmanagement.domain.dataModels.Token
 import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.utils.Urls
 import com.example.taskmanagement.domain.validatorsImpl.ProfileValidator
 import com.example.taskmanagement.domain.vallidators.Validator
 import com.example.taskmanagement.presentation.screens.home.HomeViewModel
 import com.example.taskmanagement.presentation.screens.login.LoginViewModel
+import com.example.taskmanagement.presentation.screens.profile.ProfileViewModel
+import com.example.taskmanagement.presentation.screens.project.ProjectViewModel
+import com.example.taskmanagement.presentation.screens.projects.ProjectsViewModel
 import com.example.taskmanagement.presentation.screens.signUp.SignUpViewModel
 import com.example.taskmanagement.presentation.screens.task.TaskViewModel
 import io.ktor.client.*
@@ -58,6 +61,9 @@ val viewModelModule = module {
     viewModel { LoginViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get()) }
     viewModel { params -> TaskViewModel(get(), params.get()) }
+    viewModel { ProfileViewModel(get(), get()) }
+    viewModel { ProjectsViewModel(get()) }
+    viewModel { params -> ProjectViewModel(get(), params.get()) }
 
 }
 

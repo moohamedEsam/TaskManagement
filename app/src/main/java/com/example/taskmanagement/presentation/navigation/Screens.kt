@@ -6,8 +6,10 @@ sealed class Screens(val route: String) {
     object Home : Screens("home")
     object Teams : Screens("teams")
     object Projects : Screens("projects")
+    object Project: Screens("project")
     object Profile : Screens("profile")
     object Task : Screens("task")
     object TaskList : Screens("taskList")
+    object TaskForm: Screens("taskForm")
 
 }

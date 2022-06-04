@@ -3,8 +3,11 @@ package com.example.taskmanagement.data.data_source_impl
 import android.content.Context
 import android.util.Log
 import com.example.taskmanagement.data.data_source.RemoteDataSource
-import com.example.taskmanagement.domain.data_models.*
-import com.example.taskmanagement.domain.data_models.utils.*
+import com.example.taskmanagement.domain.dataModels.*
+import com.example.taskmanagement.domain.dataModels.utils.*
+import com.example.taskmanagement.domain.dataModels.views.ProjectView
+import com.example.taskmanagement.domain.dataModels.views.TaskView
+import com.example.taskmanagement.domain.dataModels.views.UserView
 import com.example.taskmanagement.domain.utils.Urls
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -33,10 +36,43 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         }
     }
 
-    override fun isUserStillLoggedIn(context: Context): Boolean {
+    override suspend fun saveTask(task: Task): Resource<Task> {
+        return try {
+            val response = client.post(Urls.TASKS) {
+                setBody(task)
+                contentType(ContentType.Application.Json)
+            }
+            getResponseResource(response)
+        } catch (exception: Exception) {
+            Log.i("MainRemoteDataSource", "saveTask: ${exception.message}")
+            Resource.Error(exception.message)
+        }
+    }
+
+    override suspend fun isUserStillLoggedIn(context: Context): Boolean {
         return loadToken(context).token.run {
             isEmpty() || isBlank()
         }.not()
+    }
+
+    override suspend fun getUserProfile(): Resource<UserView> {
+        return try {
+            val response = client.get(Urls.PROFILE)
+            getResponseResource(response)
+        }catch (exception: Exception) {
+            Log.i("MainRemoteDataSource", "getUserProfile: ${exception.message}")
+            Resource.Error(exception.message)
+        }
+    }
+
+    override suspend fun getProject(projectId: String): Resource<ProjectView> {
+        return try {
+            val response = client.get(Urls.getProjectUrl(projectId))
+            getResponseResource(response)
+        }catch (exception: Exception) {
+            Log.i("MainRemoteDataSource", "getProject: ${exception.message}")
+            Resource.Error(exception.message)
+        }
     }
 
     override suspend fun getUserTasks(): Resource<List<Task>> {
@@ -48,7 +84,7 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         }
     }
 
-    override suspend fun getUserTask(taskId: String): Resource<TaskDetails> {
+    override suspend fun getUserTask(taskId: String): Resource<TaskView> {
         return try {
             val response = client.get(Urls.getTaskUrl(taskId))
             getResponseResource(response)

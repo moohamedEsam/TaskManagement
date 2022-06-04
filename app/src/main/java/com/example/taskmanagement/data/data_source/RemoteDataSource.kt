@@ -1,11 +1,14 @@
 package com.example.taskmanagement.data.data_source
 
 import android.content.Context
-import com.example.taskmanagement.domain.data_models.*
-import com.example.taskmanagement.domain.data_models.utils.Credentials
-import com.example.taskmanagement.domain.data_models.utils.UserProfile
-import com.example.taskmanagement.domain.data_models.utils.Resource
-import com.example.taskmanagement.domain.data_models.utils.UserStatus
+import com.example.taskmanagement.domain.dataModels.*
+import com.example.taskmanagement.domain.dataModels.utils.Credentials
+import com.example.taskmanagement.domain.dataModels.utils.UserProfile
+import com.example.taskmanagement.domain.dataModels.utils.Resource
+import com.example.taskmanagement.domain.dataModels.utils.UserStatus
+import com.example.taskmanagement.domain.dataModels.views.ProjectView
+import com.example.taskmanagement.domain.dataModels.views.TaskView
+import com.example.taskmanagement.domain.dataModels.views.UserView
 
 interface RemoteDataSource {
     suspend fun loginUser(credentials: Credentials, context: Context): UserStatus
@@ -13,7 +16,7 @@ interface RemoteDataSource {
 
 
     suspend fun getUserTasks(): Resource<List<Task>>
-    suspend fun getUserTask(taskId: String): Resource<TaskDetails>
+    suspend fun getUserTask(taskId: String): Resource<TaskView>
     suspend fun createTask(task: Task): Resource<Task>
     suspend fun updateTask(task: Task): Resource<Task>
     suspend fun deleteTask(taskId: String): Resource<ConfirmationResponse>
@@ -35,7 +38,10 @@ interface RemoteDataSource {
     suspend fun createTeam(team: Team): Resource<Team>
     suspend fun updateTeam(team: Team): Resource<Team>
     suspend fun deleteTeam(teamId: String): Resource<Team>
-    fun isUserStillLoggedIn(context: Context): Boolean
+    suspend fun isUserStillLoggedIn(context: Context): Boolean
+    suspend fun getUserProfile(): Resource<UserView>
+    suspend fun getProject(projectId: String): Resource<ProjectView>
+    suspend fun saveTask(task: Task): Resource<Task>
 
 
 }

@@ -4,9 +4,9 @@ import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.taskmanagement.domain.data_models.utils.UserProfile
-import com.example.taskmanagement.domain.data_models.utils.UserStatus
-import com.example.taskmanagement.domain.data_models.utils.ValidationResult
+import com.example.taskmanagement.domain.dataModels.utils.UserProfile
+import com.example.taskmanagement.domain.dataModels.utils.UserStatus
+import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.vallidators.Validator
 import kotlinx.coroutines.launch

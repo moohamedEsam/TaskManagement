@@ -13,20 +13,18 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.presentation.navigation.Screens
-import com.example.taskmanagement.domain.data_models.utils.UserStatus
-import com.example.taskmanagement.presentation.custom_components.PasswordTextField
-import com.example.taskmanagement.presentation.custom_components.TextFieldSetup
+import com.example.taskmanagement.domain.dataModels.utils.UserStatus
+import com.example.taskmanagement.presentation.customComponents.PasswordTextField
+import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
 import org.koin.androidx.compose.inject
 
 @Composable
 fun BoxScope.LoginScreen(
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    snackbarHostState: SnackbarHostState
 ) {
     val viewModel: LoginViewModel by inject()
     val userStatus by viewModel.userStatus
-    val snackbarHostState by remember {
-        mutableStateOf(SnackbarHostState())
-    }
     LaunchedEffect(key1 = userStatus) {
         when (userStatus) {
             is UserStatus.Authorized -> {
@@ -40,15 +38,6 @@ fun BoxScope.LoginScreen(
     }
 
     LoginScreenContent(navHostController, viewModel)
-    SnackbarHost(
-        hostState = snackbarHostState,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .align(Alignment.BottomStart)
-    )
-
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

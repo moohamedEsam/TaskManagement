@@ -12,11 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
-import com.example.taskmanagement.presentation.custom_components.CircleCheckbox
+import com.example.taskmanagement.presentation.customComponents.CircleCheckbox
 import com.example.taskmanagement.R
-import com.example.taskmanagement.domain.data_models.Priority
-import com.example.taskmanagement.domain.data_models.Task
-import com.example.taskmanagement.domain.data_models.TaskStatus
+import com.example.taskmanagement.domain.dataModels.Priority
+import com.example.taskmanagement.domain.dataModels.Task
+import com.example.taskmanagement.domain.dataModels.TaskStatus
 import org.koin.androidx.compose.get
 import java.text.SimpleDateFormat
 import java.util.*
@@ -29,7 +29,7 @@ fun TaskItem(
     onclick: () -> Unit
 ) {
     var completed by remember {
-        mutableStateOf(task.taskStatus == TaskStatus.Completed)
+        mutableStateOf(task.status == TaskStatus.Completed)
     }
     Card(
         modifier = Modifier
@@ -89,7 +89,7 @@ private fun TaskDate(
         Text(
             text = SimpleDateFormat.getDateInstance().format(task.finishDate),
             style = MaterialTheme.typography.bodySmall,
-            color = if (task.taskStatus == TaskStatus.Completed && finishDate?.before(Date()) == true)
+            color = if (task.status == TaskStatus.Completed && finishDate?.before(Date()) == true)
                 Color.Red
             else
                 MaterialTheme.colorScheme.onSurface

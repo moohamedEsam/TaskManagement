@@ -1,15 +1,13 @@
 package com.example.taskmanagement.presentation.screens.home
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.taskmanagement.domain.data_models.Priority
-import com.example.taskmanagement.domain.data_models.Task
-import com.example.taskmanagement.domain.data_models.TaskDetails
-import com.example.taskmanagement.domain.data_models.TaskStatus
-import com.example.taskmanagement.domain.data_models.utils.Resource
+import com.example.taskmanagement.domain.dataModels.Priority
+import com.example.taskmanagement.domain.dataModels.Task
+import com.example.taskmanagement.domain.dataModels.TaskStatus
+import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.repository.MainRepository
 import kotlinx.coroutines.launch
 
@@ -49,7 +47,7 @@ class HomeViewModel(
 
     private fun filterTasks() = viewModelScope.launch {
         filteredTasks.value = tasks.value.data?.filter {
-            priorityFilterStates[it.priority] ?: false || statusFilterStates[it.taskStatus] ?: false
+            priorityFilterStates[it.priority] ?: false || statusFilterStates[it.status] ?: false
         } ?: emptyList()
         if (searchQuery.value.isNotBlank()) {
             filteredTasks.value = filteredTasks.value.filter {
