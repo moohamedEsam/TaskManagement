@@ -9,7 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.example.taskmanagement.domain.dataModels.utils.UserStatus
+import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.presentation.navigation.Screens
 import com.example.taskmanagement.presentation.screens.sharedLayout.MainLayout
 import com.example.taskmanagement.ui.theme.TaskManagementTheme
@@ -18,10 +18,10 @@ import org.koin.android.ext.android.inject
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val viewModel by inject<MainActivityViewModel>()
-        viewModel.isUserStillLoggedIn(this)
+        viewModel.getCurrentUserProfile()
         installSplashScreen().apply {
             setKeepOnScreenCondition {
-                viewModel.userStatus.value == UserStatus.Loading
+                viewModel.user.value is Resource.Loading || viewModel.user.value is Resource.Initialized
             }
         }
         super.onCreate(savedInstanceState)
@@ -32,8 +32,13 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val userStatus by viewModel.userStatus
-                    MainLayout(startDestination = if (userStatus is UserStatus.LoggedOut) Screens.SignIn else Screens.Home)
+                    val user by viewModel.user
+                    if (user is Resource.Initialized)
+                        return@Surface
+                    MainLayout(
+                        startDestination = if (user is Resource.Success) Screens.Home else Screens.SignIn,
+                        user = user.data
+                    )
                 }
             }
         }

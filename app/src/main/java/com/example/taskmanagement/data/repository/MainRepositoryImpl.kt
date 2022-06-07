@@ -9,6 +9,7 @@ import com.example.taskmanagement.domain.dataModels.utils.UserProfile
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
 import com.example.taskmanagement.domain.dataModels.views.ProjectView
 import com.example.taskmanagement.domain.dataModels.views.TaskView
+import com.example.taskmanagement.domain.dataModels.views.TeamView
 import com.example.taskmanagement.domain.dataModels.views.UserView
 import com.example.taskmanagement.domain.repository.MainRepository
 
@@ -23,9 +24,6 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
         return remote.getUserTasks()
     }
 
-    override suspend fun isUserStillLoggedIn(context: Context): Boolean {
-        return remote.isUserStillLoggedIn(context)
-    }
 
     override suspend fun getTask(taskId: String): Resource<TaskView> {
         return remote.getUserTask(taskId)
@@ -55,5 +53,13 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
 
     override suspend fun saveTask(task: Task): Resource<Task> {
         return remote.saveTask(task)
+    }
+
+    override suspend fun getUserTeam(teamId: String): Resource<TeamView> {
+        return remote.getUserTeam(teamId)
+    }
+
+    override suspend fun saveProject(project: Project): Resource<Project> {
+        return remote.saveProject(project)
     }
 }

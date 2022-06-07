@@ -8,6 +8,7 @@ import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
 import com.example.taskmanagement.domain.dataModels.views.ProjectView
 import com.example.taskmanagement.domain.dataModels.views.TaskView
+import com.example.taskmanagement.domain.dataModels.views.TeamView
 import com.example.taskmanagement.domain.dataModels.views.UserView
 
 interface RemoteDataSource {
@@ -34,14 +35,14 @@ interface RemoteDataSource {
     suspend fun deleteProject(projectId: String): Resource<ConfirmationResponse>
 
     suspend fun getUserTeams(): Resource<List<Team>>
-    suspend fun getUserTeam(teamId: String): Resource<Team>
+    suspend fun getUserTeam(teamId: String): Resource<TeamView>
     suspend fun createTeam(team: Team): Resource<Team>
     suspend fun updateTeam(team: Team): Resource<Team>
     suspend fun deleteTeam(teamId: String): Resource<Team>
-    suspend fun isUserStillLoggedIn(context: Context): Boolean
     suspend fun getUserProfile(): Resource<UserView>
     suspend fun getProject(projectId: String): Resource<ProjectView>
     suspend fun saveTask(task: Task): Resource<Task>
+    suspend fun saveProject(project: Project): Resource<Project>
 
 
 }

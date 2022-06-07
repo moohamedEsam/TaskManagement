@@ -15,6 +15,7 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.utils.Urls
 import com.example.taskmanagement.domain.validatorsImpl.ProfileValidator
 import com.example.taskmanagement.domain.vallidators.Validator
+import com.example.taskmanagement.presentation.screens.forms.task.TaskFormViewModel
 import com.example.taskmanagement.presentation.screens.home.HomeViewModel
 import com.example.taskmanagement.presentation.screens.login.LoginViewModel
 import com.example.taskmanagement.presentation.screens.profile.ProfileViewModel
@@ -22,6 +23,7 @@ import com.example.taskmanagement.presentation.screens.project.ProjectViewModel
 import com.example.taskmanagement.presentation.screens.projects.ProjectsViewModel
 import com.example.taskmanagement.presentation.screens.signUp.SignUpViewModel
 import com.example.taskmanagement.presentation.screens.task.TaskViewModel
+import com.example.taskmanagement.presentation.screens.team.TeamViewModel
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -64,6 +66,8 @@ val viewModelModule = module {
     viewModel { ProfileViewModel(get(), get()) }
     viewModel { ProjectsViewModel(get()) }
     viewModel { params -> ProjectViewModel(get(), params.get()) }
+    viewModel { params -> TeamViewModel(get(), params.get()) }
+    viewModel { params -> TaskFormViewModel(get(), params.get()) }
 
 }
 
@@ -121,7 +125,7 @@ private fun Scope.provideCoilImageLoader() = ImageLoader
     .crossfade(true)
     .build()
 
-private fun saveToken(context: Context, token: Token) {
+fun saveToken(context: Context, token: Token) {
     Log.i("modules", "saveToken: ${token.token}")
     context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
         .edit()
@@ -131,7 +135,7 @@ private fun saveToken(context: Context, token: Token) {
 
 }
 
-private fun loadToken(context: Context): Token {
+fun loadToken(context: Context): Token {
     val preferences = context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
     val token = preferences.getString("token", null)
     val expiresIn = preferences.getLong("expiresIn", 0)

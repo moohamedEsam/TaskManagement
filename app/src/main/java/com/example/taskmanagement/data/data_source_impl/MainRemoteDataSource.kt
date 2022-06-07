@@ -7,8 +7,11 @@ import com.example.taskmanagement.domain.dataModels.*
 import com.example.taskmanagement.domain.dataModels.utils.*
 import com.example.taskmanagement.domain.dataModels.views.ProjectView
 import com.example.taskmanagement.domain.dataModels.views.TaskView
+import com.example.taskmanagement.domain.dataModels.views.TeamView
 import com.example.taskmanagement.domain.dataModels.views.UserView
 import com.example.taskmanagement.domain.utils.Urls
+import com.example.taskmanagement.presentation.koin.loadToken
+import com.example.taskmanagement.presentation.koin.saveToken
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -47,12 +50,6 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
             Log.i("MainRemoteDataSource", "saveTask: ${exception.message}")
             Resource.Error(exception.message)
         }
-    }
-
-    override suspend fun isUserStillLoggedIn(context: Context): Boolean {
-        return loadToken(context).token.run {
-            isEmpty() || isBlank()
-        }.not()
     }
 
     override suspend fun getUserProfile(): Resource<UserView> {
@@ -252,9 +249,21 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         }
     }
 
-    override suspend fun getUserTeam(teamId: String): Resource<Team> {
+    override suspend fun getUserTeam(teamId: String): Resource<TeamView> {
         return try {
             val response = client.get(Urls.getTeamUrl(teamId))
+            getResponseResource(response)
+        } catch (exception: Exception) {
+            Resource.Error(exception.message)
+        }
+    }
+
+    override suspend fun saveProject(project: Project): Resource<Project> {
+        return try {
+            val response = client.post(Urls.PROJECTS) {
+                setBody(project)
+                contentType(ContentType.Application.Json)
+            }
             getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
@@ -340,24 +349,6 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         } catch (exception: Exception) {
             UserStatus.Forbidden(exception.message)
         }
-    }
-
-    private fun saveToken(context: Context, token: Token) {
-        Log.i("MainRemoteDataSource", "saveToken: $token")
-        context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
-            .edit()
-            .putString("token", token.token)
-            .putLong("expiresIn", token.expiresIn)
-            .apply()
-
-    }
-
-    private fun loadToken(context: Context): Token {
-        val preferences = context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
-        val token = preferences.getString("token", null)
-        val expiresIn = preferences.getLong("expiresIn", 0)
-        Log.i("MainRemoteDataSource", "getToken: $token")
-        return Token(token ?: "", expiresIn)
     }
 
 }

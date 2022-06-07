@@ -11,5 +11,8 @@ sealed class Screens(val route: String) {
     object Task : Screens("task")
     object TaskList : Screens("taskList")
     object TaskForm: Screens("taskForm")
+    object ProjectForm: Screens("projectForm")
+    object TeamForm: Screens("teamForm")
+
 
 }
