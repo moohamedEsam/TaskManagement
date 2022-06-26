@@ -8,11 +8,11 @@ import com.example.taskmanagement.domain.dataModels.Priority
 import com.example.taskmanagement.domain.dataModels.Task
 import com.example.taskmanagement.domain.dataModels.TaskStatus
 import com.example.taskmanagement.domain.dataModels.utils.Resource
-import com.example.taskmanagement.domain.repository.MainRepository
+import com.example.taskmanagement.domain.repository.IMainRepository
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val repository: MainRepository
+    private val repository: IMainRepository
 ) : ViewModel() {
     val tasks = mutableStateOf<Resource<List<Task>>>(Resource.Initialized())
     val filteredTasks = mutableStateOf<List<Task>>(emptyList())

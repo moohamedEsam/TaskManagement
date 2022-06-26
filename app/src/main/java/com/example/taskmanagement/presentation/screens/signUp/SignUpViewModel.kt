@@ -4,18 +4,18 @@ import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.taskmanagement.domain.dataModels.utils.UserProfile
+import com.example.taskmanagement.domain.dataModels.utils.SignUpUser
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
-import com.example.taskmanagement.domain.repository.MainRepository
+import com.example.taskmanagement.domain.repository.IMainRepository
 import com.example.taskmanagement.domain.vallidators.Validator
 import kotlinx.coroutines.launch
 
 class SignUpViewModel(
-    private val repository: MainRepository,
+    private val repository: IMainRepository,
     private val validator: Validator
 ) : ViewModel() {
-    val user = mutableStateOf(UserProfile("", "", "", null, ""))
+    val user = mutableStateOf(SignUpUser("", "", "", null, ""))
     val userStatus = mutableStateOf<UserStatus>(UserStatus.LoggedOut)
     val confirmPassword = mutableStateOf("")
     val usernameValidationResult = mutableStateOf(ValidationResult(true))

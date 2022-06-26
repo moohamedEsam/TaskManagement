@@ -32,9 +32,9 @@ fun MembersList(users: List<User>, navHostController: NavHostController) {
 fun UserItem(user: User, navHostController: NavHostController) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         UserIcon(
-            user = user,
             navHostController = navHostController,
-            modifier = Modifier.size(48.dp)
+            photoPath = user.photoPath,
+            size = 48.dp
         )
         Text(text = user.username)
     }

@@ -32,6 +32,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+
                     val user by viewModel.user
                     if (user is Resource.Initialized)
                         return@Surface
@@ -42,6 +43,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
 
+    }
 }

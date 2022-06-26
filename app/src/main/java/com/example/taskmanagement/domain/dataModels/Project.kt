@@ -1,15 +1,13 @@
 package com.example.taskmanagement.domain.dataModels
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Project(
     val name: String,
     val owner: String = "",
-    val description: String,
-    val members: List<String>,
+    val description: String = "",
+    val members: List<ActiveUser>,
     val team: String,
-    @SerialName("publicId")
-    val id: String
+     val id: String = ""
 )

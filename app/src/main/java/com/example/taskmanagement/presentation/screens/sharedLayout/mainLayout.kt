@@ -1,7 +1,9 @@
 package com.example.taskmanagement.presentation.screens.sharedLayout
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Notifications
@@ -11,22 +13,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
+import coil.transform.CircleCropTransformation
 import com.example.taskmanagement.R
-import com.example.taskmanagement.domain.dataModels.views.UserView
+import com.example.taskmanagement.domain.dataModels.User
 import com.example.taskmanagement.domain.utils.Urls
+import com.example.taskmanagement.presentation.customComponents.UserIcon
 import com.example.taskmanagement.presentation.navigation.Navigation
 import com.example.taskmanagement.presentation.navigation.Screens
 import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainLayout(startDestination: Screens, user: UserView?) {
+fun MainLayout(startDestination: Screens, user: User?) {
     val navHostController = rememberNavController()
     val currentDestination by navHostController.currentBackStackEntryAsState()
     val snackBarHostState by remember {
@@ -51,7 +57,7 @@ fun MainLayout(startDestination: Screens, user: UserView?) {
         topBar = {
             user?.let {
                 if (!notAllowedScreens.contains(currentDestination?.destination?.route)) {
-                    TopAppBarSetup(user = it)
+                    TopAppBarSetup(user = it, navHostController = navHostController)
                 }
             }
         }
@@ -59,16 +65,14 @@ fun MainLayout(startDestination: Screens, user: UserView?) {
 }
 
 @Composable
-private fun TopAppBarSetup(user: UserView) {
+private fun TopAppBarSetup(user: User, navHostController: NavHostController) {
     SmallTopAppBar(
         title = { Text(user.username) },
         actions = {
             Icon(imageVector = Icons.Default.Notifications, contentDescription = null)
-            SubcomposeAsyncImage(
-                model = Urls.getUserImage(user.photoPath) ?: R.drawable.profile_person,
-                contentDescription = null,
-                imageLoader = get(),
-                modifier = Modifier.size(48.dp)
+            UserIcon(
+                navHostController = navHostController,
+                photoPath = user.photoPath
             )
         }
     )
@@ -97,10 +101,10 @@ private fun FormNavigatorButton(navHostController: NavHostController) {
         onClick = {
             when (currentDestination?.destination?.route) {
                 Screens.Home.route -> {
-                    navHostController.navigate("${Screens.TaskForm.route}/0")
+                    navHostController.navigate("${Screens.TaskForm.route}/  ")
                 }
                 Screens.Projects.route -> {
-                    navHostController.navigate(Screens.ProjectForm.route)
+                    navHostController.navigate("${Screens.ProjectForm.route}/  ")
                 }
                 Screens.Teams.route -> {
                     navHostController.navigate(Screens.TeamForm.route)

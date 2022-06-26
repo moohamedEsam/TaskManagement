@@ -1,14 +1,14 @@
-package com.example.taskmanagement.domain.dataModels
+package com.example.taskmanagement.domain.dataModels.utils
 
 
 import kotlinx.serialization.Serializable
 
 
 @Serializable
-data class User(
+data class SignUpUser(
     val username: String,
-    val email: String = "",
+    val email: String,
     val photoPath: String?,
     val phone: String?,
-    val id: String
+    val password: String
 )

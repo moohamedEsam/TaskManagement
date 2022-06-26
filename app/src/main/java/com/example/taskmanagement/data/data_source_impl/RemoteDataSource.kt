@@ -2,7 +2,7 @@ package com.example.taskmanagement.data.data_source_impl
 
 import android.content.Context
 import android.util.Log
-import com.example.taskmanagement.data.data_source.RemoteDataSource
+import com.example.taskmanagement.data.data_source.IRemoteDataSource
 import com.example.taskmanagement.domain.dataModels.*
 import com.example.taskmanagement.domain.dataModels.utils.*
 import com.example.taskmanagement.domain.dataModels.views.ProjectView
@@ -10,7 +10,6 @@ import com.example.taskmanagement.domain.dataModels.views.TaskView
 import com.example.taskmanagement.domain.dataModels.views.TeamView
 import com.example.taskmanagement.domain.dataModels.views.UserView
 import com.example.taskmanagement.domain.utils.Urls
-import com.example.taskmanagement.presentation.koin.loadToken
 import com.example.taskmanagement.presentation.koin.saveToken
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -19,8 +18,9 @@ import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import java.io.File
+import java.util.*
 
-class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
+class RemoteDataSource(private val client: HttpClient) : IRemoteDataSource {
     override suspend fun loginUser(credentials: Credentials, context: Context): UserStatus {
         return try {
             val response = client.post(Urls.SIGN_IN) {
@@ -52,12 +52,15 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         }
     }
 
-    override suspend fun getUserProfile(): Resource<UserView> {
+    override suspend fun getUserProfile(): Resource<User> {
         return try {
-            val response = client.get(Urls.PROFILE)
+            val response = client.get(Urls.PROFILE){
+                headers.names().forEach {
+                    Log.i("RemoteDataSource", "getUserProfile: $it")
+                }
+            }
             getResponseResource(response)
-        }catch (exception: Exception) {
-            Log.i("MainRemoteDataSource", "getUserProfile: ${exception.message}")
+        } catch (exception: Exception) {
             Resource.Error(exception.message)
         }
     }
@@ -66,7 +69,7 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         return try {
             val response = client.get(Urls.getProjectUrl(projectId))
             getResponseResource(response)
-        }catch (exception: Exception) {
+        } catch (exception: Exception) {
             Log.i("MainRemoteDataSource", "getProject: ${exception.message}")
             Resource.Error(exception.message)
         }
@@ -162,7 +165,7 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
 
     override suspend fun deleteTaskComment(
         taskId: String,
-        commentId: String
+        commentId: UUID
     ): Resource<Task> {
         return try {
             val response = client.delete(Urls.getTaskCommentUrl(taskId, commentId))
@@ -309,7 +312,7 @@ class MainRemoteDataSource(private val client: HttpClient) : RemoteDataSource {
         else
             Resource.Error(response.body())
 
-    override suspend fun registerUser(userProfile: UserProfile, context: Context): UserStatus {
+    override suspend fun registerUser(userProfile: SignUpUser, context: Context): UserStatus {
         return try {
             var file: File? = null
             if (userProfile.photoPath != null)
