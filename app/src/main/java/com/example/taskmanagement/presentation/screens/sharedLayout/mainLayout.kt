@@ -101,13 +101,13 @@ private fun FormNavigatorButton(navHostController: NavHostController) {
         onClick = {
             when (currentDestination?.destination?.route) {
                 Screens.Home.route -> {
-                    navHostController.navigate("${Screens.TaskForm.route}/  ")
+                    navHostController.navigate(Screens.TaskForm.withArgs("  "))
                 }
                 Screens.Projects.route -> {
-                    navHostController.navigate("${Screens.ProjectForm.route}/  ")
+                    navHostController.navigate(Screens.ProjectForm.withArgs("   "))
                 }
                 Screens.Teams.route -> {
-                    navHostController.navigate(Screens.TeamForm.route)
+                    navHostController.navigate(Screens.TeamForm.withArgs("  "))
                 }
             }
         },

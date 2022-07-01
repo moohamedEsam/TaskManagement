@@ -2,10 +2,7 @@ package com.example.taskmanagement.data.data_source
 
 import android.content.Context
 import com.example.taskmanagement.domain.dataModels.*
-import com.example.taskmanagement.domain.dataModels.utils.Credentials
-import com.example.taskmanagement.domain.dataModels.utils.Resource
-import com.example.taskmanagement.domain.dataModels.utils.SignUpUser
-import com.example.taskmanagement.domain.dataModels.utils.UserStatus
+import com.example.taskmanagement.domain.dataModels.utils.*
 import com.example.taskmanagement.domain.dataModels.views.ProjectView
 import com.example.taskmanagement.domain.dataModels.views.TaskView
 import com.example.taskmanagement.domain.dataModels.views.TeamView
@@ -37,8 +34,8 @@ interface IRemoteDataSource {
 
     suspend fun getUserTeams(): Resource<List<Team>>
     suspend fun getUserTeam(teamId: String): Resource<TeamView>
-    suspend fun createTeam(team: Team): Resource<Team>
-    suspend fun updateTeam(team: Team): Resource<Team>
+    suspend fun createTeam(team: CreateTeamBody): Resource<TeamView>
+    suspend fun updateTeam(team: CreateTeamBody): Resource<TeamView>
     suspend fun deleteTeam(teamId: String): Resource<Team>
     suspend fun getUserProfile(): Resource<User>
     suspend fun getProject(projectId: String): Resource<ProjectView>

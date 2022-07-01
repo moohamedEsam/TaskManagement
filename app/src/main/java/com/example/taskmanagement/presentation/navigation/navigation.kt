@@ -4,13 +4,17 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.taskmanagement.presentation.screens.forms.project.ProjectFormScreen
 import com.example.taskmanagement.presentation.screens.forms.task.TaskFormScreen
+import com.example.taskmanagement.presentation.screens.forms.team.TeamFormScreen
 import com.example.taskmanagement.presentation.screens.home.HomeScreen
 import com.example.taskmanagement.presentation.screens.login.LoginScreenWrapper
 import com.example.taskmanagement.presentation.screens.profile.ProfileScreen
@@ -30,7 +34,9 @@ fun Navigation(
     NavHost(
         navController = navHostController,
         startDestination = startDestination.route,
-        modifier = Modifier.padding(paddingValues)
+        modifier = Modifier
+            .padding(paddingValues)
+            .padding(horizontal = 8.dp)
     ) {
         composable(Screens.SignIn.route) {
             LoginScreenWrapper(navHostController, snackbarHostState)
@@ -70,7 +76,7 @@ fun Navigation(
         composable(Screens.Teams.route) {
             TeamScreen(
                 navHostController = navHostController,
-                teamId = "62938534be29607677449be4",
+                teamId = "d94da931-ed1d-41d3-b55d-3aa51793f298",
                 snackbarHostState = snackbarHostState
             )
         }
@@ -82,22 +88,26 @@ fun Navigation(
             )
         }
 
-        composable(
-            route = "${Screens.TaskForm.route}/{projectId}",
-            arguments = listOf(navArgument("projectId") {
-                type = NavType.StringType
-                nullable = true
-                defaultValue = null
-            })
-        ) {
-            val projectId = it.arguments?.getString("projectId", "0") ?: "0"
+        composable(route = "${Screens.TaskForm.route}/{projectId}") {
+            val projectId = it.arguments?.getString("projectId", "  ") ?: "  "
             TaskFormScreen(
                 snackbarHostState = snackbarHostState,
                 projectId = projectId
             )
         }
-        composable(Screens.ProjectForm.route) {}
-        composable(Screens.TeamForm.route) {}
+        composable("${Screens.ProjectForm.route}/{teamId}") {
+            val teamId = it.arguments?.getString("teamId", "  ") ?: "  "
+            ProjectFormScreen(snackbarHostState = snackbarHostState, teamId = teamId)
+        }
+
+        composable("${Screens.TeamForm.route}/{teamId}") {
+            val teamId = it.arguments?.getString("teamId", "    ") ?: "   "
+            TeamFormScreen(
+                navHostController = navHostController,
+                teamId = teamId,
+                snackbarHostState = snackbarHostState
+            )
+        }
 
     }
 }

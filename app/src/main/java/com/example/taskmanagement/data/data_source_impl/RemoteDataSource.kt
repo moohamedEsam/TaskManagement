@@ -273,7 +273,7 @@ class RemoteDataSource(private val client: HttpClient) : IRemoteDataSource {
         }
     }
 
-    override suspend fun createTeam(team: Team): Resource<Team> {
+    override suspend fun createTeam(team: CreateTeamBody): Resource<TeamView> {
         return try {
             val response = client.post(Urls.TEAMS) {
                 setBody(team)
@@ -285,9 +285,10 @@ class RemoteDataSource(private val client: HttpClient) : IRemoteDataSource {
         }
     }
 
-    override suspend fun updateTeam(team: Team): Resource<Team> {
+    override suspend fun updateTeam(team: CreateTeamBody): Resource<TeamView> {
         return try {
-            val response = client.put(Urls.getTeamUrl(team.id)) {
+            Log.i("RemoteDataSource", "updateTeam: $team")
+            val response = client.put(Urls.TEAMS) {
                 setBody(team)
                 contentType(ContentType.Application.Json)
             }

@@ -6,10 +6,7 @@ import com.example.taskmanagement.domain.dataModels.Project
 import com.example.taskmanagement.domain.dataModels.Task
 import com.example.taskmanagement.domain.dataModels.Team
 import com.example.taskmanagement.domain.dataModels.User
-import com.example.taskmanagement.domain.dataModels.utils.Credentials
-import com.example.taskmanagement.domain.dataModels.utils.Resource
-import com.example.taskmanagement.domain.dataModels.utils.SignUpUser
-import com.example.taskmanagement.domain.dataModels.utils.UserStatus
+import com.example.taskmanagement.domain.dataModels.utils.*
 import com.example.taskmanagement.domain.dataModels.views.ProjectView
 import com.example.taskmanagement.domain.dataModels.views.TaskView
 import com.example.taskmanagement.domain.dataModels.views.TeamView
@@ -24,6 +21,14 @@ class MainRepositoryImpl(private val remote: IRemoteDataSource) : IMainRepositor
 
     override suspend fun getUserTasks(): Resource<List<Task>> {
         return remote.getUserTasks()
+    }
+
+    override suspend fun updateTeam(team: CreateTeamBody): Resource<TeamView> {
+        return remote.updateTeam(team)
+    }
+
+    override suspend fun createTeam(team: CreateTeamBody): Resource<TeamView> {
+        return remote.createTeam(team)
     }
 
     override suspend fun getUserTeams(): Resource<List<Team>> {

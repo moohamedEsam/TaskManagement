@@ -17,6 +17,7 @@ import com.example.taskmanagement.domain.validatorsImpl.ProfileValidator
 import com.example.taskmanagement.domain.vallidators.Validator
 import com.example.taskmanagement.presentation.screens.forms.project.ProjectFormViewModel
 import com.example.taskmanagement.presentation.screens.forms.task.TaskFormViewModel
+import com.example.taskmanagement.presentation.screens.forms.team.TeamFormViewModel
 import com.example.taskmanagement.presentation.screens.home.HomeViewModel
 import com.example.taskmanagement.presentation.screens.login.LoginViewModel
 import com.example.taskmanagement.presentation.screens.profile.ProfileViewModel
@@ -71,6 +72,7 @@ val viewModelModule = module {
     viewModel { params -> TeamViewModel(get(), params.get()) }
     viewModel { params -> TaskFormViewModel(get(), params.get()) }
     viewModel { params -> ProjectFormViewModel(get(), params.get()) }
+    viewModel { params -> TeamFormViewModel(get(), params.get()) }
 
 }
 

@@ -2,6 +2,7 @@ package com.example.taskmanagement.domain.utils
 
 import com.example.taskmanagement.domain.dataModels.TaskPriority
 import com.example.taskmanagement.domain.dataModels.TaskStatus
+import java.util.*
 
 object Urls {
     private const val BASE_URL = "http://192.168.1.6:8080"
@@ -15,7 +16,7 @@ object Urls {
 
     fun getTaskUrl(id: String) = "$BASE_URL/tasks/$id"
     fun getTaskCommentsUrl(id: String) = "$BASE_URL/tasks/$id/comments"
-    fun getTaskCommentUrl(taskId: String, commentId: String) =
+    fun getTaskCommentUrl(taskId: String, commentId: UUID) =
         "$BASE_URL/tasks/$taskId/comments/$commentId"
 
     fun getTasksByStatusUrl(status: TaskStatus) = "$BASE_URL/tasks?status=$status"
