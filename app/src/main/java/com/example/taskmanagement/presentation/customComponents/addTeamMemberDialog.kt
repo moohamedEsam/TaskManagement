@@ -23,6 +23,7 @@ import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 fun AddTeamMember(
     initialValue: TeamUser?,
     validationResult: ValidationResult,
+    canEditPermission: Boolean = true,
     onDismiss: () -> Unit,
     onRemove: () -> Unit,
     onSave: (TeamUser) -> Unit
@@ -59,14 +60,16 @@ fun AddTeamMember(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            user = addRole(user, permission)
+                            if (canEditPermission || initialValue == null)
+                                user = addRole(user, permission)
                         }
                 ) {
                     Checkbox(
                         checked = user.role.permissions.contains(permission),
                         onCheckedChange = {
                             user = addRole(user, permission)
-                        }
+                        },
+                        enabled = canEditPermission || initialValue == null
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(text = permission.toString())

@@ -1,5 +1,6 @@
 package com.example.taskmanagement.presentation.screens.forms.team
 
+import android.util.Log
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
@@ -65,6 +66,20 @@ class TeamFormViewModel(
                 }
                 requestBody.value = it.toCreateTeamBody()
             }
+        }
+    }
+
+    fun hasPermission(requiredPermission: Permission): Boolean {
+        Log.i("TeamFormViewModel", "hasPermission: called")
+        return when (isUpdating.value) {
+            true -> {
+                if (team.data?.owner?.id == currentUser.value.data?.id)
+                    return true
+                val teamUser = team.data?.members?.find { it.user.id == currentUser.value.data?.id }
+                    ?: return false
+                teamUser.role.permissions.any { it == requiredPermission || it == Permission.FullControl }
+            }
+            else -> true
         }
     }
 

@@ -1,24 +1,18 @@
 package com.example.taskmanagement.presentation.screens.forms.team
 
-import android.util.Log
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.domain.dataModels.Permission
@@ -79,7 +73,10 @@ private fun MembersList(
         Text(text = "Members", style = MaterialTheme.typography.headlineMedium)
         LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             item {
-                IconButton(onClick = { viewModel.toggleDialog() }) {
+                IconButton(
+                    onClick = { viewModel.toggleDialog() },
+                    enabled = viewModel.hasPermission(Permission.EditMembers)
+                ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = null)
                 }
             }
@@ -94,6 +91,7 @@ private fun MembersList(
     if (showDialog)
         AddTeamMember(
             initialValue = showDialogWithUser,
+            canEditPermission = viewModel.hasPermission(Permission.EditMembersPermission),
             onDismiss = { viewModel.toggleDialog() },
             validationResult = validationResult,
             onRemove = {
@@ -114,6 +112,7 @@ private fun TeamFormScreenHeader(
         value = team.name,
         label = "Title",
         validationResult = ValidationResult(true),
+        enabled = viewModel.hasPermission(Permission.EditName),
         leadingIcon = null,
         onValueChange = { viewModel.setName(it) }
     )
@@ -124,6 +123,7 @@ private fun TeamFormScreenHeader(
         value = team.description ?: "",
         label = "Description",
         validationResult = ValidationResult(true),
+        enabled = viewModel.hasPermission(Permission.EditName),
         leadingIcon = null,
         onValueChange = { viewModel.setDescription(it) }
     )
@@ -131,19 +131,14 @@ private fun TeamFormScreenHeader(
 
 @Composable
 fun OwnerTextField(viewModel: TeamFormViewModel, team: CreateTeamBody) {
-    var currentRole by remember {
-        mutableStateOf(viewModel.getCurrentUserRole())
-    }
     val isUpdating by viewModel.isUpdating
-    LaunchedEffect(key1 = isUpdating) {
-        currentRole = viewModel.getCurrentUserRole()
-    }
     if (!isUpdating) return
-    TextField(
+    TextFieldSetup(
         value = team.owner,
+        label = "Owner",
+        enabled = viewModel.hasPermission(Permission.EditOwner),
+        leadingIcon = null,
         onValueChange = { viewModel.setOwner(it) },
-        label = { Text(text = "Owner") },
-        modifier = Modifier.fillMaxWidth(),
-        enabled = (isUpdating && currentRole.permissions.any { it == Permission.EditOwner || it == Permission.FullControl }) || !isUpdating
+        validationResult = ValidationResult(true)
     )
 }

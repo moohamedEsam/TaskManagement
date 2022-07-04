@@ -15,6 +15,7 @@ fun TextFieldSetup(
     value: String,
     label: String,
     validationResult: ValidationResult,
+    enabled:Boolean = true,
     leadingIcon: @Composable (() -> Unit)?,
     onValueChange: (String) -> Unit
 ) {
@@ -25,7 +26,8 @@ fun TextFieldSetup(
             label = { Text(text = label) },
             modifier = Modifier.fillMaxWidth(),
             isError = !validationResult.isValid,
-            leadingIcon = leadingIcon
+            leadingIcon = leadingIcon,
+            enabled = enabled
         )
         if (!validationResult.message.isNullOrBlank())
             Text(text = validationResult.message, color = MaterialTheme.colorScheme.error)
