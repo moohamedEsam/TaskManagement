@@ -11,13 +11,13 @@ object Urls {
     const val SIGN_IN = "$BASE_URL/user/signIn"
     const val SIGN_UP = "$BASE_URL/user/signUp"
     const val TASKS = "$BASE_URL/tasks"
+    const val COMMENTS = "$BASE_URL/comments"
     const val TEAMS = "$BASE_URL/teams"
     const val PROJECTS = "$BASE_URL/projects"
 
     fun getTaskUrl(id: String) = "$BASE_URL/tasks/$id"
-    fun getTaskCommentsUrl(id: String) = "$BASE_URL/tasks/$id/comments"
-    fun getTaskCommentUrl(taskId: String, commentId: UUID) =
-        "$BASE_URL/tasks/$taskId/comments/$commentId"
+    fun getTaskCommentsUrl(id: String) = "$BASE_URL/comments/$id"
+
 
     fun getTasksByStatusUrl(status: TaskStatus) = "$BASE_URL/tasks?status=$status"
     fun getTasksByPriorityUrl(priority: TaskPriority) = "$BASE_URL/tasks?priority=$priority"

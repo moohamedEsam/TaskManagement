@@ -14,7 +14,7 @@ import com.example.taskmanagement.domain.repository.IMainRepository
 
 class MainRepositoryImpl(private val remote: IRemoteDataSource) : IMainRepository {
     private lateinit var userStatus: UserStatus
-    override suspend fun registerUser(userProfile: SignUpUser, context: Context): UserStatus {
+    override suspend fun registerUser(userProfile: SignUpUserBody, context: Context): UserStatus {
         userStatus = remote.registerUser(userProfile, context)
         return userStatus
     }
@@ -23,11 +23,11 @@ class MainRepositoryImpl(private val remote: IRemoteDataSource) : IMainRepositor
         return remote.getUserTasks()
     }
 
-    override suspend fun updateTeam(team: CreateTeamBody): Resource<TeamView> {
+    override suspend fun updateTeam(team: CreateTeamBody): Resource<Team> {
         return remote.updateTeam(team)
     }
 
-    override suspend fun createTeam(team: CreateTeamBody): Resource<TeamView> {
+    override suspend fun createTeam(team: CreateTeamBody): Resource<Team> {
         return remote.createTeam(team)
     }
 
@@ -59,11 +59,11 @@ class MainRepositoryImpl(private val remote: IRemoteDataSource) : IMainRepositor
     }
 
     override suspend fun getProject(projectId: String): Resource<ProjectView> {
-        return remote.getProject(projectId)
+        return remote.getUserProject(projectId)
     }
 
     override suspend fun saveTask(task: Task): Resource<Task> {
-        return remote.saveTask(task)
+        return remote.createTask(task)
     }
 
     override suspend fun getUserTeam(teamId: String): Resource<TeamView> {
@@ -71,6 +71,6 @@ class MainRepositoryImpl(private val remote: IRemoteDataSource) : IMainRepositor
     }
 
     override suspend fun saveProject(project: Project): Resource<Project> {
-        return remote.saveProject(project)
+        return remote.createProject(project)
     }
 }

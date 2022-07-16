@@ -9,10 +9,9 @@ import com.example.taskmanagement.domain.dataModels.utils.*
 import com.example.taskmanagement.domain.dataModels.views.ProjectView
 import com.example.taskmanagement.domain.dataModels.views.TaskView
 import com.example.taskmanagement.domain.dataModels.views.TeamView
-import com.example.taskmanagement.domain.dataModels.views.UserView
 
 interface IMainRepository {
-    suspend fun registerUser(userProfile: SignUpUser, context: Context): UserStatus
+    suspend fun registerUser(userProfile: SignUpUserBody, context: Context): UserStatus
     suspend fun loginUser(credentials: Credentials, context: Context): UserStatus
     suspend fun logoutUser(): UserStatus
 
@@ -30,6 +29,6 @@ interface IMainRepository {
     suspend fun saveProject(project: Project): Resource<Project>
 
     suspend fun getUserTeams(): Resource<List<Team>>
-    suspend fun updateTeam(team: CreateTeamBody): Resource<TeamView>
-    suspend fun createTeam(team: CreateTeamBody): Resource<TeamView>
+    suspend fun updateTeam(team: CreateTeamBody): Resource<Team>
+    suspend fun createTeam(team: CreateTeamBody): Resource<Team>
 }
