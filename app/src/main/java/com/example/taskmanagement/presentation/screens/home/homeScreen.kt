@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.taskmanagement.domain.dataModels.Task
+import com.example.taskmanagement.domain.dataModels.task.Task
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.presentation.composables.TaskItem
 import com.example.taskmanagement.presentation.customComponents.HandleResourceChange

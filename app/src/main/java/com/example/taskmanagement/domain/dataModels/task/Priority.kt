@@ -1,4 +1,4 @@
-package com.example.taskmanagement.domain.dataModels
+package com.example.taskmanagement.domain.dataModels.task
 
 enum class Priority {
     Low,

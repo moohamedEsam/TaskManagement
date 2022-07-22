@@ -4,18 +4,18 @@ import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.taskmanagement.domain.dataModels.utils.SignUpUser
+import com.example.taskmanagement.domain.dataModels.utils.SignUpUserBody
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
-import com.example.taskmanagement.domain.repository.IMainRepository
+import com.example.taskmanagement.domain.useCases.SignUpUseCase
 import com.example.taskmanagement.domain.vallidators.Validator
 import kotlinx.coroutines.launch
 
 class SignUpViewModel(
-    private val repository: IMainRepository,
+    private val signUpUseCase: SignUpUseCase,
     private val validator: Validator
 ) : ViewModel() {
-    val user = mutableStateOf(SignUpUser("", "", "", null, ""))
+    val user = mutableStateOf(SignUpUserBody("", "", "", null, ""))
     val userStatus = mutableStateOf<UserStatus>(UserStatus.LoggedOut)
     val confirmPassword = mutableStateOf("")
     val usernameValidationResult = mutableStateOf(ValidationResult(true))
@@ -63,7 +63,7 @@ class SignUpViewModel(
             phoneValidationResult.value.isValid
         ) {
             userStatus.value = UserStatus.Loading
-            userStatus.value = repository.registerUser(user.value, context)
+            userStatus.value = signUpUseCase(SignUpUseCase.Params(user.value, context))
 
         }
 

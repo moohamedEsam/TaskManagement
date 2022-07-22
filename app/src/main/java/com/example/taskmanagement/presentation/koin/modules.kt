@@ -10,8 +10,12 @@ import com.example.taskmanagement.MainActivityViewModel
 import com.example.taskmanagement.data.data_source.IRemoteDataSource
 import com.example.taskmanagement.data.data_source_impl.RemoteDataSource
 import com.example.taskmanagement.data.repository.MainRepositoryImpl
-import com.example.taskmanagement.domain.dataModels.Token
+import com.example.taskmanagement.domain.dataModels.utils.Token
 import com.example.taskmanagement.domain.repository.IMainRepository
+import com.example.taskmanagement.domain.useCases.CreateTeamUseCase
+import com.example.taskmanagement.domain.useCases.LoginUserUseCase
+import com.example.taskmanagement.domain.useCases.SignUpUseCase
+import com.example.taskmanagement.domain.useCases.UpdateTeamUseCase
 import com.example.taskmanagement.domain.utils.Urls
 import com.example.taskmanagement.domain.validatorsImpl.ProfileValidator
 import com.example.taskmanagement.domain.vallidators.Validator
@@ -34,9 +38,7 @@ import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
-import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -55,6 +57,13 @@ val repository = module {
     single { provideRepository(get()) }
 }
 
+val useCaseModules = module {
+    factory { LoginUserUseCase(get()) }
+    factory { SignUpUseCase(get()) }
+    factory { CreateTeamUseCase(get()) }
+    factory { UpdateTeamUseCase(get()) }
+}
+
 fun provideRepository(remoteDataSource: IRemoteDataSource): IMainRepository =
     MainRepositoryImpl(remoteDataSource)
 
@@ -65,14 +74,14 @@ val viewModelModule = module {
     viewModel { HomeViewModel(get()) }
     viewModel { LoginViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get()) }
-    viewModel { params -> TaskViewModel(get(), params.get()) }
+    viewModel { params -> TaskViewModel(get(), params[0]) }
     viewModel { ProfileViewModel(get(), get()) }
     viewModel { ProjectsViewModel(get()) }
-    viewModel { params -> ProjectViewModel(get(), params.get()) }
-    viewModel { params -> TeamViewModel(get(), params.get()) }
-    viewModel { params -> TaskFormViewModel(get(), params.get()) }
-    viewModel { params -> ProjectFormViewModel(get(), params.get()) }
-    viewModel { params -> TeamFormViewModel(get(), params.get()) }
+    viewModel { params -> ProjectViewModel(get(), params[0]) }
+    viewModel { params -> TeamViewModel(get(), params[0]) }
+    viewModel { params -> TaskFormViewModel(get(), params[0]) }
+    viewModel { params -> ProjectFormViewModel(get(), params[0], params[1]) }
+    viewModel { params -> TeamFormViewModel(get(), get(), get(), params[0]) }
 
 }
 
@@ -108,7 +117,7 @@ fun Scope.provideHttpClient() = HttpClient(CIO) {
                 }.body<Token>()
 
                 saveToken(androidContext(), refreshToken)
-                BearerTokens(accessToken, accessToken)
+                BearerTokens(refreshToken.token, refreshToken.token)
             }
             sendWithoutRequest {
                 it.url.host in listOf(Urls.REFRESH_TOKEN, Urls.SIGN_IN, Urls.SIGN_UP)

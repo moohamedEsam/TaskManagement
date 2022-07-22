@@ -1,17 +1,19 @@
 package com.example.taskmanagement.data.data_source
 
-import android.content.Context
-import com.example.taskmanagement.domain.dataModels.*
+import com.example.taskmanagement.domain.dataModels.project.Project
+import com.example.taskmanagement.domain.dataModels.task.*
+import com.example.taskmanagement.domain.dataModels.team.Team
+import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.*
-import com.example.taskmanagement.domain.dataModels.views.ProjectView
-import com.example.taskmanagement.domain.dataModels.views.TaskView
-import com.example.taskmanagement.domain.dataModels.views.TeamView
-import java.util.*
+import com.example.taskmanagement.domain.dataModels.project.ProjectView
+import com.example.taskmanagement.domain.dataModels.task.TaskView
+import com.example.taskmanagement.domain.dataModels.team.TeamDto
+import com.example.taskmanagement.domain.dataModels.team.TeamView
 
 interface IRemoteDataSource {
-    suspend fun loginUser(credentials: Credentials, context: Context): UserStatus
-    suspend fun registerUser(user: SignUpUserBody, context: Context): UserStatus
-
+    suspend fun loginUser(credentials: Credentials): UserStatus
+    suspend fun registerUser(user: SignUpUserBody): Resource<Token>
+    suspend fun searchMembers(query: String): Resource<List<User>>
 
     suspend fun getUserTasks(): Resource<List<Task>>
     suspend fun getUserTask(taskId: String): Resource<TaskView>
@@ -19,7 +21,7 @@ interface IRemoteDataSource {
     suspend fun updateTask(task: Task): Resource<Task>
     suspend fun deleteTask(taskId: String): Resource<ConfirmationResponse>
     suspend fun getUserTasksByStatus(status: TaskStatus): Resource<List<Task>>
-    suspend fun getUserTasksByPriority(priority: TaskPriority): Resource<List<Task>>
+    suspend fun getUserTasksByPriority(priority: Priority): Resource<List<Task>>
     suspend fun createTaskComment(comment: Comment): Resource<Comment>
     suspend fun deleteTaskComment(commentId: String): Resource<ConfirmationResponse>
     suspend fun updateTaskComment(comment: Comment): Resource<Comment>
@@ -33,8 +35,8 @@ interface IRemoteDataSource {
 
     suspend fun getUserTeams(): Resource<List<Team>>
     suspend fun getUserTeam(teamId: String): Resource<TeamView>
-    suspend fun createTeam(team: CreateTeamBody): Resource<Team>
-    suspend fun updateTeam(team: CreateTeamBody): Resource<Team>
+    suspend fun createTeam(team: Team): Resource<TeamDto>
+    suspend fun updateTeam(team: Team): Resource<TeamDto>
     suspend fun deleteTeam(teamId: String): Resource<ConfirmationResponse>
     suspend fun getUserProfile(): Resource<User>
 

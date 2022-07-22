@@ -1,7 +1,7 @@
-package com.example.taskmanagement.domain.dataModels.abstarct
+package com.example.taskmanagement.domain.dataModels.task
 
-import com.example.taskmanagement.domain.dataModels.Priority
-import com.example.taskmanagement.domain.dataModels.TaskStatus
+import com.example.taskmanagement.domain.dataModels.task.Priority
+import com.example.taskmanagement.domain.dataModels.task.TaskStatus
 import kotlinx.serialization.Serializable
 
 @Serializable

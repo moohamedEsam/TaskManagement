@@ -95,9 +95,14 @@ fun Navigation(
                 projectId = projectId
             )
         }
-        composable("${Screens.ProjectForm.route}/{teamId}") {
+        composable("${Screens.ProjectForm.route}/{teamId}/{projectId}") {
             val teamId = it.arguments?.getString("teamId", "  ") ?: "  "
-            ProjectFormScreen(snackbarHostState = snackbarHostState, teamId = teamId)
+            val projectId = it.arguments?.getString("projectId", "  ") ?: "  "
+            ProjectFormScreen(
+                snackbarHostState = snackbarHostState,
+                teamId = teamId,
+                projectId = projectId
+            )
         }
 
         composable("${Screens.TeamForm.route}/{teamId}") {

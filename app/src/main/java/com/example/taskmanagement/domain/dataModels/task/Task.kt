@@ -1,5 +1,6 @@
-package com.example.taskmanagement.domain.dataModels
+package com.example.taskmanagement.domain.dataModels.task
 
+import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUser
 import com.example.taskmanagement.domain.utils.custom_serializers.DateSerializer
 import kotlinx.serialization.Serializable
 import java.util.*

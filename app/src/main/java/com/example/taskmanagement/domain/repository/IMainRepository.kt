@@ -1,19 +1,20 @@
 package com.example.taskmanagement.domain.repository
 
-import android.content.Context
-import com.example.taskmanagement.domain.dataModels.Project
-import com.example.taskmanagement.domain.dataModels.Task
-import com.example.taskmanagement.domain.dataModels.Team
-import com.example.taskmanagement.domain.dataModels.User
+import com.example.taskmanagement.domain.dataModels.project.Project
+import com.example.taskmanagement.domain.dataModels.task.Task
+import com.example.taskmanagement.domain.dataModels.team.Team
+import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.*
-import com.example.taskmanagement.domain.dataModels.views.ProjectView
-import com.example.taskmanagement.domain.dataModels.views.TaskView
-import com.example.taskmanagement.domain.dataModels.views.TeamView
+import com.example.taskmanagement.domain.dataModels.project.ProjectView
+import com.example.taskmanagement.domain.dataModels.task.TaskView
+import com.example.taskmanagement.domain.dataModels.team.TeamDto
+import com.example.taskmanagement.domain.dataModels.team.TeamView
 
 interface IMainRepository {
-    suspend fun registerUser(userProfile: SignUpUserBody, context: Context): UserStatus
-    suspend fun loginUser(credentials: Credentials, context: Context): UserStatus
+    suspend fun registerUser(userProfile: SignUpUserBody): Resource<Token>
+    suspend fun loginUser(credentials: Credentials): UserStatus
     suspend fun logoutUser(): UserStatus
+    suspend fun searchMembers(query: String): Resource<List<User>>
 
     //suspend fun updateUser(user: User): Resource<User>
     suspend fun getUserTasks(): Resource<List<Task>>
@@ -29,6 +30,6 @@ interface IMainRepository {
     suspend fun saveProject(project: Project): Resource<Project>
 
     suspend fun getUserTeams(): Resource<List<Team>>
-    suspend fun updateTeam(team: CreateTeamBody): Resource<Team>
-    suspend fun createTeam(team: CreateTeamBody): Resource<Team>
+    suspend fun updateTeam(team: Team): Resource<TeamDto>
+    suspend fun createTeam(team: Team): Resource<TeamDto>
 }

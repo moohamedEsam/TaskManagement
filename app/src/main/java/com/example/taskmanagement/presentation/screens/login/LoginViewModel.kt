@@ -7,12 +7,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.utils.Credentials
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
-import com.example.taskmanagement.domain.repository.IMainRepository
+import com.example.taskmanagement.domain.useCases.LoginUserUseCase
 import com.example.taskmanagement.domain.vallidators.Validator
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
-    private val repository: IMainRepository,
+    private val loginUserUseCase: LoginUserUseCase,
     private val validator: Validator
 ) : ViewModel() {
     val userStatus = mutableStateOf<UserStatus>(UserStatus.LoggedOut)
@@ -29,7 +29,7 @@ class LoginViewModel(
     }
 
     private fun loginUser(context: Context) = viewModelScope.launch {
-        userStatus.value = repository.loginUser(userCredentials.value, context)
+        userStatus.value = loginUserUseCase(LoginUserUseCase.Params(userCredentials.value, context))
     }
 
     fun submit(context: Context) = viewModelScope.launch {

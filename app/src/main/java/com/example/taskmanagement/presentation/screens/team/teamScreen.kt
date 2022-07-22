@@ -1,22 +1,23 @@
 package com.example.taskmanagement.presentation.screens.team
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.taskmanagement.domain.dataModels.abstarct.AbstractProject
-import com.example.taskmanagement.domain.dataModels.views.TeamView
-import com.example.taskmanagement.presentation.composables.ShowDialogFormButton
+import com.example.taskmanagement.domain.dataModels.project.AbstractProject
+import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.presentation.customComponents.HandleResourceChange
-import com.example.taskmanagement.presentation.customComponents.MembersList
-import com.example.taskmanagement.presentation.screens.forms.ProjectFormScreen
+import com.example.taskmanagement.presentation.navigation.Screens
 import org.koin.androidx.compose.inject
 import org.koin.core.parameter.parametersOf
 
@@ -38,7 +39,6 @@ fun TeamScreen(
     team.onSuccess {
         TeamScreenContent(
             team = it,
-            viewModel = viewModel,
             navHostController = navHostController
         )
     }
@@ -47,26 +47,51 @@ fun TeamScreen(
 @Composable
 fun TeamScreenContent(
     team: TeamView,
-    viewModel: TeamViewModel,
     navHostController: NavHostController
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        TeamHeader(team = team)
-        Spacer(Modifier.height(16.dp))
-        MembersList(users = team.members, navHostController = navHostController)
-        Spacer(modifier = Modifier.height(16.dp))
-        TeamFooter(team = team, viewModel = viewModel)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        TeamHeader(team = team, navHostController)
+        //MembersList(users = team.members.map { it.user }, navHostController = navHostController)
+        TeamFooter(team = team, navHostController = navHostController)
     }
 }
 
 @Composable
-fun TeamFooter(team: TeamView, viewModel: TeamViewModel) {
+fun ActionHeader(navHostController: NavHostController, team: TeamView) {
+    Row(
+        horizontalArrangement = Arrangement.End,
+    ) {
+        Icon(
+            imageVector = Icons.Default.Edit,
+            contentDescription = null,
+            modifier = Modifier
+                .size(24.dp)
+                .clickable {
+                    navHostController.navigate(Screens.TeamForm.withArgs(team.id))
+                }
+        )
+    }
+}
+
+@Composable
+fun TeamFooter(team: TeamView, navHostController: NavHostController) {
     Column {
         Text("Projects", modifier = Modifier.padding(4.dp))
-
         LazyVerticalGrid(columns = GridCells.Adaptive(120.dp)) {
             items(team.projects) {
                 ProjectCard(it)
+            }
+            item {
+                IconButton(onClick = {
+                    navHostController.navigate(Screens.ProjectForm.withArgs(team.id, "  "))
+                }) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                }
             }
         }
     }
@@ -85,9 +110,17 @@ private fun ProjectCard(it: AbstractProject) {
 }
 
 @Composable
-fun TeamHeader(team: TeamView) {
+fun TeamHeader(team: TeamView, navHostController: NavHostController) {
     Column {
-        Text(text = team.name, style = MaterialTheme.typography.titleLarge)
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 8.dp)
+        ) {
+            Text(text = team.name, style = MaterialTheme.typography.titleLarge)
+            ActionHeader(navHostController = navHostController, team = team)
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Text(text = team.description ?: "", style = MaterialTheme.typography.bodyMedium)
     }

@@ -1,4 +1,4 @@
-package com.example.taskmanagement.domain.dataModels
+package com.example.taskmanagement.domain.dataModels.task
 
 import kotlinx.serialization.Serializable
 
@@ -8,7 +8,6 @@ enum class Permission {
     Create,
     EditName,
     EditMembers,
-    EditMembersPermission,
     EditOwner,
     EditTaskItems,
     Delete,

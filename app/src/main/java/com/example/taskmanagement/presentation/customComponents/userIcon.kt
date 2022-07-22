@@ -16,23 +16,24 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import com.example.taskmanagement.R
-import com.example.taskmanagement.domain.dataModels.User
 import com.example.taskmanagement.domain.utils.Urls
 import org.koin.androidx.compose.get
 
 @Composable
 fun UserIcon(
-    navHostController: NavHostController,
     photoPath: String?,
     size: Dp = 24.dp,
     modifier: Modifier = Modifier
 ) {
+    val model = ImageRequest.Builder(LocalContext.current)
+        .data(Urls.getUserImage(photoPath) ?: R.drawable.profile_person)
+        .crossfade(true)
+
+    if (photoPath != null)
+        model.transformations(CircleCropTransformation())
+
     SubcomposeAsyncImage(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(Urls.getUserImage(photoPath) ?: R.drawable.profile_person)
-            .transformations(CircleCropTransformation())
-            .crossfade(true)
-            .build(),
+        model = model.build(),
         imageLoader = get(),
         contentScale = ContentScale.Crop,
         contentDescription = null,

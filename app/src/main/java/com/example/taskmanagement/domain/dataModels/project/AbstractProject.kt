@@ -1,4 +1,4 @@
-package com.example.taskmanagement.domain.dataModels.abstarct
+package com.example.taskmanagement.domain.dataModels.project
 
 import kotlinx.serialization.Serializable
 

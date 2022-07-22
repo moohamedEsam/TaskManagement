@@ -4,9 +4,9 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.taskmanagement.domain.dataModels.Priority
-import com.example.taskmanagement.domain.dataModels.Task
-import com.example.taskmanagement.domain.dataModels.TaskStatus
+import com.example.taskmanagement.domain.dataModels.task.Priority
+import com.example.taskmanagement.domain.dataModels.task.Task
+import com.example.taskmanagement.domain.dataModels.task.TaskStatus
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.repository.IMainRepository
 import kotlinx.coroutines.launch

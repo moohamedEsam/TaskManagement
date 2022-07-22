@@ -1,6 +1,6 @@
 package com.example.taskmanagement.domain.vallidators
 
-import com.example.taskmanagement.domain.dataModels.User
+import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 
 interface Validator {

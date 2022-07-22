@@ -82,7 +82,4 @@ dependencies {
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
     implementation "io.insert-koin:koin-android:$koin_version"
     implementation "io.insert-koin:koin-androidx-compose:$koin_version"
-
-    implementation 'com.godaddy.android.colorpicker:compose-color-picker:0.4.2'
-
 }

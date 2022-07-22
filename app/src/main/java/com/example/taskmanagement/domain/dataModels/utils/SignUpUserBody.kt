@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 
 @Serializable
-data class SignUpUser(
+data class SignUpUserBody(
     val username: String,
     val email: String,
     val photoPath: String?,

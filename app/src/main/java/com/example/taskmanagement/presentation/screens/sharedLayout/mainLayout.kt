@@ -1,9 +1,7 @@
 package com.example.taskmanagement.presentation.screens.sharedLayout
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Notifications
@@ -13,22 +11,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import coil.compose.SubcomposeAsyncImage
-import coil.request.ImageRequest
-import coil.transform.CircleCropTransformation
 import com.example.taskmanagement.R
-import com.example.taskmanagement.domain.dataModels.User
-import com.example.taskmanagement.domain.utils.Urls
+import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.presentation.customComponents.UserIcon
 import com.example.taskmanagement.presentation.navigation.Navigation
 import com.example.taskmanagement.presentation.navigation.Screens
-import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +63,6 @@ private fun TopAppBarSetup(user: User, navHostController: NavHostController) {
         actions = {
             Icon(imageVector = Icons.Default.Notifications, contentDescription = null)
             UserIcon(
-                navHostController = navHostController,
                 photoPath = user.photoPath
             )
         }

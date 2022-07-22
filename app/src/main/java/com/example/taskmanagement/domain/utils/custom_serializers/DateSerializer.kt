@@ -10,7 +10,7 @@ import java.util.*
 
 object DateSerializer : KSerializer<Date> {
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("DateSerializer", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("DateSerializer", PrimitiveKind.LONG)
 
     override fun serialize(encoder: Encoder, value: Date) {
         encoder.encodeLong(value.time)
