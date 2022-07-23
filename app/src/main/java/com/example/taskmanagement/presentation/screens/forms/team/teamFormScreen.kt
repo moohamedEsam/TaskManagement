@@ -25,6 +25,7 @@ import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.domain.dataModels.team.Team
 import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
+import com.example.taskmanagement.presentation.composables.MemberComposable
 import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
 import com.example.taskmanagement.presentation.customComponents.UserIcon
 import org.koin.androidx.compose.inject
@@ -117,7 +118,7 @@ private fun MembersList(
             }
         }
         items(members) {
-            MemberComposable(user = it, false) {}
+            MemberComposable(user = it, { }) {}
         }
     }
 
@@ -181,34 +182,16 @@ private fun MemberSuggestionsMenu(
             .padding(8.dp)
     ) {
         items(suggestions) {
-            MemberComposable(user = it, onClick = onClick)
+            MemberComposable(
+                user = it,
+                action = {
+                    IconButton(onClick = { onClick(it) }) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                    }
+                },
+                onClick = { }
+            )
         }
-    }
-}
-
-@Composable
-private fun MemberComposable(
-    user: User,
-    showAddIcon: Boolean = true,
-    onClick: (User) -> Unit
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {}
-    ) {
-        UserIcon(photoPath = user.photoPath)
-        Spacer(modifier = Modifier.width(8.dp))
-        Column {
-            Text(text = user.username, style = MaterialTheme.typography.headlineMedium)
-            Text(text = user.email, style = MaterialTheme.typography.bodyMedium)
-        }
-        Spacer(modifier = Modifier.weight(0.8f))
-        if (showAddIcon)
-            IconButton(onClick = { onClick(user) }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = null)
-            }
     }
 }
 

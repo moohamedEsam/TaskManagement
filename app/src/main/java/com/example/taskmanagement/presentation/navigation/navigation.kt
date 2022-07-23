@@ -76,7 +76,7 @@ fun Navigation(
         composable(Screens.Teams.route) {
             TeamScreen(
                 navHostController = navHostController,
-                teamId = "d94da931-ed1d-41d3-b55d-3aa51793f298",
+                teamId = "02e42e89-b926-4659-808c-3382f6faecd6",
                 snackbarHostState = snackbarHostState
             )
         }

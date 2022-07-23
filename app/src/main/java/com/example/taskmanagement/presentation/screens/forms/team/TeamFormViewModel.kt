@@ -77,7 +77,8 @@ class TeamFormViewModel(
                 val teamUser =
                     teamView.data?.members?.find { it.user.id == currentUser.value.data?.id }
                         ?: return false
-                teamUser.tag.permissions.any { it == requiredPermission || it == Permission.FullControl }
+                teamUser.tag?.permissions?.any { it == requiredPermission || it == Permission.FullControl }
+                    ?: false
             }
             else -> true
         }
@@ -89,7 +90,8 @@ class TeamFormViewModel(
         owner = currentUser.value.data!!,
         members = emptyList(),
         projects = emptyList(),
-        id = UUID.randomUUID().toString()
+        id = UUID.randomUUID().toString(),
+        tags = emptyList()
     )
 
     fun setName(value: String) = viewModelScope.launch {

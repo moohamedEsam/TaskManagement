@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ActiveUserDto(
     val user: User,
-    val tag: Tag
+    val tag: Tag?
 ) {
-    fun toActiveUser() = ActiveUser(user.id, tag.id)
+    fun toActiveUser() = ActiveUser(user.id, tag?.id)
 }

@@ -1,4 +1,4 @@
-package com.example.taskmanagement.domain.dataModels
+package com.example.taskmanagement.domain.dataModels.task
 
 import com.example.taskmanagement.domain.utils.custom_serializers.UUIDSerializer
 import kotlinx.serialization.Serializable
@@ -9,6 +9,5 @@ data class Comment(
     val owner: String,
     val description: String,
     val mentions: List<String>?,
-    @Serializable(with = UUIDSerializer::class)
-    val id: UUID = UUID.randomUUID(),
+    val id: String
 )
