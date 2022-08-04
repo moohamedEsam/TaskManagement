@@ -12,8 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.taskmanagement.domain.dataModels.TaskItem
-import com.example.taskmanagement.domain.dataModels.views.TaskView
+import com.example.taskmanagement.domain.dataModels.task.TaskItem
+import com.example.taskmanagement.domain.dataModels.task.TaskView
 import com.example.taskmanagement.presentation.customComponents.CircleCheckbox
 import com.example.taskmanagement.presentation.customComponents.HandleResourceChange
 import org.koin.androidx.compose.inject

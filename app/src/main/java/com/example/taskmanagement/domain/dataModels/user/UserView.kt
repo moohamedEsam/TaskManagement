@@ -1,6 +1,8 @@
-package com.example.taskmanagement.domain.dataModels.views
+package com.example.taskmanagement.domain.dataModels.user
 
-import com.example.taskmanagement.domain.dataModels.abstarct.*
+import com.example.taskmanagement.domain.dataModels.project.AbstractProject
+import com.example.taskmanagement.domain.dataModels.task.AbstractTask
+import com.example.taskmanagement.domain.dataModels.team.AbstractTeam
 import kotlinx.serialization.Serializable
 
 @Serializable

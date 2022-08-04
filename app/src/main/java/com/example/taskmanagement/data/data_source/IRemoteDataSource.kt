@@ -1,5 +1,6 @@
 package com.example.taskmanagement.data.data_source
 
+import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.project.Project
 import com.example.taskmanagement.domain.dataModels.task.*
 import com.example.taskmanagement.domain.dataModels.team.Team
@@ -14,6 +15,8 @@ interface IRemoteDataSource {
     suspend fun loginUser(credentials: Credentials): UserStatus
     suspend fun registerUser(user: SignUpUserBody): Resource<Token>
     suspend fun searchMembers(query: String): Resource<List<User>>
+
+    suspend fun createTag(tag: Tag): Resource<Tag>
 
     suspend fun getUserTasks(): Resource<List<Task>>
     suspend fun getUserTask(taskId: String): Resource<TaskView>

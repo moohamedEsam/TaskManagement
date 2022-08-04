@@ -14,7 +14,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.R
-import com.example.taskmanagement.domain.dataModels.Project
+import com.example.taskmanagement.domain.dataModels.project.Project
 import com.example.taskmanagement.presentation.customComponents.HandleResourceChange
 import com.example.taskmanagement.presentation.navigation.Screens
 import org.koin.androidx.compose.inject

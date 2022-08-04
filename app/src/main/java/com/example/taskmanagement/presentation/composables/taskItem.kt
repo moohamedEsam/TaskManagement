@@ -14,9 +14,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import com.example.taskmanagement.presentation.customComponents.CircleCheckbox
 import com.example.taskmanagement.R
-import com.example.taskmanagement.domain.dataModels.Priority
-import com.example.taskmanagement.domain.dataModels.Task
-import com.example.taskmanagement.domain.dataModels.TaskStatus
+import com.example.taskmanagement.domain.dataModels.task.Priority
+import com.example.taskmanagement.domain.dataModels.task.Task
+import com.example.taskmanagement.domain.dataModels.task.TaskStatus
 import org.koin.androidx.compose.get
 import java.text.SimpleDateFormat
 import java.util.*

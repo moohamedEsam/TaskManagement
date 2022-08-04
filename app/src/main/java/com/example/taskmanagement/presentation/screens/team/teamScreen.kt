@@ -1,5 +1,6 @@
 package com.example.taskmanagement.presentation.screens.team
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,24 +8,28 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.presentation.composables.MemberComposable
+import com.example.taskmanagement.presentation.composables.TagComposable
 import com.example.taskmanagement.presentation.customComponents.HandleResourceChange
 import com.example.taskmanagement.presentation.navigation.Screens
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -93,7 +98,11 @@ fun TeamScreenContent(
                     team = team
                 )
                 1 -> MemberPage(members = team.members, viewModel = viewModel)
-                2 -> TagPage(tags = team.tags, viewModel = viewModel)
+                2 -> TagPage(
+                    team = team,
+                    viewModel = viewModel,
+                    navHostController = navHostController
+                )
                 else -> Box {}
             }
         }
@@ -139,51 +148,137 @@ fun MainPage(navHostController: NavHostController, team: TeamView, viewModel: Te
 }
 
 @Composable
-fun MemberPage(members: List<ActiveUserDto>, viewModel: TeamViewModel) {
+fun MemberPage(
+    members: List<ActiveUserDto>,
+    viewModel: TeamViewModel
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(members) {
-            MemberComposable(user = it.user, action = { }, onClick = {})
+            MemberComposable(
+                user = it.user,
+                action = {
+                    if (it.tag != null)
+                        TagComposable(tag = it.tag)
+                },
+                onClick = {}
+            )
         }
     }
+
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TagPage(tags: List<Tag>, viewModel: TeamViewModel) {
+fun TagPage(team: TeamView, viewModel: TeamViewModel, navHostController: NavHostController) {
+    val tags by team::tags
+    val showDialog by viewModel.showDialogTag
+    val tag by viewModel.tagToAssign
     Box {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(tags) {
-                Column {
-                    SuggestionChip(
-                        onClick = { },
-                        label = { Text(text = it.title) },
-                        colors = SuggestionChipDefaults.suggestionChipColors(
-                            containerColor = Color(
-                                it.color
-                            )
-                        )
-                    )
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        items(it.permissions) {
-                            Text(text = it.toString(), style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
+                TagItem(it) {
+                    viewModel.toggleAssignTagDialog(it)
                 }
             }
         }
         FloatingActionButton(
-            onClick = { },
+            onClick = { navHostController.navigate(Screens.TagForm.withArgs(team.id)) },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(8.dp)
         ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = null)
+        }
+    }
+    if (showDialog && tag != null)
+        MembersDialog(viewModel = viewModel, members = team.members, tag = tag!!)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TagItem(it: com.example.taskmanagement.domain.dataModels.Tag, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+    ) {
+        SuggestionChip(
+            onClick = { },
+            label = { Text(text = it.title) },
+            colors = SuggestionChipDefaults.suggestionChipColors(
+                containerColor = it.getColor()
+            )
+        )
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            items(it.permissions) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Circle,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Text(text = it.toString(), style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        }
+
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MembersDialog(
+    viewModel: TeamViewModel,
+    members: List<ActiveUserDto>,
+    tag: Tag
+) {
+    val taggedMembers = viewModel.taggedMembersList
+    Dialog(
+        onDismissRequest = { viewModel.toggleAssignTagDialog() },
+    ) {
+        ElevatedCard(
+            modifier = Modifier.padding(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            LazyColumn(
+                modifier = Modifier.padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                item {
+                    Text(
+                        text = "Assign tag to  members",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                }
+
+                items(members) {
+                    MemberComposable(
+                        user = it.user,
+                        action = {
+                            if (taggedMembers.find { user -> user.id == it.user.id }?.tag == tag.id)
+                                Icon(
+                                    imageVector = Icons.Default.Remove,
+                                    contentDescription = null
+                                )
+                            else
+                                Icon(
+                                    imageVector = Icons.Default.Done,
+                                    contentDescription = null
+                                )
+                        }
+                    ) { user ->
+                        if (taggedMembers.find { activeUser -> activeUser.id == it.user.id }?.tag == tag.id)
+                            viewModel.addMember(user.id, null)
+                        else
+                            viewModel.addMember(user.id, tag.id)
+                    }
+                }
+            }
         }
     }
 }

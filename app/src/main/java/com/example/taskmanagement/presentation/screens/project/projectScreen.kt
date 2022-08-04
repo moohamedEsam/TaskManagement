@@ -16,12 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.taskmanagement.domain.dataModels.Priority
-import com.example.taskmanagement.domain.dataModels.TaskStatus
-import com.example.taskmanagement.domain.dataModels.abstarct.AbstractTask
-import com.example.taskmanagement.domain.dataModels.views.ProjectView
+import com.example.taskmanagement.domain.dataModels.task.Priority
+import com.example.taskmanagement.domain.dataModels.task.TaskStatus
+import com.example.taskmanagement.domain.dataModels.task.AbstractTask
+import com.example.taskmanagement.domain.dataModels.project.ProjectView
 import com.example.taskmanagement.presentation.customComponents.HandleResourceChange
-import com.example.taskmanagement.presentation.customComponents.MembersList
 import com.example.taskmanagement.presentation.navigation.Screens
 import org.koin.androidx.compose.inject
 import org.koin.core.parameter.parametersOf
@@ -69,7 +68,7 @@ fun ProjectScreenContent(
     ) {
         ProjectScreenHeader(project = project)
         Spacer(modifier = Modifier.height(8.dp))
-        MembersList(users = project.members, navHostController = navHostController)
+        //MembersList(users = emptyList(), navHostController = navHostController)
         Spacer(modifier = Modifier.height(8.dp))
         ProjectScreenTasks(tasks = project.tasks, navHostController = navHostController)
         Spacer(modifier = Modifier.weight(0.8f))

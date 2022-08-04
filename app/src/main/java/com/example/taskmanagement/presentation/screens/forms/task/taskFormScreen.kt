@@ -2,13 +2,14 @@ package com.example.taskmanagement.presentation.screens.forms.task
 
 import android.app.DatePickerDialog
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateMap
@@ -16,14 +17,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import com.example.taskmanagement.domain.dataModels.Priority
-import com.example.taskmanagement.domain.dataModels.Task
+import com.example.taskmanagement.domain.dataModels.task.Priority
+import com.example.taskmanagement.domain.dataModels.project.Project
+import com.example.taskmanagement.domain.dataModels.task.Task
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
-import com.example.taskmanagement.domain.dataModels.views.ProjectView
+import com.example.taskmanagement.domain.dataModels.project.ProjectView
+import com.example.taskmanagement.presentation.customComponents.PickerController
+import com.example.taskmanagement.presentation.customComponents.PickerDialog
 import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
-import com.example.taskmanagement.presentation.screens.project.ProjectViewModel
 import com.example.taskmanagement.presentation.screens.task.TaskItemCard
 import org.koin.androidx.compose.inject
 import org.koin.core.parameter.parametersOf
@@ -172,21 +174,21 @@ private fun AssignedList(
     assigned: SnapshotStateMap<String, Boolean>,
     viewModel: TaskFormViewModel
 ) {
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(text = "Assignees", style = MaterialTheme.typography.headlineMedium)
-    Spacer(modifier = Modifier.height(4.dp))
-    LazyRow {
-        items(project.data?.members ?: emptyList()) {
-            FilterChip(
-                selected = assigned[it.publicId] ?: false,
-                onClick = {
-                    viewModel.addTaskAssigned(it.publicId)
-                },
-                label = { Text(it.username) },
-                modifier = Modifier.padding(8.dp)
-            )
-        }
-    }
+//    Spacer(modifier = Modifier.height(8.dp))
+//    Text(text = "Assignees", style = MaterialTheme.typography.headlineMedium)
+//    Spacer(modifier = Modifier.height(4.dp))
+//    LazyRow {
+//        items(project.data?.members ?: emptyList()) {
+//            FilterChip(
+//                selected = assigned[it.user] ?: false,
+//                onClick = {
+//                    viewModel.addTaskAssigned(it.user)
+//                },
+//                label = { Text(it.user) },
+//                modifier = Modifier.padding(8.dp)
+//            )
+//        }
+//    }
 }
 
 @RequiresApi(Build.VERSION_CODES.N)
@@ -215,7 +217,13 @@ private fun TaskDatePicker(
                     viewModel.setTaskFinishDate(calendar.time)
                 }
                 dateDialog.show()
-            }
+            },
+        trailingIcon = {
+            Icon(
+                imageVector = Icons.Default.CalendarMonth,
+                contentDescription = null
+            )
+        }
     )
 }
 
@@ -249,55 +257,66 @@ private fun TaskFormHeader(
 
 @Composable
 private fun ProjectPicker(viewModel: TaskFormViewModel) {
+    val project by viewModel.project
     var showDialog by remember {
         mutableStateOf(false)
     }
-    val project by viewModel.project
-    TextField(
-        value = project.data?.name ?: "Project",
-        onValueChange = {},
-        enabled = false,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                showDialog = true
-            }
-    )
-    if (showDialog) {
-        ProjectDialog(viewModel) { showDialog = false }
+    PickerController(
+        value = showDialog,
+        title = project.data?.name ?: "Project",
+        toggleValue = { showDialog = !showDialog }
+    ) {
+        ProjectDialog(viewModel = viewModel) {
+            showDialog = false
+        }
     }
 }
 
 @Composable
-fun ProjectDialog(viewModel: TaskFormViewModel, onDismissDialog: () -> Unit) {
+fun ProjectDialog(
+    viewModel: TaskFormViewModel,
+    onDismissDialog: () -> Unit
+) {
     val projects by viewModel.projects
-    Log.i("taskFormScreen", "ProjectDialog: ${projects.data?.size}")
-    Dialog(onDismissRequest = onDismissDialog) {
-        Surface {
-            projects.onSuccess {
-                LazyColumn(modifier = Modifier.padding(8.dp)) {
-                    items(it) { project ->
-                        Column(
-                            modifier = Modifier.clickable {
-                                viewModel.setProject(project.id)
-                                onDismissDialog()
-                            }
-                        ) {
-                            Divider()
-                            Text(
-                                text = project.name,
-                                style = MaterialTheme.typography.headlineMedium
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(text = project.description)
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(text = "Members: ${project.members.count()}")
-                            Divider()
-                        }
-                    }
-                }
-            }
+    projects.onSuccess {
+        PickerDialog(
+            items = it,
+            item = { project ->
+                ProjectPickerDialogCard(
+                    viewModel = viewModel,
+                    project = project,
+                    onDismissDialog = onDismissDialog
+                )
+            },
+            onDismissDialog = onDismissDialog
+        )
+    }
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProjectPickerDialogCard(
+    viewModel: TaskFormViewModel,
+    project: Project,
+    onDismissDialog: () -> Unit
+) {
+    OutlinedCard(modifier = Modifier.padding(8.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .clickable {
+                    viewModel.setProject(project.id)
+                    onDismissDialog()
+                }
+        ) {
+            Text(
+                text = project.name,
+                style = MaterialTheme.typography.headlineMedium
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = project.description)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = "Members: ${project.members.count()}")
         }
     }
 }

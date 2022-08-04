@@ -13,9 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.taskmanagement.domain.dataModels.User
 import com.example.taskmanagement.domain.dataModels.utils.Resource
-import com.example.taskmanagement.domain.dataModels.views.UserView
+import com.example.taskmanagement.domain.dataModels.user.UserView
 import com.example.taskmanagement.presentation.customComponents.HandleResourceChange
 import com.example.taskmanagement.presentation.customComponents.UserIcon
 import com.example.taskmanagement.presentation.navigation.Screens
@@ -31,7 +30,7 @@ fun ProfileScreen(navHostController: NavHostController, snackbarHostState: Snack
         snackbarHostState = snackbarHostState,
         onSnackbarClick = { viewModel.getUser() }
     )
-    ProfileScreenContent(navHostController, user)
+    //ProfileScreenContent(navHostController, user)
 }
 
 @Composable
@@ -84,9 +83,9 @@ fun ProfileScreenHeader(user: UserView, navHostController: NavHostController) {
                     }
                 }
         )
+
         UserIcon(
-            user = User(user.username, user.phone, user.photoPath, user.publicId),
-            navHostController = navHostController,
+            photoPath = user.photoPath,
             modifier = Modifier.size(100.dp)
         )
 

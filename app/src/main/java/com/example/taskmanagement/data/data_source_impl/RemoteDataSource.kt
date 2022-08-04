@@ -2,6 +2,7 @@ package com.example.taskmanagement.data.data_source_impl
 
 import android.util.Log
 import com.example.taskmanagement.data.data_source.IRemoteDataSource
+import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.project.Project
 import com.example.taskmanagement.domain.dataModels.task.*
 import com.example.taskmanagement.domain.dataModels.team.Team
@@ -239,6 +240,18 @@ class RemoteDataSource(private val client: HttpClient) : IRemoteDataSource {
         return try {
             val response = client.post(Urls.TEAMS) {
                 setBody(team)
+                contentType(ContentType.Application.Json)
+            }
+            getResponseResource(response)
+        } catch (exception: Exception) {
+            Resource.Error(exception.message)
+        }
+    }
+
+    override suspend fun createTag(tag: Tag): Resource<Tag> {
+        return try {
+            val response = client.post(Urls.TAGS) {
+                setBody(tag)
                 contentType(ContentType.Application.Json)
             }
             getResponseResource(response)

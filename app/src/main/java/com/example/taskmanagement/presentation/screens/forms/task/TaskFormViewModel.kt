@@ -1,21 +1,24 @@
 package com.example.taskmanagement.presentation.screens.forms.task
 
-import android.util.Log
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.taskmanagement.domain.dataModels.*
+import com.example.taskmanagement.domain.dataModels.project.Project
+import com.example.taskmanagement.domain.dataModels.task.Priority
+import com.example.taskmanagement.domain.dataModels.task.Task
+import com.example.taskmanagement.domain.dataModels.task.TaskItem
+import com.example.taskmanagement.domain.dataModels.task.TaskStatus
 import com.example.taskmanagement.domain.dataModels.utils.Resource
-import com.example.taskmanagement.domain.dataModels.views.ProjectView
-import com.example.taskmanagement.domain.repository.MainRepository
+import com.example.taskmanagement.domain.dataModels.project.ProjectView
+import com.example.taskmanagement.domain.repository.IMainRepository
 import kotlinx.coroutines.launch
 import java.util.*
 
 class TaskFormViewModel(
-    private val repository: MainRepository,
+    private val repository: IMainRepository,
     projectId: String
 ) : ViewModel() {
     val project = mutableStateOf<Resource<ProjectView>>(Resource.Initialized())
@@ -26,7 +29,7 @@ class TaskFormViewModel(
             owner = "",
             description = "",
             assigned = mutableListOf(),
-            project = project.value.data?.publicId ?: "",
+            project = project.value.data?.id ?: "",
             status = TaskStatus.Pending,
             taskItems = mutableListOf(),
             comments = mutableListOf(),
@@ -42,7 +45,7 @@ class TaskFormViewModel(
     val assigned = mutableStateMapOf<String, Boolean>()
 
     init {
-        if (projectId != "0") {
+        if (projectId.isNotBlank()) {
             setProject(projectId)
         } else {
             getProjects()
@@ -95,7 +98,7 @@ class TaskFormViewModel(
             owner = "",
             description = "",
             assigned = mutableListOf(),
-            project = project.value.data?.publicId ?: "",
+            project = project.value.data?.id ?: "",
             status = TaskStatus.Pending,
             taskItems = mutableListOf(),
             comments = mutableListOf(),
@@ -111,12 +114,15 @@ class TaskFormViewModel(
 
     fun saveTask(snackbarHostState: SnackbarHostState) = viewModelScope.launch {
         task.value = task.value.copy(
-            assigned = assigned.filter { it.value }.keys.toMutableList(),
+            assigned = emptyList(),
             taskItems = taskItems.toMutableList(),
-            project = project.value.data?.publicId ?: ""
+            project = project.value.data?.id ?: ""
         )
         when (val saveTask = repository.saveTask(task.value)) {
-            is Resource.Success -> snackbarHostState.showSnackbar("task saved")
+            is Resource.Success -> {
+                snackbarHostState.showSnackbar("task saved")
+                resetTask()
+            }
             is Resource.Error -> snackbarHostState.showSnackbar(saveTask.message ?: "")
             else -> Unit
         }

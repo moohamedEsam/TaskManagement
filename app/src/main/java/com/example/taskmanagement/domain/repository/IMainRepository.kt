@@ -1,5 +1,6 @@
 package com.example.taskmanagement.domain.repository
 
+import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.project.Project
 import com.example.taskmanagement.domain.dataModels.task.Task
 import com.example.taskmanagement.domain.dataModels.team.Team
@@ -32,4 +33,5 @@ interface IMainRepository {
     suspend fun getUserTeams(): Resource<List<Team>>
     suspend fun updateTeam(team: Team): Resource<TeamDto>
     suspend fun createTeam(team: Team): Resource<TeamDto>
+    suspend fun createTag(tag: Tag): Resource<Tag>
 }

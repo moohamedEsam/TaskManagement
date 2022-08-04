@@ -77,7 +77,7 @@ fun BottomBarSetup(navHostController: NavHostController) {
     ) {
         BottomNavItem(navHostController, Screens.Home, R.drawable.task)
         BottomNavItem(navHostController, Screens.Projects, R.drawable.project)
-        FormNavigatorButton(navHostController)
+        //FormNavigatorButton(navHostController)
         BottomNavItem(navHostController, Screens.Teams, R.drawable.team)
         BottomNavItem(navHostController, Screens.Profile, R.drawable.profile)
     }

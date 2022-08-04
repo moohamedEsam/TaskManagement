@@ -4,7 +4,7 @@ import com.example.taskmanagement.domain.dataModels.task.Priority
 import com.example.taskmanagement.domain.dataModels.task.TaskStatus
 
 object Urls {
-    private const val BASE_URL = "http://192.168.1.5:8080"
+    private const val BASE_URL = "http://192.168.1.6:8080"
     const val REFRESH_TOKEN = "$BASE_URL/auth/refresh"
     const val PROFILE = "$BASE_URL/user"
     const val SIGN_IN = "$BASE_URL/user/signIn"
@@ -12,6 +12,7 @@ object Urls {
     const val TASKS = "$BASE_URL/tasks"
     const val COMMENTS = "$BASE_URL/comments"
     const val TEAMS = "$BASE_URL/teams"
+    const val TAGS = "$BASE_URL/tapogs"
     const val PROJECTS = "$BASE_URL/projects"
 
     fun searchMembers(query: String) = "$PROFILE/search/$query"
