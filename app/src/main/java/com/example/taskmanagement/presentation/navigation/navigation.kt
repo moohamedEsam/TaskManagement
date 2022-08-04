@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.taskmanagement.presentation.screens.forms.project.ProjectFormScreen
+import com.example.taskmanagement.presentation.screens.forms.tags.TagScreen
 import com.example.taskmanagement.presentation.screens.forms.task.TaskFormScreen
 import com.example.taskmanagement.presentation.screens.forms.team.TeamFormScreen
 import com.example.taskmanagement.presentation.screens.home.HomeScreen
@@ -23,6 +24,7 @@ import com.example.taskmanagement.presentation.screens.projects.ProjectsScreen
 import com.example.taskmanagement.presentation.screens.signUp.SignUpScreen
 import com.example.taskmanagement.presentation.screens.task.TaskScreen
 import com.example.taskmanagement.presentation.screens.team.TeamScreen
+import com.example.taskmanagement.presentation.screens.teams.TeamsScreen
 
 @Composable
 fun Navigation(
@@ -74,9 +76,17 @@ fun Navigation(
         }
 
         composable(Screens.Teams.route) {
+            TeamsScreen(
+                navHostController = navHostController,
+                snackbarHostState = snackbarHostState
+            )
+        }
+
+        composable("${Screens.Team.route}/{teamId}") {
+            val teamId = it.arguments?.getString("teamId", "  ") ?: "  "
             TeamScreen(
                 navHostController = navHostController,
-                teamId = "02e42e89-b926-4659-808c-3382f6faecd6",
+                teamId = teamId,
                 snackbarHostState = snackbarHostState
             )
         }
@@ -112,6 +122,11 @@ fun Navigation(
                 teamId = teamId,
                 snackbarHostState = snackbarHostState
             )
+        }
+
+        composable("${Screens.TagForm.route}/{owner}") {
+            val owner = it.arguments?.getString("owner", "  ") ?: "   "
+            TagScreen(owner = owner, navHostController = navHostController)
         }
 
     }

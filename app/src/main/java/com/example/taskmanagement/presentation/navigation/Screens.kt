@@ -5,6 +5,7 @@ sealed class Screens(val route: String) {
     object SignUp : Screens("signUp")
     object Home : Screens("home")
     object Teams : Screens("teams")
+    object Team : Screens("team")
     object Projects : Screens("projects")
     object Project : Screens("project")
     object Profile : Screens("profile")
@@ -13,6 +14,7 @@ sealed class Screens(val route: String) {
     object TaskForm : Screens("taskForm")
     object ProjectForm : Screens("projectForm")
     object TeamForm : Screens("teamForm")
+    object TagForm : Screens("tagForm")
 
     fun withArgs(vararg path: String) = buildString {
         append(route)

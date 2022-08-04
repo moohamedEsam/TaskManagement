@@ -20,6 +20,7 @@ import com.example.taskmanagement.domain.utils.Urls
 import com.example.taskmanagement.domain.validatorsImpl.ProfileValidator
 import com.example.taskmanagement.domain.vallidators.Validator
 import com.example.taskmanagement.presentation.screens.forms.project.ProjectFormViewModel
+import com.example.taskmanagement.presentation.screens.forms.tags.TagViewModel
 import com.example.taskmanagement.presentation.screens.forms.task.TaskFormViewModel
 import com.example.taskmanagement.presentation.screens.forms.team.TeamFormViewModel
 import com.example.taskmanagement.presentation.screens.home.HomeViewModel
@@ -30,6 +31,7 @@ import com.example.taskmanagement.presentation.screens.projects.ProjectsViewMode
 import com.example.taskmanagement.presentation.screens.signUp.SignUpViewModel
 import com.example.taskmanagement.presentation.screens.task.TaskViewModel
 import com.example.taskmanagement.presentation.screens.team.TeamViewModel
+import com.example.taskmanagement.presentation.screens.teams.TeamsViewModel
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -77,7 +79,9 @@ val viewModelModule = module {
     viewModel { params -> TaskViewModel(get(), params[0]) }
     viewModel { ProfileViewModel(get(), get()) }
     viewModel { ProjectsViewModel(get()) }
+    viewModel { TeamsViewModel(get()) }
     viewModel { params -> ProjectViewModel(get(), params[0]) }
+    viewModel { params -> TagViewModel(get(), params[0]) }
     viewModel { params -> TeamViewModel(get(), params[0]) }
     viewModel { params -> TaskFormViewModel(get(), params[0]) }
     viewModel { params -> ProjectFormViewModel(get(), params[0], params[1]) }
