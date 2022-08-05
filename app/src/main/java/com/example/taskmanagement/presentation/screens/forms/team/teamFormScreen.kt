@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -72,10 +73,11 @@ private fun TeamFormScreenHeader(
     team: Team,
     viewModel: TeamFormViewModel
 ) {
+    val titleValidationResult by viewModel.teamNameValidationResult
     TextFieldSetup(
         value = team.name,
         label = "Title",
-        validationResult = ValidationResult(true),
+        validationResult = titleValidationResult,
         enabled = viewModel.hasPermission(Permission.EditName),
         leadingIcon = null,
         onValueChange = { viewModel.setName(it) }
@@ -118,7 +120,11 @@ private fun MembersList(
             }
         }
         items(members) {
-            MemberComposable(user = it) {}
+            MemberComposable(user = it) {
+                IconButton(onClick = { viewModel.removeMember(it.id) }) {
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+                }
+            }
         }
     }
 

@@ -12,7 +12,7 @@ object Urls {
     const val TASKS = "$BASE_URL/tasks"
     const val COMMENTS = "$BASE_URL/comments"
     const val TEAMS = "$BASE_URL/teams"
-    const val TAGS = "$BASE_URL/tapogs"
+    const val TAGS = "$BASE_URL/tags"
     const val PROJECTS = "$BASE_URL/projects"
 
     fun searchMembers(query: String) = "$PROFILE/search/$query"

@@ -8,6 +8,7 @@
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 /.idea/sonarlint/issuestore/
+/.idea/sonarlint/issuestore/index.pb
 .DS_Store
 /build
 /captures

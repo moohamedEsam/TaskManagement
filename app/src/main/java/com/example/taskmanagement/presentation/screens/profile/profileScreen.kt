@@ -11,8 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.user.UserView
 import com.example.taskmanagement.presentation.customComponents.HandleResourceChange
@@ -30,13 +32,14 @@ fun ProfileScreen(navHostController: NavHostController, snackbarHostState: Snack
         snackbarHostState = snackbarHostState,
         onSnackbarClick = { viewModel.getUser() }
     )
-    //ProfileScreenContent(navHostController, user)
+    ProfileScreenContent(navHostController, user, viewModel)
 }
 
 @Composable
 fun ProfileScreenContent(
     navHostController: NavHostController,
-    user: Resource<UserView>
+    user: Resource<User>,
+    viewModel: ProfileViewModel
 ) {
     Column(
         modifier = Modifier
@@ -45,28 +48,29 @@ fun ProfileScreenContent(
     ) {
         user.onSuccess {
             ProfileScreenHeader(it, navHostController)
-            ProfileScreenBody(it)
+            ProfileScreenBody(navHostController, it, viewModel = viewModel)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreenBody(user: UserView) {
+fun ProfileScreenBody(
+    navHostController: NavHostController,
+    user: User,
+    viewModel: ProfileViewModel
+) {
+    val context = LocalContext.current
     Column {
         Text(text = "Projects", style = MaterialTheme.typography.headlineMedium)
         LazyRow {
-            items(user.projects) {
-                OutlinedCard(modifier = Modifier.padding(8.dp)) {
-                    Text(text = it.name, modifier = Modifier.padding(8.dp))
-                }
-            }
+
         }
     }
 }
 
 @Composable
-fun ProfileScreenHeader(user: UserView, navHostController: NavHostController) {
+fun ProfileScreenHeader(user: User, navHostController: NavHostController) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
         Icon(
             imageVector = Icons.Default.Logout,

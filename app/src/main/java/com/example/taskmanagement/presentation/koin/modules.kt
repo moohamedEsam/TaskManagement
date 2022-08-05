@@ -119,8 +119,8 @@ fun Scope.provideHttpClient() = HttpClient(CIO) {
                     setBody(accessToken)
                     markAsRefreshTokenRequest()
                 }.body<Token>()
-
-                saveToken(androidContext(), refreshToken)
+                if (refreshToken.token != accessToken)
+                    saveToken(androidContext(), refreshToken)
                 BearerTokens(refreshToken.token, refreshToken.token)
             }
             sendWithoutRequest {

@@ -33,6 +33,7 @@ class TeamFormViewModel(
     val members = mutableStateListOf<User>()
     val showDialog = mutableStateOf(false)
     val memberSuggestions = mutableStateOf(emptyList<User>())
+    val teamNameValidationResult = mutableStateOf(ValidationResult(true))
 
     init {
         viewModelScope.launch {
@@ -96,6 +97,10 @@ class TeamFormViewModel(
 
     fun setName(value: String) = viewModelScope.launch {
         team.value = team.value.copy(name = value)
+        teamNameValidationResult.value = if (value.isBlank())
+            ValidationResult(false, "title can't be blank")
+        else
+            ValidationResult(true)
     }
 
     fun setDescription(value: String) = viewModelScope.launch {
@@ -112,7 +117,10 @@ class TeamFormViewModel(
         toggleDialog()
     }
 
+
     fun saveTeam(snackbarHostState: SnackbarHostState) = viewModelScope.launch {
+        if (!teamNameValidationResult.value.isValid)
+            return@launch
         team.value = team.value.copy(members = members.map { ActiveUser(it.id, null) })
         val result = if (isUpdating.value)
             updateTeamUseCase(CreateTeamUseCase.Params(team.value))
@@ -124,7 +132,7 @@ class TeamFormViewModel(
             snackbarHostState.showSnackbar(result.message ?: "")
     }
 
-    private fun removeMember(userId: String) {
+    fun removeMember(userId: String) {
         members.removeIf { activeUser -> activeUser.id == userId }
     }
 
