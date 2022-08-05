@@ -25,6 +25,7 @@ object Urls {
     fun getTasksByPriorityUrl(priority: Priority) = "$BASE_URL/tasks?priority=$priority"
 
     fun getTeamUrl(id: String) = "$BASE_URL/teams/$id"
+    fun assignTag(id: String) = "${getTeamUrl(id)}/assignTag"
     fun getProjectUrl(id: String) = "$BASE_URL/projects/$id"
 
     fun getUserImage(id: String?) = if (id != null) "$BASE_URL/user/Images/$id" else null

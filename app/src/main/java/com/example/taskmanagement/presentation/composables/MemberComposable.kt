@@ -14,14 +14,12 @@ import com.example.taskmanagement.presentation.customComponents.UserIcon
 @Composable
 fun MemberComposable(
     user: User,
-    action: @Composable () -> Unit,
-    onClick: (User) -> Unit
+    modifier: Modifier = Modifier,
+    action: @Composable RowScope.() -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick(user) }
+        modifier = modifier.fillMaxWidth()
     ) {
         UserIcon(photoPath = user.photoPath)
         Spacer(modifier = Modifier.width(8.dp))

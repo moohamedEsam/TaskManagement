@@ -7,6 +7,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.More
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -18,6 +21,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.domain.dataModels.team.Team
+import com.example.taskmanagement.presentation.customComponents.ElevatedCenteredCard
+import com.example.taskmanagement.presentation.customComponents.OutlinedCenteredCard
 import com.example.taskmanagement.presentation.navigation.Screens
 import org.koin.androidx.compose.inject
 
@@ -62,14 +67,13 @@ fun TeamsScreenContent(navHostController: NavHostController, viewModel: TeamsVie
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NewTeamCard(
     configuration: Configuration,
     ratio: Int,
     navHostController: NavHostController
 ) {
-    OutlinedCard(
+    OutlinedCenteredCard(
         modifier = Modifier.size(
             (configuration.screenWidthDp / ratio).dp,
             (configuration.screenHeightDp / ratio).dp
@@ -78,22 +82,16 @@ private fun NewTeamCard(
             navHostController.navigate(Screens.TeamForm.withArgs("   "))
         }
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = null)
-                Text(
-                    text = "New Team",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-            }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = null)
+            Text(
+                text = "New Team",
+                style = MaterialTheme.typography.headlineMedium
+            )
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TeamCard(
     configuration: Configuration,
@@ -101,34 +99,33 @@ private fun TeamCard(
     navHostController: NavHostController,
     team: Team
 ) {
-    ElevatedCard(
+    ElevatedCenteredCard(
         modifier = Modifier.size(
             (configuration.screenWidthDp / ratio).dp,
             (configuration.screenHeightDp / ratio).dp
         ),
-        onClick = {
-            navHostController.navigate(Screens.Team.withArgs(team.id))
-        }
+        onClick = { navHostController.navigate(Screens.Team.withArgs(team.id)) }
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = team.name,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(8.dp),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = team.description ?: "",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = team.name,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(8.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = team.description ?: "",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(8.dp)
+            )
         }
-
+        Icon(
+            imageVector = Icons.Default.MoreVert,
+            contentDescription = null,
+            modifier = Modifier
+                .padding(horizontal = 2.dp, vertical = 4.dp)
+                .align(Alignment.TopEnd)
+        )
     }
 }

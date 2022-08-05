@@ -3,6 +3,7 @@ package com.example.taskmanagement.data.repository
 import android.util.Log
 import com.example.taskmanagement.data.data_source.IRemoteDataSource
 import com.example.taskmanagement.domain.dataModels.Tag
+import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUser
 import com.example.taskmanagement.domain.dataModels.project.Project
 import com.example.taskmanagement.domain.dataModels.task.Task
 import com.example.taskmanagement.domain.dataModels.team.Team
@@ -35,6 +36,10 @@ class MainRepositoryImpl(private val remote: IRemoteDataSource) : IMainRepositor
 
     override suspend fun createTag(tag: Tag): Resource<Tag> {
         return remote.createTag(tag)
+    }
+
+    override suspend fun assignTag(teamId: String, members: List<ActiveUser>): Resource<List<ActiveUser>> {
+        return remote.assignTag(teamId, members)
     }
 
     override suspend fun createTeam(team: Team): Resource<TeamDto> {

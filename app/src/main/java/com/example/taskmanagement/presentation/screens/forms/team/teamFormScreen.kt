@@ -118,7 +118,7 @@ private fun MembersList(
             }
         }
         items(members) {
-            MemberComposable(user = it, { }) {}
+            MemberComposable(user = it) {}
         }
     }
 
@@ -129,7 +129,7 @@ private fun MembersList(
 
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchMemberTextField(viewModel: TeamFormViewModel, onDismiss: () -> Unit) {
     var query by remember {
@@ -140,31 +140,32 @@ private fun SearchMemberTextField(viewModel: TeamFormViewModel, onDismiss: () ->
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Column(
-            modifier = Modifier
-                .animateContentSize()
-                .fillMaxSize(0.8f)
-                .background(MaterialTheme.colorScheme.surface),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = query,
-                onValueChange = {
-                    query = it
-                    if (query.isNotBlank() && query.length > 2)
-                        viewModel.searchMembers(query)
-
-                },
+        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                label = { Text(text = "Search Members") }
-            )
+                    .animateContentSize()
+                    .fillMaxSize(0.8f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = {
+                        query = it
+                        if (query.isNotBlank() && query.length > 2)
+                            viewModel.searchMembers(query)
 
-            MemberSuggestionsMenu(suggestions) {
-                viewModel.addMember(it)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    label = { Text(text = "Search Members") }
+                )
+
+                MemberSuggestionsMenu(suggestions) {
+                    viewModel.addMember(it)
+                }
+
             }
-
         }
 
     }
@@ -182,15 +183,11 @@ private fun MemberSuggestionsMenu(
             .padding(8.dp)
     ) {
         items(suggestions) {
-            MemberComposable(
-                user = it,
-                action = {
-                    IconButton(onClick = { onClick(it) }) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
-                    }
-                },
-                onClick = { }
-            )
+            MemberComposable(user = it) {
+                IconButton(onClick = { onClick(it) }) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                }
+            }
         }
     }
 }

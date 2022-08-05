@@ -7,8 +7,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUser
+import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.team.TeamView
+import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.repository.IMainRepository
 import kotlinx.coroutines.launch
 
@@ -17,9 +19,11 @@ class TeamViewModel(
     private val teamId: String
 ) : ViewModel() {
     val team = mutableStateOf<Resource<TeamView>>(Resource.Initialized())
-    val tagToAssign: MutableState<Tag?> = mutableStateOf(null)
-    val showDialogTag = mutableStateOf(false)
-    val taggedMembersList = mutableStateListOf<ActiveUser>()
+    val showTagDialog = mutableStateOf(false)
+    val taggedMembersList = mutableStateListOf<ActiveUserDto>()
+    val multiSelectMode = mutableStateOf(false)
+    val selectedMembers = mutableStateListOf<User>()
+    val membersTagsChanged = mutableStateOf(false)
 
     init {
         getTeam()
@@ -27,19 +31,34 @@ class TeamViewModel(
 
     fun getTeam() = viewModelScope.launch {
         team.value = repository.getUserTeam(teamId)
+        team.value.onSuccess {
+            taggedMembersList.addAll(it.members)
+        }
     }
 
-    fun toggleAssignTagDialog(tag: Tag? = null) {
-        tagToAssign.value = tag
-        showDialogTag.value = !showDialogTag.value
+    fun toggleTagDialog() {
+        showTagDialog.value = !showTagDialog.value
     }
 
-    fun addMember(memberId: String, tagId: String?) = viewModelScope.launch {
-        taggedMembersList.removeIf { memberId == it.id }
-        taggedMembersList.add(ActiveUser(memberId, tagId))
+    fun assignTagToSelectedMembers(tag: Tag) = viewModelScope.launch {
+        taggedMembersList.removeIf { selectedMembers.contains(it.user) }
+        taggedMembersList.addAll(selectedMembers.map { ActiveUserDto(it, tag) })
+        membersTagsChanged.value = true
     }
 
-    fun saveTaggedMembers(){
+    fun toggleSelectedMember(user: User) = viewModelScope.launch {
+        val exist = selectedMembers.remove(user)
+        if (!exist)
+            selectedMembers.add(user)
+    }
 
+    fun toggleMultiSelect() {
+        multiSelectMode.value = !multiSelectMode.value
+        if (!multiSelectMode.value)
+            selectedMembers.clear()
+    }
+
+    fun saveTaggedMembers() = viewModelScope.launch {
+        repository.assignTag(teamId, taggedMembersList.map { it.toActiveUser() })
     }
 }
