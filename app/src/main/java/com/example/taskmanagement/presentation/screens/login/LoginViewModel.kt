@@ -5,10 +5,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.utils.Credentials
+import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.domain.useCases.LoginUserUseCase
 import com.example.taskmanagement.domain.vallidators.Validator
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
@@ -19,7 +23,8 @@ class LoginViewModel(
     val userCredentials = mutableStateOf(Credentials("", ""))
     val usernameValidation = mutableStateOf(ValidationResult(true))
     val passwordValidation = mutableStateOf(ValidationResult(true))
-
+    private val snackBarChannel = Channel<SnackBarEvent>()
+    val receiveChannel = snackBarChannel.receiveAsFlow()
     fun setEmail(value: String) {
         userCredentials.value = userCredentials.value.copy(email = value)
     }
@@ -28,8 +33,17 @@ class LoginViewModel(
         userCredentials.value = userCredentials.value.copy(password = value)
     }
 
-    private fun loginUser(context: Context) = viewModelScope.launch {
-        userStatus.value = loginUserUseCase(LoginUserUseCase.Params(userCredentials.value, context))
+    private fun loginUser(context: Context) {
+        viewModelScope.launch {
+            userStatus.value =
+                loginUserUseCase(LoginUserUseCase.Params(userCredentials.value, context))
+            if (userStatus.value is UserStatus.Forbidden) {
+                val event = SnackBarEvent(userStatus.value.message ?: "", "Retry") {
+                    loginUser(context)
+                }
+                snackBarChannel.send(event)
+            }
+        }
     }
 
     fun submit(context: Context) = viewModelScope.launch {

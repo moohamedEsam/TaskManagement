@@ -25,7 +25,9 @@ import com.example.taskmanagement.R
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
 import com.example.taskmanagement.presentation.customComponents.PasswordTextField
 import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
+import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
 import com.example.taskmanagement.presentation.navigation.Screens
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.inject
 
@@ -33,16 +35,17 @@ import org.koin.androidx.compose.inject
 fun SignUpScreen(navHostController: NavHostController, snackbarHostState: SnackbarHostState) {
     val viewModel: SignUpViewModel by inject()
     val userStatus by viewModel.userStatus
-    LaunchedEffect(key1 = userStatus) {
-        when (userStatus) {
-            is UserStatus.Forbidden -> {
-                snackbarHostState.showSnackbar(message = userStatus.message ?: "")
-            }
-            is UserStatus.Authorized -> {
-                navHostController.navigate(Screens.Home.route)
-            }
-            else -> Unit
+    val channel = viewModel.receiveChannel
+    LaunchedEffect(key1 = Unit) {
+        channel.collectLatest {
+            handleSnackBarEvent(it, snackbarHostState)
         }
+    }
+    LaunchedEffect(key1 = userStatus) {
+        if (userStatus is UserStatus.Authorized)
+            navHostController.navigate(Screens.Home.route) {
+                popUpTo(Screens.SignIn.route) { inclusive = true }
+            }
     }
     Box(
         modifier = Modifier

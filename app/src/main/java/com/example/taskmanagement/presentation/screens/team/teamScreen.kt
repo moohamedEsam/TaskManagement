@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -22,10 +23,12 @@ import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.presentation.customComponents.ElevatedCenteredCard
 import com.example.taskmanagement.presentation.customComponents.HandleResourceChange
 import com.example.taskmanagement.presentation.customComponents.OutlinedCenteredCard
+import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
 import com.example.taskmanagement.presentation.navigation.Screens
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.inject
 import org.koin.core.parameter.parametersOf
@@ -38,13 +41,13 @@ fun TeamScreen(
 ) {
     val viewModel: TeamViewModel by inject { parametersOf(teamId) }
     val team by viewModel.team
+    val channel = viewModel.receiveChannel
+    LaunchedEffect(key1 = Unit) {
+        channel.collectLatest {
+            handleSnackBarEvent(it, snackbarHostState)
+        }
+    }
 
-    HandleResourceChange(
-        resource = team,
-        onSuccess = { },
-        snackbarHostState = snackbarHostState,
-        onSnackbarClick = { viewModel.getTeam() }
-    )
     team.onSuccess {
         TeamScreenContent(navHostController = navHostController, viewModel = viewModel, team = it)
     }
@@ -94,73 +97,6 @@ fun TeamScreenContent(
                     navHostController = navHostController
                 )
                 else -> Box {}
-            }
-        }
-    }
-}
-
-@Composable
-fun NewProjectCard(
-    team: TeamView,
-    navHostController: NavHostController,
-    configuration: Configuration,
-    ratio: Int
-) {
-    OutlinedCenteredCard(
-        modifier = Modifier.size(
-            (configuration.screenWidthDp / ratio).dp,
-            (configuration.screenHeightDp / ratio).dp
-        ),
-        onClick = { navHostController.navigate(Screens.ProjectForm.withArgs(team.id, " ")) }
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = null)
-            Text(text = "New Project", style = MaterialTheme.typography.headlineMedium)
-        }
-    }
-}
-
-@Composable
-fun ProjectCard(
-    projectSummery: ProjectSummery,
-    navHostController: NavHostController,
-    configuration: Configuration,
-    ratio: Int
-) {
-    ElevatedCenteredCard(
-        modifier = Modifier.size(
-            (configuration.screenWidthDp / ratio).dp,
-            (configuration.screenHeightDp / ratio).dp
-        ),
-        onClick = { navHostController.navigate(Screens.Project.withArgs(projectSummery.id)) }
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = projectSummery.name,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.headlineMedium
-            )
-
-            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                Icon(
-                    imageVector = Icons.Default.Circle,
-                    contentDescription = null,
-                    tint = Color.Green
-                )
-                Text(text = "Completed Tasks (${projectSummery.completedTasks})")
-                Icon(
-                    imageVector = Icons.Default.Circle,
-                    contentDescription = null,
-                    tint = Color.Gray
-                )
-                Text(text = "InProgress Tasks (${projectSummery.inProgressTasks})")
-                Icon(
-                    imageVector = Icons.Default.Circle,
-                    contentDescription = null,
-                    tint = Color.Red
-                )
-                Text(text = "Late Tasks (${projectSummery.createdTasks - projectSummery.completedTasks - projectSummery.inProgressTasks})")
             }
         }
     }

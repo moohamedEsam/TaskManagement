@@ -1,6 +1,5 @@
 package com.example.taskmanagement.presentation.screens.forms.team
 
-import android.util.Log
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
@@ -13,10 +12,13 @@ import com.example.taskmanagement.domain.dataModels.team.Team
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.Resource
+import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.domain.repository.IMainRepository
 import com.example.taskmanagement.domain.useCases.CreateTeamUseCase
 import com.example.taskmanagement.domain.useCases.UpdateTeamUseCase
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -34,40 +36,60 @@ class TeamFormViewModel(
     val showDialog = mutableStateOf(false)
     val memberSuggestions = mutableStateOf(emptyList<User>())
     val teamNameValidationResult = mutableStateOf(ValidationResult(true))
+    private val snackBarChannel = Channel<SnackBarEvent>()
+    val receiveChannel = snackBarChannel.receiveAsFlow()
 
     init {
         viewModelScope.launch {
             setCurrentUser()
-            getTeam()
+            setTeam()
         }
     }
 
     private suspend fun setCurrentUser() {
         currentUser.value = repository.getUserProfile()
+        if (currentUser.value is Resource.Error) {
+            val event = SnackBarEvent(currentUser.value.message ?: "") {
+                setCurrentUser()
+            }
+            snackBarChannel.send(event)
+        }
     }
 
 
-    fun toggleDialog() {
+    private fun toggleDialog() {
         showDialog.value = !showDialog.value
     }
 
 
-    private suspend fun getTeam() {
-        if (teamId.isNotBlank()) {
-            teamView = repository.getUserTeam(teamId)
-            isUpdating.value = true
-        } else {
-            teamView =
-                if (currentUser.value is Resource.Success && currentUser.value.data != null) {
-                    Resource.Success(getInitializedTeam())
-                } else
-                    Resource.Error("couldn't get current profile")
-            isUpdating.value = false
-        }
+    private suspend fun setTeam() {
+        if (teamId.isNotBlank())
+            getTeamView()
+        else
+            createTeamView()
+
         teamView.onSuccess {
             team.value = it.toTeam()
         }
 
+    }
+
+    private fun createTeamView() {
+        teamView =
+            if (currentUser.value is Resource.Success && currentUser.value.data != null) {
+                Resource.Success(getInitializedTeam())
+            } else
+                Resource.Error("couldn't get current profile")
+        isUpdating.value = false
+    }
+
+    private suspend fun getTeamView() {
+        teamView = repository.getUserTeam(teamId)
+        if (teamView is Resource.Error) {
+            val event = SnackBarEvent(teamView.message ?: "") { setTeam() }
+            snackBarChannel.send(event)
+        }
+        isUpdating.value = true
     }
 
     fun hasPermission(requiredPermission: Permission): Boolean {
@@ -118,18 +140,21 @@ class TeamFormViewModel(
     }
 
 
-    fun saveTeam(snackbarHostState: SnackbarHostState) = viewModelScope.launch {
-        if (!teamNameValidationResult.value.isValid)
-            return@launch
-        team.value = team.value.copy(members = members.map { ActiveUser(it.id, null) })
-        val result = if (isUpdating.value)
-            updateTeamUseCase(CreateTeamUseCase.Params(team.value))
-        else
-            createTeamUseCase(CreateTeamUseCase.Params(team.value))
-        if (result is Resource.Success)
-            snackbarHostState.showSnackbar("success")
-        else
-            snackbarHostState.showSnackbar(result.message ?: "")
+    fun saveTeam() {
+        viewModelScope.launch {
+            if (!teamNameValidationResult.value.isValid)
+                return@launch
+            team.value = team.value.copy(members = members.map { ActiveUser(it.id, null) })
+            val result = if (isUpdating.value)
+                updateTeamUseCase(CreateTeamUseCase.Params(team.value))
+            else
+                createTeamUseCase(CreateTeamUseCase.Params(team.value))
+            val event = if (result is Resource.Success)
+                SnackBarEvent("team has been created", null) {}
+            else
+                SnackBarEvent(result.message ?: "") { saveTeam() }
+            snackBarChannel.send(event)
+        }
     }
 
     fun removeMember(userId: String) {

@@ -1,8 +1,6 @@
 package com.example.taskmanagement.presentation.screens.forms.team
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,7 +26,8 @@ import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.presentation.composables.MemberComposable
 import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
-import com.example.taskmanagement.presentation.customComponents.UserIcon
+import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.inject
 import org.koin.core.parameter.parametersOf
 
@@ -39,13 +38,18 @@ fun TeamFormScreen(
     snackbarHostState: SnackbarHostState
 ) {
     val viewModel: TeamFormViewModel by inject { parametersOf(teamId) }
-    TeamFormScreenContent(viewModel, snackbarHostState)
+    val channel = viewModel.receiveChannel
+    LaunchedEffect(key1 = Unit) {
+        channel.collectLatest {
+            handleSnackBarEvent(it, snackbarHostState)
+        }
+    }
+    TeamFormScreenContent(viewModel)
 }
 
 @Composable
 fun TeamFormScreenContent(
-    viewModel: TeamFormViewModel,
-    snackbarHostState: SnackbarHostState
+    viewModel: TeamFormViewModel
 ) {
     val team by viewModel.team
     val isUpdating by viewModel.isUpdating
@@ -59,7 +63,7 @@ fun TeamFormScreenContent(
         MembersList(viewModel)
         Button(
             onClick = {
-                viewModel.saveTeam(snackbarHostState)
+                viewModel.saveTeam()
             },
             modifier = Modifier.align(Alignment.End)
         ) {

@@ -16,6 +16,9 @@ import com.example.taskmanagement.presentation.navigation.Screens
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
 import com.example.taskmanagement.presentation.customComponents.PasswordTextField
 import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
+import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import org.koin.androidx.compose.inject
 
 @Composable
@@ -24,17 +27,17 @@ fun BoxScope.LoginScreen(
     snackbarHostState: SnackbarHostState
 ) {
     val viewModel: LoginViewModel by inject()
+    val channel = viewModel.receiveChannel
     val userStatus by viewModel.userStatus
-    LaunchedEffect(key1 = userStatus) {
-        when (userStatus) {
-            is UserStatus.Authorized -> {
-                navHostController.navigate(Screens.Home.route)
-            }
-            is UserStatus.Forbidden -> {
-                snackbarHostState.showSnackbar(message = userStatus.message ?: "")
-            }
-            else -> Unit
+    LaunchedEffect(key1 = Unit) {
+        channel.collectLatest {
+            handleSnackBarEvent(it, snackbarHostState)
         }
+    }
+    LaunchedEffect(key1 = userStatus) {
+        if (userStatus is UserStatus.Authorized)
+            navHostController.navigate(Screens.Home.route)
+
     }
 
     LoginScreenContent(navHostController, viewModel)
@@ -97,7 +100,8 @@ fun BoxScope.LoginScreenContent(navHostController: NavHostController, viewModel:
                     }
                 }.toString(),
                 style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier
+                    .padding(start = 8.dp)
                     .clickable {
                         navHostController.navigate(Screens.SignUp.route)
                     }

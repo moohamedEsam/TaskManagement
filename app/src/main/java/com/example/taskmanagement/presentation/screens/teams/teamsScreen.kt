@@ -1,34 +1,41 @@
 package com.example.taskmanagement.presentation.screens.teams
 
-import android.content.res.Configuration
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.More
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.domain.dataModels.team.Team
+import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.presentation.customComponents.ElevatedCenteredCard
 import com.example.taskmanagement.presentation.customComponents.OutlinedCenteredCard
+import com.example.taskmanagement.presentation.customComponents.fillMaxHeight
+import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
 import com.example.taskmanagement.presentation.navigation.Screens
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.inject
 
 @Composable
 fun TeamsScreen(navHostController: NavHostController, snackbarHostState: SnackbarHostState) {
     val viewModel: TeamsViewModel by inject()
+    val channel = viewModel.receiveChannel
+    LaunchedEffect(key1 = Unit) {
+        channel.collectLatest {
+            handleSnackBarEvent(it, snackbarHostState)
+        }
+    }
     TeamsScreenContent(navHostController, viewModel)
 }
 
@@ -37,11 +44,9 @@ fun TeamsScreenContent(navHostController: NavHostController, viewModel: TeamsVie
     val teams by viewModel.teams
     val searchQuery by viewModel.searchQuery
     val filteredTeams by viewModel.filteredTeams
-    val configuration = LocalConfiguration.current
     val ratio = 4
     Column(
         modifier = Modifier
-            //.verticalScroll(rememberScrollState())
             .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -54,14 +59,22 @@ fun TeamsScreenContent(navHostController: NavHostController, viewModel: TeamsVie
         )
         Text(text = "Teams", style = MaterialTheme.typography.headlineLarge)
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(120.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            columns = GridCells.Fixed(3),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxSize()
         ) {
             item {
-                NewTeamCard(configuration, ratio, navHostController)
+                NewTeamCard(
+                    navHostController = navHostController,
+                    modifier = Modifier.fillMaxHeight(ratio)
+                )
             }
             items(if (searchQuery.isBlank()) teams else filteredTeams) {
-                TeamCard(configuration, ratio, navHostController, it)
+                TeamCard(
+                    navHostController = navHostController,
+                    modifier = Modifier.fillMaxHeight(ratio),
+                    team = it
+                )
             }
         }
     }
@@ -69,20 +82,18 @@ fun TeamsScreenContent(navHostController: NavHostController, viewModel: TeamsVie
 
 @Composable
 private fun NewTeamCard(
-    configuration: Configuration,
-    ratio: Int,
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    modifier: Modifier = Modifier
 ) {
     OutlinedCenteredCard(
-        modifier = Modifier.size(
-            (configuration.screenWidthDp / ratio).dp,
-            (configuration.screenHeightDp / ratio).dp
-        ),
+        modifier = modifier,
         onClick = {
             navHostController.navigate(Screens.TeamForm.withArgs("   "))
         }
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = null)
             Text(
                 text = "New Team",
@@ -94,16 +105,12 @@ private fun NewTeamCard(
 
 @Composable
 private fun TeamCard(
-    configuration: Configuration,
-    ratio: Int,
     navHostController: NavHostController,
+    modifier: Modifier = Modifier,
     team: Team
 ) {
     ElevatedCenteredCard(
-        modifier = Modifier.size(
-            (configuration.screenWidthDp / ratio).dp,
-            (configuration.screenHeightDp / ratio).dp
-        ),
+        modifier = modifier,
         onClick = { navHostController.navigate(Screens.Team.withArgs(team.id)) }
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

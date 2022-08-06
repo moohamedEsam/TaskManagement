@@ -5,6 +5,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.example.taskmanagement.domain.dataModels.utils.Resource
+import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 
 
 @Composable
@@ -27,4 +28,13 @@ fun HandleResourceChange(
             else -> Unit
         }
     }
+}
+
+suspend fun handleSnackBarEvent(
+    snackBarEvent: SnackBarEvent,
+    snackbarHostState: SnackbarHostState
+) {
+    val result = snackbarHostState.showSnackbar(snackBarEvent.message, snackBarEvent.actionTitle)
+    if (result == SnackbarResult.ActionPerformed)
+        snackBarEvent.action()
 }
