@@ -19,7 +19,7 @@ data class TeamView(
         return Team(
             name,
             description,
-            owner.username,
+            owner.id,
             members.map { it.toActiveUser() },
             id
         )
