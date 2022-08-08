@@ -14,6 +14,8 @@ data class Tag(
     val id: String
 ) {
     fun getColor() = Color(color[0], color[1], color[2])
+    fun isUserAuthorized(requiredPermission: Permission) =
+        permissions.any { it == requiredPermission || it == Permission.FullControl }
 }
 
 enum class TagScope {

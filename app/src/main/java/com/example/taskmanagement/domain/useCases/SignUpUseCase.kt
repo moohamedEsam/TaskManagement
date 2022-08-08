@@ -4,11 +4,11 @@ import android.content.Context
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SignUpUserBody
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
-import com.example.taskmanagement.domain.repository.IMainRepository
+import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.presentation.koin.saveToken
 
 class SignUpUseCase(
-    private val repository: IMainRepository,
+    private val repository: MainRepository,
 ) : BaseUseCaseBuilder<SignUpUseCase.Params, UserStatus> {
     override suspend fun build(params: Params): UserStatus {
         val result = repository.registerUser(params.signUpUserBody)

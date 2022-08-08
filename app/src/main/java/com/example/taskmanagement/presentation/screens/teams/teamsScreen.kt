@@ -61,6 +61,7 @@ fun TeamsScreenContent(navHostController: NavHostController, viewModel: TeamsVie
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxSize()
         ) {
             item {

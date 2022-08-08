@@ -1,7 +1,7 @@
 package com.example.taskmanagement.data.data_source_impl
 
 import android.util.Log
-import com.example.taskmanagement.data.data_source.IRemoteDataSource
+import com.example.taskmanagement.data.data_source.RemoteDataSource
 import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUser
 import com.example.taskmanagement.domain.dataModels.project.Project
@@ -22,7 +22,8 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import java.io.File
 
-class RemoteDataSource(private val client: HttpClient) : IRemoteDataSource {
+class RemoteDataSourceImpl(private val client: HttpClient) :
+    RemoteDataSource {
     override suspend fun loginUser(credentials: Credentials): UserStatus {
         return try {
             val response = client.post(Urls.SIGN_IN) {
@@ -36,6 +37,16 @@ class RemoteDataSource(private val client: HttpClient) : IRemoteDataSource {
         } catch (exception: Exception) {
             Log.i("MainRemoteDataSource", "loginUser: ${exception.message}")
             UserStatus.Forbidden(exception.message)
+        }
+    }
+
+    override suspend fun getUserTag(parentRoute: String, id: String): Resource<Tag> {
+        return try {
+            val response = client.get(Urls.getUserTag(parentRoute, id))
+            getResponseResource(response)
+        } catch (exception: Exception) {
+            Log.i("RemoteDataSource", "getUserTag: ${exception.message}")
+            Resource.Error(exception.message)
         }
     }
 

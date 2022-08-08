@@ -12,11 +12,11 @@ import com.example.taskmanagement.domain.dataModels.task.TaskView
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 
-interface IRemoteDataSource {
+interface RemoteDataSource {
     suspend fun loginUser(credentials: Credentials): UserStatus
     suspend fun registerUser(user: SignUpUserBody): Resource<Token>
     suspend fun searchMembers(query: String): Resource<List<User>>
-
+    suspend fun getUserTag(parentRoute: String, id: String): Resource<Tag>
     suspend fun createTag(tag: Tag): Resource<Tag>
 
     suspend fun getUserTasks(): Resource<List<Task>>
@@ -43,6 +43,6 @@ interface IRemoteDataSource {
     suspend fun updateTeam(team: Team): Resource<TeamDto>
     suspend fun deleteTeam(teamId: String): Resource<ConfirmationResponse>
     suspend fun getUserProfile(): Resource<User>
-    suspend fun assignTag(teamId:String, members: List<ActiveUser>): Resource<List<ActiveUser>>
+    suspend fun assignTag(teamId: String, members: List<ActiveUser>): Resource<List<ActiveUser>>
 
 }

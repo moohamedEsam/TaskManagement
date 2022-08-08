@@ -13,6 +13,11 @@ sealed class Resource<T>(val data: T?, val message: String? = null) {
             code(data)
     }
 
+     inline fun onError(code: (String?) -> Unit) {
+        if (this is Error)
+            code(message)
+    }
+
 
     fun copy(data: T?): Resource<T> {
         return when (this) {

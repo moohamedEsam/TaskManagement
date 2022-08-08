@@ -17,7 +17,7 @@ import androidx.compose.ui.window.Dialog
 fun PickerController(
     value: Boolean,
     title: String,
-    toggleValue: () -> Unit,
+    onToggle: () -> Unit,
     contentToShow: @Composable () -> Unit
 ) {
     TextField(
@@ -27,7 +27,7 @@ fun PickerController(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                toggleValue()
+                onToggle()
             }
     )
     if (value) {

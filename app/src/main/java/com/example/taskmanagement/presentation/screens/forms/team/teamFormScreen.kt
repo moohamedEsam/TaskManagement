@@ -122,7 +122,7 @@ private fun MembersList(
         }
         items(members) {
             MemberComposable(user = it) {
-                IconButton(onClick = { viewModel.removeMember(it.id) }) {
+                IconButton(onClick = { viewModel.toggleMember(it) }) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = null)
                 }
             }
@@ -138,7 +138,7 @@ private fun MembersList(
                     viewModel.searchMembers(it)
             },
             onUserSelected = {
-                viewModel.addMember(it)
+                viewModel.toggleMember(it)
             }
         )
 

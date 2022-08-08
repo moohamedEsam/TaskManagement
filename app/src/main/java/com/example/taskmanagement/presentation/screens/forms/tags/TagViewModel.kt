@@ -7,11 +7,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.TagScope
 import com.example.taskmanagement.domain.dataModels.task.Permission
-import com.example.taskmanagement.domain.repository.IMainRepository
+import com.example.taskmanagement.domain.repository.MainRepository
 import kotlinx.coroutines.launch
 import java.util.*
 
-class TagViewModel(private val repository: IMainRepository, owner: String) : ViewModel() {
+class TagViewModel(private val repository: MainRepository, owner: String) : ViewModel() {
     val tag =
         mutableStateOf(
             Tag(

@@ -1,7 +1,6 @@
 package com.example.taskmanagement.data.repository
 
-import android.util.Log
-import com.example.taskmanagement.data.data_source.IRemoteDataSource
+import com.example.taskmanagement.data.data_source.RemoteDataSource
 import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUser
 import com.example.taskmanagement.domain.dataModels.project.Project
@@ -13,9 +12,9 @@ import com.example.taskmanagement.domain.dataModels.project.ProjectView
 import com.example.taskmanagement.domain.dataModels.task.TaskView
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
-import com.example.taskmanagement.domain.repository.IMainRepository
+import com.example.taskmanagement.domain.repository.MainRepository
 
-class MainRepositoryImpl(private val remote: IRemoteDataSource) : IMainRepository {
+class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository {
     private lateinit var userStatus: UserStatus
     override suspend fun registerUser(userProfile: SignUpUserBody): Resource<Token> {
         val result = remote.registerUser(userProfile)
@@ -40,6 +39,10 @@ class MainRepositoryImpl(private val remote: IRemoteDataSource) : IMainRepositor
 
     override suspend fun assignTag(teamId: String, members: List<ActiveUser>): Resource<List<ActiveUser>> {
         return remote.assignTag(teamId, members)
+    }
+
+    override suspend fun getUserTag(parentRoute: String, id: String): Resource<Tag> {
+        return remote.getUserTag(parentRoute, id)
     }
 
     override suspend fun createTeam(team: Team): Resource<TeamDto> {

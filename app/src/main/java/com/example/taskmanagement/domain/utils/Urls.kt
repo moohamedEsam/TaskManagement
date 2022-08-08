@@ -19,7 +19,7 @@ object Urls {
 
     fun getTaskUrl(id: String) = "$BASE_URL/tasks/$id"
     fun getTaskCommentsUrl(id: String) = "$BASE_URL/comments/$id"
-
+    fun getUserTag(parentRoute: String, id: String) = "$BASE_URL/$parentRoute/$id/userTag"
 
     fun getTasksByStatusUrl(status: TaskStatus) = "$BASE_URL/tasks?status=$status"
     fun getTasksByPriorityUrl(priority: Priority) = "$BASE_URL/tasks?priority=$priority"

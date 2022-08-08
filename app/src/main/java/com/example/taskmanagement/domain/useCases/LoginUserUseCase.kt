@@ -3,11 +3,10 @@ package com.example.taskmanagement.domain.useCases
 import android.content.Context
 import com.example.taskmanagement.domain.dataModels.utils.Credentials
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
-import com.example.taskmanagement.domain.repository.IMainRepository
-import com.example.taskmanagement.domain.vallidators.Validator
+import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.presentation.koin.saveToken
 
-class LoginUserUseCase(private val repository: IMainRepository) :
+class LoginUserUseCase(private val repository: MainRepository) :
     BaseUseCaseBuilder<LoginUserUseCase.Params, UserStatus> {
     override suspend fun build(params: Params): UserStatus {
         val result = repository.loginUser(params.credentials)

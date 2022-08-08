@@ -10,13 +10,13 @@ import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
-import com.example.taskmanagement.domain.repository.IMainRepository
+import com.example.taskmanagement.domain.repository.MainRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class TeamViewModel(
-    private val repository: IMainRepository,
+    private val repository: MainRepository,
     private val teamId: String
 ) : ViewModel() {
     val team = mutableStateOf<Resource<TeamView>>(Resource.Initialized())

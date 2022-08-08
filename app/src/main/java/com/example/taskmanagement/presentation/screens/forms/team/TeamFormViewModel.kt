@@ -1,10 +1,10 @@
 package com.example.taskmanagement.presentation.screens.forms.team
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUser
 import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.domain.dataModels.team.TeamView
@@ -12,7 +12,7 @@ import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
-import com.example.taskmanagement.domain.repository.IMainRepository
+import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.CreateTeamUseCase
 import com.example.taskmanagement.domain.useCases.UpdateTeamUseCase
 import kotlinx.coroutines.channels.Channel
@@ -21,14 +21,14 @@ import kotlinx.coroutines.launch
 import java.util.*
 
 class TeamFormViewModel(
-    private val repository: IMainRepository,
+    private val repository: MainRepository,
     private val updateTeamUseCase: UpdateTeamUseCase,
     private val createTeamUseCase: CreateTeamUseCase,
     private val teamId: String
 ) : ViewModel() {
     var teamView = mutableStateOf(getInitializedTeam())
     val members = mutableStateListOf<User>()
-    private val currentUser: MutableState<Resource<User>> = mutableStateOf(Resource.Initialized())
+    private var currentUserTag: Resource<Tag> = Resource.Initialized()
     val isUpdating = mutableStateOf(false)
     val membersDialog = mutableStateOf(false)
     val ownerDialog = mutableStateOf(false)
@@ -39,22 +39,19 @@ class TeamFormViewModel(
     val receiveChannel = snackBarChannel.receiveAsFlow()
 
     init {
-        viewModelScope.launch {
-            setCurrentUser()
-            setTeam()
+        if (teamId.isNotBlank()) {
+            setCurrentUserTag()
+            setTeamView()
         }
     }
 
-    private suspend fun setCurrentUser() {
-        currentUser.value = repository.getUserProfile()
-        currentUser.value.onSuccess {
-            teamView.value = teamView.value.copy(owner = it)
-        }
-        if (currentUser.value is Resource.Error) {
-            val event = SnackBarEvent(currentUser.value.message ?: "") {
-                setCurrentUser()
+    private fun setCurrentUserTag() {
+        viewModelScope.launch {
+            currentUserTag = repository.getUserTag("teams", teamId)
+            currentUserTag.onError {
+                val event = SnackBarEvent(it ?: "") { setCurrentUserTag() }
+                snackBarChannel.send(event)
             }
-            snackBarChannel.send(event)
         }
     }
 
@@ -68,39 +65,24 @@ class TeamFormViewModel(
     }
 
 
-    private suspend fun setTeam() {
-        if (teamId.isNotBlank())
-            getTeamView()
-
-    }
-
-    private suspend fun getTeamView() {
-        val result = repository.getUserTeam(teamId)
-        if (result is Resource.Error) {
-            val event = SnackBarEvent(result.message ?: "") { setTeam() }
-            snackBarChannel.send(event)
+    private fun setTeamView() {
+        viewModelScope.launch {
+            val result = repository.getUserTeam(teamId)
+            if (result is Resource.Error) {
+                val event = SnackBarEvent(result.message ?: "") { setTeamView() }
+                snackBarChannel.send(event)
+            }
+            result.onSuccess {
+                teamView.value = it
+                members.clear()
+                members.addAll(it.members.map { activeUser -> activeUser.user })
+            }
+            isUpdating.value = true
         }
-        result.onSuccess {
-            teamView.value = it
-            members.clear()
-            members.addAll(it.members.map { activeUser -> activeUser.user })
-        }
-        isUpdating.value = true
     }
 
     fun hasPermission(requiredPermission: Permission): Boolean {
-        return when (isUpdating.value) {
-            true -> {
-                if (teamView.value.owner.id == currentUser.value.data?.id)
-                    return true
-                val teamUser =
-                    teamView.value.members.find { it.user.id == currentUser.value.data?.id }
-                        ?: return false
-                teamUser.tag?.permissions?.any { it == requiredPermission || it == Permission.FullControl }
-                    ?: false
-            }
-            else -> true
-        }
+        return currentUserTag.data?.isUserAuthorized(requiredPermission) ?: true
     }
 
     private fun getInitializedTeam() = TeamView(
@@ -126,12 +108,15 @@ class TeamFormViewModel(
     }
 
     fun setOwner(value: User) = viewModelScope.launch {
+        members.remove(value)
+        members.add(teamView.value.owner)
         teamView.value = teamView.value.copy(owner = value)
     }
 
-    fun addMember(value: User) {
-        removeMember(value.id)
-        members.add(value)
+    fun toggleMember(value: User) {
+        val exist = members.remove(value)
+        if (!exist)
+            members.add(value)
     }
 
 
@@ -146,15 +131,11 @@ class TeamFormViewModel(
             else
                 createTeamUseCase(CreateTeamUseCase.Params(team))
             val event = if (result is Resource.Success)
-                SnackBarEvent("team has been created", null) {}
+                SnackBarEvent("team has been saved", null) {}
             else
                 SnackBarEvent(result.message ?: "") { saveTeam() }
             snackBarChannel.send(event)
         }
-    }
-
-    fun removeMember(userId: String) {
-        members.removeIf { activeUser -> activeUser.id == userId }
     }
 
     fun searchMembers(query: String) = viewModelScope.launch {

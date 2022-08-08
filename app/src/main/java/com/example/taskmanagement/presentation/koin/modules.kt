@@ -7,11 +7,11 @@ import coil.ImageLoader
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import com.example.taskmanagement.MainActivityViewModel
-import com.example.taskmanagement.data.data_source.IRemoteDataSource
-import com.example.taskmanagement.data.data_source_impl.RemoteDataSource
+import com.example.taskmanagement.data.data_source.RemoteDataSource
+import com.example.taskmanagement.data.data_source_impl.RemoteDataSourceImpl
 import com.example.taskmanagement.data.repository.MainRepositoryImpl
 import com.example.taskmanagement.domain.dataModels.utils.Token
-import com.example.taskmanagement.domain.repository.IMainRepository
+import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.CreateTeamUseCase
 import com.example.taskmanagement.domain.useCases.LoginUserUseCase
 import com.example.taskmanagement.domain.useCases.SignUpUseCase
@@ -66,10 +66,10 @@ val useCaseModules = module {
     factory { UpdateTeamUseCase(get()) }
 }
 
-fun provideRepository(remoteDataSource: IRemoteDataSource): IMainRepository =
+fun provideRepository(remoteDataSource: RemoteDataSource): MainRepository =
     MainRepositoryImpl(remoteDataSource)
 
-fun provideRemoteSource(client: HttpClient): IRemoteDataSource = RemoteDataSource(client)
+fun provideRemoteSource(client: HttpClient): RemoteDataSource = RemoteDataSourceImpl(client)
 
 val viewModelModule = module {
     viewModel { MainActivityViewModel(get()) }

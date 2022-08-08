@@ -12,7 +12,7 @@ import com.example.taskmanagement.domain.dataModels.task.TaskView
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 
-interface IMainRepository {
+interface MainRepository {
     suspend fun registerUser(userProfile: SignUpUserBody): Resource<Token>
     suspend fun loginUser(credentials: Credentials): UserStatus
     suspend fun logoutUser(): UserStatus
@@ -36,4 +36,5 @@ interface IMainRepository {
     suspend fun createTeam(team: Team): Resource<TeamDto>
     suspend fun createTag(tag: Tag): Resource<Tag>
     suspend fun assignTag(teamId: String, members: List<ActiveUser>): Resource<List<ActiveUser>>
+    suspend fun getUserTag(parentRoute: String, id: String): Resource<Tag>
 }
