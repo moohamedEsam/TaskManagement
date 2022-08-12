@@ -7,11 +7,16 @@ import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.TagScope
 import com.example.taskmanagement.domain.dataModels.task.Permission
+import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.repository.MainRepository
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.*
 
 class TagViewModel(private val repository: MainRepository, owner: String) : ViewModel() {
+    private val snackBarChannel = Channel<SnackBarEvent>()
+    val receiveChannel = snackBarChannel.receiveAsFlow()
     val tag =
         mutableStateOf(
             Tag(
@@ -42,7 +47,18 @@ class TagViewModel(private val repository: MainRepository, owner: String) : View
         tag.value = tag.value.copy(color = color)
     }
 
-    fun saveTag() = viewModelScope.launch {
-        repository.createTag(tag.value)
+    fun saveTag() {
+        viewModelScope.launch {
+            val result = repository.createTag(tag.value)
+            result.onSuccess {
+                val event = SnackBarEvent("tag has been created", null) {}
+                snackBarChannel.send(event)
+            }
+
+            result.onError {
+                val event = SnackBarEvent(it ?: "") { saveTag() }
+                snackBarChannel.send(event)
+            }
+        }
     }
 }

@@ -126,7 +126,11 @@ fun Navigation(
 
         composable("${Screens.TagForm.route}/{owner}") {
             val owner = it.arguments?.getString("owner", "  ") ?: "   "
-            TagScreen(owner = owner, navHostController = navHostController)
+            TagScreen(
+                owner = owner,
+                navHostController = navHostController,
+                snackbarHostState = snackbarHostState
+            )
         }
 
     }

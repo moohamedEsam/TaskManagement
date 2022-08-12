@@ -78,17 +78,17 @@ fun MultiSelectGrid(members: List<ActiveUserDto>, viewModel: TeamViewModel) {
                 }
             }
         }
-        items(members) {
+        items(members) { activeUserDto ->
             MemberComposable(
-                user = it.user,
+                user = activeUserDto.user,
                 modifier = Modifier.clickable {
-                    viewModel.toggleSelectedMember(it.user)
+                    viewModel.toggleSelectedMember(activeUserDto.user)
                 }
             ) {
                 Spacer(modifier = Modifier.weight(0.8f))
                 Checkbox(
-                    checked = selectedMembers.contains(it.user),
-                    onCheckedChange = {}
+                    checked = selectedMembers.contains(activeUserDto.user),
+                    onCheckedChange = { viewModel.toggleSelectedMember(activeUserDto.user) }
                 )
             }
         }

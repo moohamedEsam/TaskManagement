@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,13 +21,25 @@ import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.presentation.composables.TagComposable
 import com.example.taskmanagement.presentation.customComponents.PermissionItem
+import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
 import com.godaddy.android.colorpicker.ClassicColorPicker
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.inject
 import org.koin.core.parameter.parametersOf
 
 @Composable
-fun TagScreen(owner: String, navHostController: NavHostController) {
+fun TagScreen(
+    owner: String,
+    navHostController: NavHostController,
+    snackbarHostState: SnackbarHostState
+) {
     val viewModel: TagViewModel by inject { parametersOf(owner) }
+    val channel = viewModel.receiveChannel
+    LaunchedEffect(key1 = Unit) {
+        channel.collectLatest {
+            handleSnackBarEvent(it, snackbarHostState)
+        }
+    }
     TagScreenContent(viewModel = viewModel)
 }
 

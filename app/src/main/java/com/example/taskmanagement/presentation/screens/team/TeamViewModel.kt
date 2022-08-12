@@ -72,10 +72,14 @@ class TeamViewModel(
     fun saveTaggedMembers() {
         viewModelScope.launch {
             val result = repository.assignTag(teamId, taggedMembersList.map { it.toActiveUser() })
-            if (result is Resource.Error) {
-                val event = SnackBarEvent(result.message ?: "") {
+            result.onError {
+                val event = SnackBarEvent(it ?: "") {
                     saveTaggedMembers()
                 }
+                snackBarChannel.send(event)
+            }
+            result.onSuccess {
+                val event = SnackBarEvent("changes has been saved", null) {}
                 snackBarChannel.send(event)
             }
         }
