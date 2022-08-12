@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUser
+import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
 import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.dataModels.user.User
@@ -27,9 +28,10 @@ class TeamFormViewModel(
     private val teamId: String
 ) : ViewModel() {
     var teamView = mutableStateOf(getInitializedTeam())
-    val members = mutableStateListOf<User>()
+    val members = mutableStateListOf<String>()
+
     private var currentUserTag: Resource<Tag> = Resource.Initialized()
-    val isUpdating = mutableStateOf(false)
+    val isUpdating = teamId.isNotBlank()
     val membersDialog = mutableStateOf(false)
     val ownerDialog = mutableStateOf(false)
 
@@ -75,9 +77,8 @@ class TeamFormViewModel(
             result.onSuccess {
                 teamView.value = it
                 members.clear()
-                members.addAll(it.members.map { activeUser -> activeUser.user })
+                members.addAll(it.members.map { user -> user.user.id })
             }
-            isUpdating.value = true
         }
     }
 
@@ -108,32 +109,66 @@ class TeamFormViewModel(
     }
 
     fun setOwner(value: User) = viewModelScope.launch {
-        members.remove(value)
-        members.add(teamView.value.owner)
+        addMember(teamView.value.owner)
+        members.add(teamView.value.owner.id)
         teamView.value = teamView.value.copy(owner = value)
+        members.remove(value.id)
     }
 
     fun toggleMember(value: User) {
-        val exist = members.remove(value)
-        if (!exist)
-            members.add(value)
+        if (isUpdating)
+            toggleMemberUpdateCase(value)
+        else
+            toggleMemberCreateCase(value)
+
     }
 
+    private fun toggleMemberUpdateCase(value: User) {
+        if (members.contains(value.id))
+            members.remove(value.id)
+        else
+            members.add(value.id)
+    }
 
-    fun saveTeam() {
+    private fun toggleMemberCreateCase(value: User) {
+        teamView.value = if (!userExistInTeamMembers(value))
+            addUserToTeamMembersUpdateCase(value)
+        else
+            removeTeamMember(value)
+    }
+
+    private fun removeTeamMember(value: User) =
+        teamView.value.copy(members = teamView.value.members - ActiveUserDto(value, null))
+
+    private fun addUserToTeamMembersUpdateCase(value: User) =
+        teamView.value.copy(members = teamView.value.members + ActiveUserDto(value, null))
+
+    fun addMember(value: User) {
+        if (userExistInTeamMembers(value))
+            return
+        teamView.value = addUserToTeamMembersUpdateCase(value)
+    }
+
+    private fun userExistInTeamMembers(value: User) =
+        teamView.value.members.find { it.user.id == value.id } != null
+
+
+    fun saveTeam(onSuccess: (String) -> Unit) {
         viewModelScope.launch {
             if (!teamNameValidationResult.value.isValid)
                 return@launch
-            val team =
-                teamView.value.toTeam().copy(members = members.map { ActiveUser(it.id, null) })
-            val result = if (isUpdating.value)
+            val team = teamView.value.toTeam()
+            if (isUpdating)
+                team.members = team.members.filter { members.contains(it.id) }
+            val result = if (isUpdating)
                 updateTeamUseCase(CreateTeamUseCase.Params(team))
             else
                 createTeamUseCase(CreateTeamUseCase.Params(team))
-            val event = if (result is Resource.Success)
+            val event = if (result is Resource.Success) {
+                onSuccess(result.data?.id ?: "")
                 SnackBarEvent("team has been saved", null) {}
-            else
-                SnackBarEvent(result.message ?: "") { saveTeam() }
+            } else
+                SnackBarEvent(result.message ?: "") { saveTeam(onSuccess) }
             snackBarChannel.send(event)
         }
     }

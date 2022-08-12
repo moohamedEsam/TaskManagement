@@ -25,6 +25,7 @@ import com.example.taskmanagement.presentation.composables.MemberComposable
 import com.example.taskmanagement.presentation.customComponents.MembersSuggestionsDialog
 import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
 import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
+import com.example.taskmanagement.presentation.navigation.Screens
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.inject
 import org.koin.core.parameter.parametersOf
@@ -42,15 +43,15 @@ fun TeamFormScreen(
             handleSnackBarEvent(it, snackbarHostState)
         }
     }
-    TeamFormScreenContent(viewModel)
+    TeamFormScreenContent(viewModel, navHostController)
 }
 
 @Composable
 fun TeamFormScreenContent(
-    viewModel: TeamFormViewModel
+    viewModel: TeamFormViewModel, navHostController: NavHostController
 ) {
     val team by viewModel.teamView
-    val isUpdating by viewModel.isUpdating
+    val isUpdating = viewModel.isUpdating
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -61,7 +62,9 @@ fun TeamFormScreenContent(
         MembersList(viewModel)
         Button(
             onClick = {
-                viewModel.saveTeam()
+                viewModel.saveTeam {
+                    navHostController.navigate(Screens.Team.withArgs(it))
+                }
             },
             modifier = Modifier.align(Alignment.End)
         ) {
@@ -76,6 +79,7 @@ private fun TeamFormScreenHeader(
     viewModel: TeamFormViewModel
 ) {
     val titleValidationResult by viewModel.teamNameValidationResult
+
     TextFieldSetup(
         value = team.name,
         label = "Title",
@@ -97,10 +101,13 @@ private fun TeamFormScreenHeader(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MembersList(
     viewModel: TeamFormViewModel
 ) {
+    val isUpdating = viewModel.isUpdating
+    val team by viewModel.teamView
     val members = viewModel.members
     val suggestions by viewModel.memberSuggestions
     val showDialog by viewModel.membersDialog
@@ -120,11 +127,12 @@ private fun MembersList(
                 }
             }
         }
-        items(members) {
-            MemberComposable(user = it) {
-                IconButton(onClick = { viewModel.toggleMember(it) }) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = null)
-                }
+
+        items(team.members.map { it.user }) { user ->
+            MemberComposable(user = user) {
+                Checkbox(
+                    checked = !isUpdating || members.contains(user.id),
+                    onCheckedChange = { viewModel.toggleMember(user) })
             }
         }
     }
@@ -138,7 +146,7 @@ private fun MembersList(
                     viewModel.searchMembers(it)
             },
             onUserSelected = {
-                viewModel.toggleMember(it)
+                viewModel.addMember(it)
             }
         )
 
@@ -146,9 +154,8 @@ private fun MembersList(
 
 @Composable
 private fun OwnerTextField(viewModel: TeamFormViewModel, team: TeamView) {
-    val isUpdating by viewModel.isUpdating
+    val isUpdating = viewModel.isUpdating
     val ownerDialog by viewModel.ownerDialog
-    val members = viewModel.members
     if (!isUpdating) return
     TextField(
         value = team.owner.username,
@@ -166,7 +173,7 @@ private fun OwnerTextField(viewModel: TeamFormViewModel, team: TeamView) {
     )
     if (ownerDialog)
         MembersSuggestionsDialog(
-            suggestions = members,
+            suggestions = team.members.map { it.user },
             onDismiss = { viewModel.toggleOwnerDialog() },
             onSearchChanged = {},
             onUserSelected = {

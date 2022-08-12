@@ -8,6 +8,6 @@ data class Team(
     val name: String,
     val description: String? = null,
     val owner: String = "",
-    val members: List<ActiveUser>,
+    var members: List<ActiveUser>,
     val id: String = ""
 )
