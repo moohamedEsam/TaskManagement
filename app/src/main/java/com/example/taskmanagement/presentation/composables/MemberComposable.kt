@@ -25,7 +25,11 @@ fun MemberComposable(
         Spacer(modifier = Modifier.width(8.dp))
         Column {
             Text(text = user.username, style = MaterialTheme.typography.headlineMedium)
-            Text(text = user.email, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = user.email,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
         }
         Spacer(modifier = Modifier.weight(0.8f))
         action()

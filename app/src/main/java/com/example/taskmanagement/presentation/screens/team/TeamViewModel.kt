@@ -20,11 +20,8 @@ class TeamViewModel(
     private val teamId: String
 ) : ViewModel() {
     val team = mutableStateOf<Resource<TeamView>>(Resource.Initialized())
-    val showTagDialog = mutableStateOf(false)
     val taggedMembersList = mutableStateListOf<ActiveUserDto>()
-    val multiSelectMode = mutableStateOf(false)
-    val selectedMembers = mutableStateListOf<User>()
-    val membersTagsChanged = mutableStateOf(false)
+    val updateMade = mutableStateOf(false)
     private val snackBarChannel = Channel<SnackBarEvent>()
     val receiveChannel = snackBarChannel.receiveAsFlow()
 
@@ -47,26 +44,13 @@ class TeamViewModel(
         }
     }
 
-    fun toggleTagDialog() {
-        showTagDialog.value = !showTagDialog.value
-    }
-
-    fun assignTagToSelectedMembers(tag: Tag) = viewModelScope.launch {
-        taggedMembersList.removeIf { selectedMembers.contains(it.user) }
-        taggedMembersList.addAll(selectedMembers.map { ActiveUserDto(it, tag) })
-        membersTagsChanged.value = true
-    }
-
-    fun toggleSelectedMember(user: User) = viewModelScope.launch {
-        val exist = selectedMembers.remove(user)
-        if (!exist)
-            selectedMembers.add(user)
-    }
-
-    fun toggleMultiSelect() {
-        multiSelectMode.value = !multiSelectMode.value
-        if (!multiSelectMode.value)
-            selectedMembers.clear()
+    fun toggleMemberToTaggedMembers(user: User, tag: Tag) {
+        updateMade.value = true
+        val index = taggedMembersList.indexOfFirst { user.id == it.user.id }
+        if (taggedMembersList[index].tag == null)
+            taggedMembersList.add(ActiveUserDto(user, tag))
+        else
+            taggedMembersList[index] = ActiveUserDto(user, null)
     }
 
     fun saveTaggedMembers() {
