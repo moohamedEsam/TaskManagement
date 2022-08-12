@@ -208,7 +208,7 @@ class RemoteDataSourceImpl(private val client: HttpClient) :
 
     override suspend fun updateProject(project: Project): Resource<Project> {
         return try {
-            val response = client.put(Urls.getProjectUrl(project.id)) {
+            val response = client.put(Urls.PROJECTS) {
                 setBody(project)
                 contentType(ContentType.Application.Json)
             }

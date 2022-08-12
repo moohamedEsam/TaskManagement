@@ -1,151 +1,170 @@
 package com.example.taskmanagement.presentation.screens.forms.project
 
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUser
-import com.example.taskmanagement.domain.dataModels.project.Project
+import com.example.taskmanagement.domain.dataModels.Tag
+import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
+import com.example.taskmanagement.domain.dataModels.project.ProjectView
 import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.domain.dataModels.team.Team
+import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.Resource
-import com.example.taskmanagement.domain.dataModels.project.ProjectView
-import com.example.taskmanagement.domain.dataModels.team.TeamView
-import com.example.taskmanagement.domain.repository.IMainRepository
+import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
+import com.example.taskmanagement.domain.repository.MainRepository
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class ProjectFormViewModel(
-    private val repository: IMainRepository,
-    teamId: String,
-    projectId: String
+    private val repository: MainRepository,
+    private val teamId: String,
+    private val projectId: String
 ) : ViewModel() {
     val team = mutableStateOf<Resource<TeamView>>(Resource.Initialized())
     val teams = mutableStateOf<Resource<List<Team>>>(Resource.Initialized())
-    val isUpdating = mutableStateOf(false)
-    private val currentUser: MutableState<Resource<User>> = mutableStateOf(Resource.Initialized())
-    var projectView: MutableState<Resource<ProjectView>> = mutableStateOf(Resource.Initialized())
-    val project = mutableStateOf(
-        Project(
-            name = "",
-            description = "",
-            members = emptyList(),
-            team = team.value.data?.id ?: "",
-        )
-    )
-    val members: SnapshotStateMap<String, Pair<ActiveUser, Boolean>> = mutableStateMapOf()
+    val isUpdating = projectId.isNotBlank()
+    private var currentUserPermission: Resource<Tag> = Resource.Initialized()
+    var projectView = mutableStateOf(getInitializedProjectView())
+    private val snackbarChannel = Channel<SnackBarEvent>()
+    val receiveChannel = snackbarChannel.receiveAsFlow()
+    val members = mutableStateListOf<User>()
     val showTeamDialog = mutableStateOf(false)
-    val showTeamMembersDialog = mutableStateOf(false)
     val showOwnerDialog = mutableStateOf(false)
-    val userToUpdate: MutableState<ActiveUser?> = mutableStateOf(null)
+
 
     init {
         viewModelScope.launch {
-            if (projectId.isNotBlank()) {
-                projectView.value = repository.getProject(projectId)
-                isUpdating.value = true
-            } else {
-                if (teamId.isNotBlank())
-                    setTeam(teamId)
-                else
-                    setTeams()
-            }
-            projectView.value.onSuccess {
-                project.value =
-                    Project(it.name, it.owner.id, it.description, it.members, it.team, it.id)
-                it.members.forEach { activeUser ->
+            if (teamId.isNotBlank())
+                assignTeam(teamId)
 
-                }
+            if (isUpdating) {
+                getUserTag()
+                getProject()
             }
-
         }
     }
 
-    private fun setTeams() = viewModelScope.launch {
-        teams.value = repository.getUserTeams()
+    private suspend fun getProject() {
+        val result = repository.getProject(projectId)
+        result.onSuccess {
+            projectView.value = it
+            members.addAll(it.members.map { activeUser -> activeUser.user })
+        }
+        result.onError {
+            val event = SnackBarEvent(it ?: "") {
+                getProject()
+            }
+            snackbarChannel.send(event)
+        }
+
     }
 
-    fun setTeam(id: String) = viewModelScope.launch {
+    fun setTeams() {
+        viewModelScope.launch {
+            teams.value = repository.getUserTeams()
+            teams.value.onError {
+                val event = SnackBarEvent(it ?: "") { setTeams() }
+                snackbarChannel.send(event)
+            }
+        }
+    }
+
+    private fun getUserTag() {
+        viewModelScope.launch {
+            currentUserPermission = repository.getUserTag("projects", projectId)
+            currentUserPermission.onError {
+                val event = SnackBarEvent(it ?: "") { getUserTag() }
+                snackbarChannel.send(event)
+            }
+        }
+    }
+
+    fun setTeam(id: String) {
+        viewModelScope.launch {
+            assignTeam(id)
+        }
+    }
+
+    private suspend fun assignTeam(id: String) {
         team.value = repository.getUserTeam(id)
-        members.clear()
+        team.value.onError {
+            val event = SnackBarEvent(it ?: "") { setTeam(id) }
+            snackbarChannel.send(event)
+        }
         team.value.onSuccess {
-            it.members.forEach { activeUser ->
-
-
-            }
+            if (isUpdating)
+                team.value =
+                    Resource.Success(it.copy(members = it.members + ActiveUserDto(it.owner, null)))
+            members.clear()
         }
     }
 
-    fun getProjectOwner(): String {
-        if (!isUpdating.value) return ""
-        projectView.value.onSuccess {
-        }
-        return ""
-    }
+    private fun getInitializedProjectView() = ProjectView(
+        name = "",
+        owner = User("", "", null, null, ""),
+        description = "",
+        members = emptyList(),
+        tasks = emptyList(),
+        team = teamId,
+        id = projectId
+    )
 
-    fun addProjectMember(activeUser: ActiveUser) = viewModelScope.launch {
-
-        toggleTeamMemberDialog()
+    fun toggleProjectMember(user: User) = viewModelScope.launch {
+        val exist = members.remove(user)
+        if (!exist)
+            members.add(user)
     }
 
     fun setProjectName(name: String) {
-        project.value = project.value.copy(name = name)
+        projectView.value = projectView.value.copy(name = name)
     }
 
     fun setProjectDescription(description: String) {
-        project.value = project.value.copy(description = description)
+        projectView.value = projectView.value.copy(description = description)
     }
 
-    fun setProjectOwner(owner: String) {
-        projectView.value.onSuccess {
-            val user = if (owner == it.owner.username)
-                it.owner.id
+    fun setProjectOwner(owner: User) {
+        toggleProjectMember(projectView.value.owner)
+        projectView.value = projectView.value.copy(owner = owner)
+        members.remove(owner)
+    }
+
+    fun saveProject() {
+        viewModelScope.launch {
+            val project =
+                projectView.value.toProject()
+                    .copy(members = getSelectedMembers())
+            val result = if (isUpdating)
+                repository.updateProject(project)
             else
-
-
-            project.value = project.value
+                repository.saveProject(project)
+            result.onSuccess {
+                val event = SnackBarEvent("project has been saved", null) {}
+                snackbarChannel.send(event)
+            }
+            result.onError {
+                val event = SnackBarEvent(it ?: "") { saveProject() }
+                snackbarChannel.send(event)
+            }
         }
     }
 
-    fun saveProject(snackbarHostState: SnackbarHostState) = viewModelScope.launch {
-        project.value = project.value.copy(
-            team = team.value.data?.id ?: "",
-            members = members.filter { it.value.second }.map { (_, value) -> value.first }
-        )
-        val result = repository.saveProject(project.value)
-        if (result is Resource.Success) {
-            snackbarHostState.showSnackbar("Project saved")
-            resetProject()
-        } else if (result is Resource.Error)
-            snackbarHostState.showSnackbar(result.message ?: "Error")
-    }
-
-    fun resetProject() = viewModelScope.launch {
-        project.value = project.value.copy(
-            name = "",
-            description = "",
-            members = emptyList()
-        )
-    }
+    private fun getSelectedMembers() =
+        team.value.data?.members?.filter { members.contains(it.user) }
+            ?.map { it.toActiveUser() } ?: emptyList()
 
     fun toggleOwnerDialog() {
         showOwnerDialog.value = !showOwnerDialog.value
     }
 
     fun hasPermission(requiredPermission: Permission): Boolean {
-        return true
+        return currentUserPermission.data?.isUserAuthorized(requiredPermission) ?: true
     }
 
     fun toggleTeamDialog() {
         showTeamDialog.value = !showTeamDialog.value
     }
-
-    fun toggleTeamMemberDialog(user: ActiveUser? = null) {
-        userToUpdate.value = user
-        showTeamMembersDialog.value = !showTeamMembersDialog.value
-    }
-
 }

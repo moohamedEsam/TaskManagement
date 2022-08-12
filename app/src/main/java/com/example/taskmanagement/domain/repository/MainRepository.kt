@@ -30,6 +30,7 @@ interface MainRepository {
     suspend fun getProject(projectId: String): Resource<ProjectView>
     suspend fun getUserTeam(teamId: String): Resource<TeamView>
     suspend fun saveProject(project: Project): Resource<Project>
+    suspend fun updateProject(project: Project): Resource<Project>
 
     suspend fun getUserTeams(): Resource<List<Team>>
     suspend fun updateTeam(team: Team): Resource<TeamDto>

@@ -13,12 +13,12 @@ import com.example.taskmanagement.domain.dataModels.task.TaskItem
 import com.example.taskmanagement.domain.dataModels.task.TaskStatus
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.project.ProjectView
-import com.example.taskmanagement.domain.repository.IMainRepository
+import com.example.taskmanagement.domain.repository.MainRepository
 import kotlinx.coroutines.launch
 import java.util.*
 
 class TaskFormViewModel(
-    private val repository: IMainRepository,
+    private val repository: MainRepository,
     projectId: String
 ) : ViewModel() {
     val project = mutableStateOf<Resource<ProjectView>>(Resource.Initialized())

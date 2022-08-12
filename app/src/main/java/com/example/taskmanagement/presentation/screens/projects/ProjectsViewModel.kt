@@ -5,10 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.project.Project
 import com.example.taskmanagement.domain.dataModels.utils.Resource
-import com.example.taskmanagement.domain.repository.IMainRepository
+import com.example.taskmanagement.domain.repository.MainRepository
 import kotlinx.coroutines.launch
 
-class ProjectsViewModel(private val repository: IMainRepository) : ViewModel() {
+class ProjectsViewModel(private val repository: MainRepository) : ViewModel() {
     val projects = mutableStateOf<Resource<List<Project>>>(Resource.Initialized())
 
     init {

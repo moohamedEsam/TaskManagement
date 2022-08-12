@@ -264,7 +264,7 @@ private fun ProjectPicker(viewModel: TaskFormViewModel) {
     PickerController(
         value = showDialog,
         title = project.data?.name ?: "Project",
-        toggleValue = { showDialog = !showDialog }
+        onToggle = { showDialog = !showDialog }
     ) {
         ProjectDialog(viewModel = viewModel) {
             showDialog = false

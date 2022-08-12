@@ -3,20 +3,26 @@ package com.example.taskmanagement.presentation.screens.forms.project
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.taskmanagement.domain.dataModels.task.Permission
-import com.example.taskmanagement.domain.dataModels.project.Project
+import com.example.taskmanagement.domain.dataModels.project.ProjectView
 import com.example.taskmanagement.domain.dataModels.team.Team
+import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
+import com.example.taskmanagement.presentation.composables.MemberComposable
 import com.example.taskmanagement.presentation.customComponents.*
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.inject
 import org.koin.core.parameter.parametersOf
 
@@ -27,73 +33,35 @@ fun ProjectFormScreen(
     projectId: String
 ) {
     val viewModel: ProjectFormViewModel by inject { parametersOf(teamId, projectId) }
-    ProjectFormScreenContent(viewModel, snackbarHostState)
+    val channel = viewModel.receiveChannel
+    LaunchedEffect(key1 = Unit) {
+        channel.collectLatest {
+            handleSnackBarEvent(it, snackbarHostState)
+        }
+    }
+    ProjectFormScreenContent(viewModel)
 }
 
 @Composable
 fun ProjectFormScreenContent(
-    viewModel: ProjectFormViewModel,
-    snackbarHostState: SnackbarHostState
+    viewModel: ProjectFormViewModel
 ) {
-    val project by viewModel.project
-    val team by viewModel.team
-    Column {
+    val project by viewModel.projectView
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
         ProjectHeader(project, viewModel)
         ProjectMembersList(viewModel)
-        ProjectFooter(viewModel, snackbarHostState)
+        ProjectFooter(viewModel)
     }
-    HandleResourceChange(
-        resource = team,
-        onSuccess = { },
-        snackbarHostState = snackbarHostState,
-        onSnackbarClick = { })
-}
 
-@Composable
-fun ProjectMembersList(viewModel: ProjectFormViewModel) {
-    val members = viewModel.members
-    val teamMemberDialog by viewModel.showTeamMembersDialog
-    val memberToAdd by viewModel.userToUpdate
-    MembersList(
-        users = members.map { it.value.first },
-        isSelected = { userId ->
-            members[userId]?.second ?: false
-        },
-        onClick = { activeUser -> viewModel.toggleTeamMemberDialog(activeUser) }
-    )
-
-    if (teamMemberDialog && memberToAdd != null)
-        MemberDialog(
-            initialUser = memberToAdd!!,
-            onDismiss = { viewModel.toggleTeamMemberDialog() }
-        ) {
-            viewModel.addProjectMember(it)
-        }
-}
-
-@Composable
-private fun ColumnScope.ProjectFooter(
-    viewModel: ProjectFormViewModel,
-    snackbarHostState: SnackbarHostState
-) {
-    Row(modifier = Modifier.align(Alignment.End)) {
-        OutlinedButton(onClick = { viewModel.resetProject() }) {
-            Text(text = "Reset")
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(
-            onClick = {
-                viewModel.saveProject(snackbarHostState)
-            }
-        ) {
-            Text(text = "Save")
-        }
-    }
 }
 
 @Composable
 private fun ProjectHeader(
-    project: Project,
+    project: ProjectView,
     viewModel: ProjectFormViewModel
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -113,25 +81,32 @@ private fun ProjectHeader(
             leadingIcon = null,
             validationResult = ValidationResult(true)
         )
-        OwnerTextField(viewModel)
+        OwnerTextField(project, viewModel)
         TeamPicker(viewModel)
     }
 }
 
 @Composable
-private fun OwnerTextField(viewModel: ProjectFormViewModel) {
-    val isUpdating by viewModel.isUpdating
-    if (!isUpdating) return
+private fun OwnerTextField(project: ProjectView, viewModel: ProjectFormViewModel) {
+    if (!viewModel.isUpdating) return
+    val ownerDialog by viewModel.showOwnerDialog
+    val team by viewModel.team
     TextField(
-        value = viewModel.getProjectOwner(),
+        value = project.owner.username,
         label = { Text("Owner") },
-        onValueChange = { viewModel.setProjectOwner(it) },
+        onValueChange = { },
         modifier = Modifier
             .fillMaxWidth()
             .clickable { viewModel.toggleOwnerDialog() },
         enabled = false
     )
-
+    if (ownerDialog)
+        MembersSuggestionsDialog(
+            suggestions = (team.data?.members?.map { it.user } ?: emptyList()) - project.owner,
+            onDismiss = { viewModel.toggleOwnerDialog() },
+            onSearchChanged = {},
+            onUserSelected = { viewModel.setProjectOwner(it) }
+        )
 }
 
 @Composable
@@ -141,7 +116,7 @@ fun TeamPicker(viewModel: ProjectFormViewModel) {
     PickerController(
         value = showTeamDialog,
         title = team.data?.name ?: "team",
-        toggleValue = { viewModel.toggleTeamDialog() }
+        onToggle = { viewModel.toggleTeamDialog() }
     ) {
         TeamDialog(viewModel = viewModel) {
             viewModel.toggleTeamDialog()
@@ -153,19 +128,67 @@ fun TeamPicker(viewModel: ProjectFormViewModel) {
 @Composable
 fun TeamDialog(viewModel: ProjectFormViewModel, onDismiss: () -> Unit) {
     val teams by viewModel.teams
-    teams.onSuccess {
-        Dialog(onDismissRequest = onDismiss) {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(120.dp),
-                modifier = Modifier.background(MaterialTheme.colorScheme.surface),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(it) {
-                    TeamPickerDialogCard(viewModel = viewModel, team = it, onDismiss = onDismiss)
-                }
+    LaunchedEffect(key1 = teams) {
+        if (teams is Resource.Initialized)
+            viewModel.setTeams()
+    }
+    if (teams is Resource.Error || teams.data == null)
+        return
+
+    Dialog(onDismissRequest = onDismiss) {
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier
+                .clip(RoundedCornerShape(15.dp))
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(15.dp))
+        ) {
+            items(teams.data!!) {
+                TeamPickerDialogCard(viewModel = viewModel, team = it, onDismiss = onDismiss)
+            }
+        }
+
+    }
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ColumnScope.ProjectMembersList(viewModel: ProjectFormViewModel) {
+    val members = viewModel.members
+    val team by viewModel.team
+
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.weight(0.8f)
+    ) {
+        item {
+            Text(text = "Members", style = MaterialTheme.typography.headlineMedium)
+        }
+        items(team.data?.members?.map { it.user } ?: emptyList()) { user ->
+            MemberComposable(user = user) {
+                Checkbox(
+                    checked = members.contains(user),
+                    onCheckedChange = { viewModel.toggleProjectMember(user) }
+                )
             }
         }
     }
+}
+
+@Composable
+private fun ColumnScope.ProjectFooter(
+    viewModel: ProjectFormViewModel
+) {
+
+    Button(
+        onClick = {
+            viewModel.saveProject()
+        },
+        modifier = Modifier.align(Alignment.End)
+    ) {
+        Text(text = if (viewModel.isUpdating) "Update" else "Save")
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -178,6 +201,7 @@ fun TeamPickerDialogCard(
     OutlinedCard(
         modifier = Modifier
             .padding(8.dp)
+            .fillMaxWidth()
             .clickable {
                 viewModel.setTeam(team.id)
                 onDismiss()

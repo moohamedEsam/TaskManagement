@@ -7,13 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.Token
-import com.example.taskmanagement.domain.repository.IMainRepository
+import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.vallidators.Validator
 import com.example.taskmanagement.presentation.koin.saveToken
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
-    private val repository: IMainRepository,
+    private val repository: MainRepository,
     private val validator: Validator
 ) : ViewModel() {
     val user = mutableStateOf<Resource<User>>(Resource.Initialized())

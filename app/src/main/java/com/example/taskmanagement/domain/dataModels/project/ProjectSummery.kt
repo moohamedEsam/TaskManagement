@@ -8,6 +8,7 @@ data class ProjectSummery(
     val name: String,
     val id: String,
     val members: List<User>,
+    val owner:User,
     val completedTasks: Int,
     val inProgressTasks: Int,
     val createdTasks: Int
