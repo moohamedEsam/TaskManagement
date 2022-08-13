@@ -12,6 +12,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.presentation.screens.forms.project.ProjectFormScreen
 import com.example.taskmanagement.presentation.screens.forms.tags.TagScreen
 import com.example.taskmanagement.presentation.screens.forms.task.TaskFormScreen
@@ -124,10 +125,13 @@ fun Navigation(
             )
         }
 
-        composable("${Screens.TagForm.route}/{owner}") {
-            val owner = it.arguments?.getString("owner", "  ") ?: "   "
+        composable("${Screens.TagForm.route}/{owner}/{route}") {
+            val owner = it.arguments?.getString("owner") ?: "   "
+            val parentRoute = it.arguments?.getString("route") ?: "   "
+
             TagScreen(
                 owner = owner,
+                parentRoute = ParentRoute.fromString(parentRoute),
                 navHostController = navHostController,
                 snackbarHostState = snackbarHostState
             )

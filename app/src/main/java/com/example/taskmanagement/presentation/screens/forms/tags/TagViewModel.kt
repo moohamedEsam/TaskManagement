@@ -5,8 +5,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.Tag
-import com.example.taskmanagement.domain.dataModels.TagScope
 import com.example.taskmanagement.domain.dataModels.task.Permission
+import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.repository.MainRepository
 import kotlinx.coroutines.channels.Channel
@@ -14,7 +14,11 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.*
 
-class TagViewModel(private val repository: MainRepository, owner: String) : ViewModel() {
+class TagViewModel(
+    private val repository: MainRepository,
+    owner: String,
+    private val parentRoute: ParentRoute
+) : ViewModel() {
     private val snackBarChannel = Channel<SnackBarEvent>()
     val receiveChannel = snackBarChannel.receiveAsFlow()
     val tag =
@@ -25,7 +29,6 @@ class TagViewModel(private val repository: MainRepository, owner: String) : View
                 color = Color.Transparent.run {
                     listOf(red, green, blue)
                 },
-                scope = TagScope.Team,
                 owner = owner,
                 id = UUID.randomUUID().toString()
             )
@@ -49,7 +52,7 @@ class TagViewModel(private val repository: MainRepository, owner: String) : View
 
     fun saveTag() {
         viewModelScope.launch {
-            val result = repository.createTag(tag.value)
+            val result = repository.createTag(tag.value, parentRoute)
             result.onSuccess {
                 val event = SnackBarEvent("tag has been created", null) {}
                 snackBarChannel.send(event)

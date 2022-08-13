@@ -2,6 +2,7 @@ package com.example.taskmanagement.domain.utils
 
 import com.example.taskmanagement.domain.dataModels.task.Priority
 import com.example.taskmanagement.domain.dataModels.task.TaskStatus
+import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 
 object Urls {
     private const val BASE_URL = "http://192.168.1.6:8080"
@@ -12,10 +13,10 @@ object Urls {
     const val TASKS = "$BASE_URL/tasks"
     const val COMMENTS = "$BASE_URL/comments"
     const val TEAMS = "$BASE_URL/teams"
-    const val TAGS = "$BASE_URL/tags"
     const val PROJECTS = "$BASE_URL/projects"
-
     fun searchMembers(query: String) = "$PROFILE/search/$query"
+
+    fun getTagsUrl(parentRoute: ParentRoute) = "$BASE_URL/tags/$parentRoute"
 
     fun getTaskUrl(id: String) = "$BASE_URL/tasks/$id"
     fun getTaskCommentsUrl(id: String) = "$BASE_URL/comments/$id"
@@ -25,7 +26,7 @@ object Urls {
     fun getTasksByPriorityUrl(priority: Priority) = "$BASE_URL/tasks?priority=$priority"
 
     fun getTeamUrl(id: String) = "$BASE_URL/teams/$id"
-    fun assignTag(id: String) = "${getTeamUrl(id)}/assignTag"
+    fun assignTag(id: String, parentRoute: ParentRoute) = "$BASE_URL/$parentRoute/$id/assignTag"
     fun getProjectUrl(id: String) = "$BASE_URL/projects/$id"
 
     fun getUserImage(id: String?) = if (id != null) "$BASE_URL/user/Images/$id" else null

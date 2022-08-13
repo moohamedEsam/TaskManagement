@@ -16,7 +16,7 @@ sealed class Screens(val route: String) {
     object TeamForm : Screens("teamForm")
     object TagForm : Screens("tagForm")
 
-    fun withArgs(vararg path: String) = buildString {
+    fun withArgs(vararg path: Any) = buildString {
         append(route)
         path.forEach {
             append("/$it")

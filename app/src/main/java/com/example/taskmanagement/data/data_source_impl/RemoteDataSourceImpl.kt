@@ -260,9 +260,9 @@ class RemoteDataSourceImpl(private val client: HttpClient) :
         }
     }
 
-    override suspend fun createTag(tag: Tag): Resource<Tag> {
+    override suspend fun createTag(tag: Tag, parentRoute: ParentRoute): Resource<Tag> {
         return try {
-            val response = client.post(Urls.TAGS) {
+            val response = client.post(Urls.getTagsUrl(parentRoute)) {
                 setBody(tag)
                 contentType(ContentType.Application.Json)
             }
@@ -273,11 +273,12 @@ class RemoteDataSourceImpl(private val client: HttpClient) :
     }
 
     override suspend fun assignTag(
-        teamId: String,
+        id: String,
+        parentRoute: ParentRoute,
         members: List<ActiveUser>
     ): Resource<List<ActiveUser>> {
         return try {
-            val response = client.put(Urls.assignTag(teamId)) {
+            val response = client.put(Urls.assignTag(id, parentRoute)) {
                 setBody(members)
                 contentType(ContentType.Application.Json)
             }

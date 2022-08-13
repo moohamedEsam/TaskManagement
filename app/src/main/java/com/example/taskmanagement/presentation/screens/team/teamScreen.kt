@@ -1,28 +1,16 @@
 package com.example.taskmanagement.presentation.screens.team
 
-import android.content.res.Configuration
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.taskmanagement.domain.dataModels.project.ProjectSummery
 import com.example.taskmanagement.domain.dataModels.team.TeamView
-import com.example.taskmanagement.presentation.customComponents.ElevatedCenteredCard
-import com.example.taskmanagement.presentation.customComponents.HandleResourceChange
-import com.example.taskmanagement.presentation.customComponents.OutlinedCenteredCard
+import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
 import com.example.taskmanagement.presentation.navigation.Screens
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -91,11 +79,12 @@ fun TeamScreenContent(
                     viewModel = viewModel,
                     team = team
                 )
-                1 -> MemberPage(viewModel = viewModel)
-                2 -> TagPage(
-                    team = team,
-                    navHostController = navHostController
-                )
+                1 -> TeamMembersPage(viewModel = viewModel)
+                2 -> TagPage(tags = team.tags) {
+                    navHostController.navigate(
+                        Screens.TagForm.withArgs(team.id, ParentRoute.Teams)
+                    )
+                }
                 else -> Box {}
             }
         }

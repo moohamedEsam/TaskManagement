@@ -81,7 +81,7 @@ val viewModelModule = module {
     viewModel { ProjectsViewModel(get()) }
     viewModel { TeamsViewModel(get()) }
     viewModel { params -> ProjectViewModel(get(), params[0]) }
-    viewModel { params -> TagViewModel(get(), params[0]) }
+    viewModel { params -> TagViewModel(get(), params[0], params[1]) }
     viewModel { params -> TeamViewModel(get(), params[0]) }
     viewModel { params -> TaskFormViewModel(get(), params[0]) }
     viewModel { params -> ProjectFormViewModel(get(), params[0], params[1]) }

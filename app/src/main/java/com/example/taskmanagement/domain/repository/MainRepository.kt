@@ -35,7 +35,12 @@ interface MainRepository {
     suspend fun getUserTeams(): Resource<List<Team>>
     suspend fun updateTeam(team: Team): Resource<TeamDto>
     suspend fun createTeam(team: Team): Resource<TeamDto>
-    suspend fun createTag(tag: Tag): Resource<Tag>
-    suspend fun assignTag(teamId: String, members: List<ActiveUser>): Resource<List<ActiveUser>>
+    suspend fun createTag(tag: Tag, parentRoute: ParentRoute): Resource<Tag>
+    suspend fun assignTag(
+        id: String,
+        parentRoute: ParentRoute,
+        members: List<ActiveUser>
+    ): Resource<List<ActiveUser>>
+
     suspend fun getUserTag(parentRoute: String, id: String): Resource<Tag>
 }

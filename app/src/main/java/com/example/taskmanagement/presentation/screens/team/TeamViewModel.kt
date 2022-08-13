@@ -8,6 +8,7 @@ import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.dataModels.user.User
+import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.repository.MainRepository
@@ -29,7 +30,7 @@ class TeamViewModel(
         getTeam()
     }
 
-    fun getTeam() {
+    private fun getTeam() {
         viewModelScope.launch {
             team.value = repository.getUserTeam(teamId)
             if (team.value is Resource.Error) {
@@ -47,15 +48,18 @@ class TeamViewModel(
     fun toggleMemberToTaggedMembers(user: User, tag: Tag) {
         updateMade.value = true
         val index = taggedMembersList.indexOfFirst { user.id == it.user.id }
-        if (taggedMembersList[index].tag == null)
-            taggedMembersList.add(ActiveUserDto(user, tag))
+        if (taggedMembersList[index].tag?.id != tag.id)
+            taggedMembersList[index] = ActiveUserDto(user, tag)
         else
             taggedMembersList[index] = ActiveUserDto(user, null)
     }
 
     fun saveTaggedMembers() {
         viewModelScope.launch {
-            val result = repository.assignTag(teamId, taggedMembersList.map { it.toActiveUser() })
+            val result = repository.assignTag(
+                teamId,
+                ParentRoute.Teams,
+                taggedMembersList.map { it.toActiveUser() })
             result.onError {
                 val event = SnackBarEvent(it ?: "") {
                     saveTaggedMembers()

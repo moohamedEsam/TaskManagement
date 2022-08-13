@@ -25,8 +25,7 @@ import com.example.taskmanagement.presentation.composables.MemberComposable
 import com.example.taskmanagement.presentation.navigation.Screens
 
 @Composable
-fun TagPage(team: TeamView, navHostController: NavHostController) {
-    val tags by team::tags
+fun TagPage(tags: List<Tag>, onAddClick: () -> Unit) {
     Box {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -37,7 +36,7 @@ fun TagPage(team: TeamView, navHostController: NavHostController) {
             }
         }
         FloatingActionButton(
-            onClick = { navHostController.navigate(Screens.TagForm.withArgs(team.id)) },
+            onClick = onAddClick,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(8.dp)

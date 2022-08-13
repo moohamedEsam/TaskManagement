@@ -109,7 +109,8 @@ class ProjectFormViewModel(
         members = emptyList(),
         tasks = emptyList(),
         team = teamId,
-        id = projectId
+        id = projectId,
+        tags = emptyList()
     )
 
     fun toggleProjectMember(user: User) = viewModelScope.launch {

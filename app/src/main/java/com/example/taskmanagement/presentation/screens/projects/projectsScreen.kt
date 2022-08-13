@@ -22,7 +22,7 @@ import com.example.taskmanagement.presentation.navigation.Screens
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.inject
 
-const val ratio = 4
+private const val ratio = 4
 
 @Composable
 fun ProjectsScreen(

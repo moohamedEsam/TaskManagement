@@ -33,15 +33,16 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
         return remote.updateTeam(team)
     }
 
-    override suspend fun createTag(tag: Tag): Resource<Tag> {
-        return remote.createTag(tag)
+    override suspend fun createTag(tag: Tag, parentRoute: ParentRoute): Resource<Tag> {
+        return remote.createTag(tag, parentRoute)
     }
 
     override suspend fun assignTag(
-        teamId: String,
+        id: String,
+        parentRoute: ParentRoute,
         members: List<ActiveUser>
     ): Resource<List<ActiveUser>> {
-        return remote.assignTag(teamId, members)
+        return remote.assignTag(id, parentRoute, members)
     }
 
     override suspend fun getUserTag(parentRoute: String, id: String): Resource<Tag> {

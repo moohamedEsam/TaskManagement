@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.task.Permission
+import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.presentation.composables.TagComposable
 import com.example.taskmanagement.presentation.customComponents.PermissionItem
 import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
@@ -30,10 +31,11 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun TagScreen(
     owner: String,
+    parentRoute: ParentRoute,
     navHostController: NavHostController,
     snackbarHostState: SnackbarHostState
 ) {
-    val viewModel: TagViewModel by inject { parametersOf(owner) }
+    val viewModel: TagViewModel by inject { parametersOf(owner, parentRoute) }
     val channel = viewModel.receiveChannel
     LaunchedEffect(key1 = Unit) {
         channel.collectLatest {
