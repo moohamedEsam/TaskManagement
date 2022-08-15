@@ -66,14 +66,13 @@ fun Navigation(
         }
 
         composable("${Screens.Project.route}/{projectId}") {
-            val id = it.arguments?.getString("projectId")
-            if (id != null) {
-                ProjectScreen(
-                    navHostController = navHostController,
-                    snackbarHostState = snackbarHostState,
-                    projectId = id
-                )
-            }
+            val id = it.arguments?.getString("projectId") ?: "    "
+            ProjectScreen(
+                navHostController = navHostController,
+                snackbarHostState = snackbarHostState,
+                projectId = id
+            )
+
         }
 
         composable(Screens.Teams.route) {
@@ -99,11 +98,13 @@ fun Navigation(
             )
         }
 
-        composable(route = "${Screens.TaskForm.route}/{projectId}") {
+        composable(route = "${Screens.TaskForm.route}/{projectId}/{taskId}") {
             val projectId = it.arguments?.getString("projectId", "  ") ?: "  "
+            val taskId = it.arguments?.getString("taskId", "  ") ?: "  "
             TaskFormScreen(
                 snackbarHostState = snackbarHostState,
-                projectId = projectId
+                projectId = projectId,
+                taskId = taskId
             )
         }
         composable("${Screens.ProjectForm.route}/{teamId}/{projectId}") {

@@ -1,13 +1,11 @@
 package com.example.taskmanagement.presentation.screens.forms.team
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -23,6 +21,7 @@ import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.presentation.composables.MemberComposable
 import com.example.taskmanagement.presentation.customComponents.MembersSuggestionsDialog
+import com.example.taskmanagement.presentation.customComponents.OwnerTextField
 import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
 import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
 import com.example.taskmanagement.presentation.navigation.Screens
@@ -89,7 +88,7 @@ private fun TeamFormScreenHeader(
         onValueChange = { viewModel.setName(it) }
     )
 
-    OwnerTextField(viewModel, team)
+    TeamOwnerTextField(viewModel, team)
 
     TextFieldSetup(
         value = team.description ?: "",
@@ -153,32 +152,15 @@ private fun MembersList(
 }
 
 @Composable
-private fun OwnerTextField(viewModel: TeamFormViewModel, team: TeamView) {
-    val isUpdating = viewModel.isUpdating
-    val ownerDialog by viewModel.ownerDialog
-    if (!isUpdating) return
-    TextField(
-        value = team.owner.username,
-        label = { Text("Owner") },
-        enabled = false,
-        leadingIcon = null,
-        onValueChange = { },
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                if (viewModel.hasPermission(Permission.EditOwner))
-                    viewModel.toggleOwnerDialog()
-
-            }
-    )
-    if (ownerDialog)
+private fun TeamOwnerTextField(viewModel: TeamFormViewModel, team: TeamView) {
+    val showField = viewModel.isUpdating && viewModel.hasPermission(Permission.EditOwner)
+    if (!showField) return
+    OwnerTextField(textFieldValue = team.owner.username) { onDismiss ->
         MembersSuggestionsDialog(
             suggestions = team.members.map { it.user },
-            onDismiss = { viewModel.toggleOwnerDialog() },
+            onDismiss = onDismiss,
             onSearchChanged = {},
-            onUserSelected = {
-                viewModel.setOwner(it)
-                viewModel.toggleOwnerDialog()
-            }
+            onUserSelected = { viewModel.setOwner(it) }
         )
+    }
 }

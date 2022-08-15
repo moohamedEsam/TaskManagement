@@ -1,130 +1,189 @@
 package com.example.taskmanagement.presentation.screens.forms.task
 
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.taskmanagement.domain.dataModels.Tag
+import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
 import com.example.taskmanagement.domain.dataModels.project.Project
-import com.example.taskmanagement.domain.dataModels.task.Priority
-import com.example.taskmanagement.domain.dataModels.task.Task
-import com.example.taskmanagement.domain.dataModels.task.TaskItem
-import com.example.taskmanagement.domain.dataModels.task.TaskStatus
-import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.project.ProjectView
+import com.example.taskmanagement.domain.dataModels.task.*
+import com.example.taskmanagement.domain.dataModels.user.User
+import com.example.taskmanagement.domain.dataModels.utils.Resource
+import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.repository.MainRepository
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.*
 
 class TaskFormViewModel(
     private val repository: MainRepository,
-    projectId: String
+    projectId: String,
+    private val taskId: String
 ) : ViewModel() {
     val project = mutableStateOf<Resource<ProjectView>>(Resource.Initialized())
     val projects = mutableStateOf<Resource<List<Project>>>(Resource.Initialized())
-    val task = mutableStateOf(
-        Task(
-            title = "",
-            owner = "",
-            description = "",
-            assigned = mutableListOf(),
-            project = project.value.data?.id ?: "",
-            status = TaskStatus.Pending,
-            taskItems = mutableListOf(),
-            comments = mutableListOf(),
-            estimatedTime = null,
-            priority = Priority.Low,
-            completeDate = null,
-            finishDate = null,
-            id = ""
-        )
-    )
-
+    val isUpdating = taskId.isNotBlank()
+    private var currentUserTag: Tag? = null
+    private val snackBarChannel = Channel<SnackBarEvent>()
+    val receiveChannel = snackBarChannel.receiveAsFlow()
+    val assigned = mutableStateListOf<String>()
+    val taskView = mutableStateOf(getInitializedTaskView())
     val taskItems = mutableStateListOf<TaskItem>()
-    val assigned = mutableStateMapOf<String, Boolean>()
 
     init {
-        if (projectId.isNotBlank()) {
-            setProject(projectId)
-        } else {
-            getProjects()
+        viewModelScope.launch {
+            if (projectId.isNotBlank())
+                assignProject(projectId)
+            if (isUpdating) {
+                setTask(taskId)
+            }
         }
     }
 
-    private fun getProjects() = viewModelScope.launch {
-        projects.value = Resource.Loading()
-        projects.value = repository.getUserProjects()
+    private suspend fun setTask(taskId: String) {
+        val result = repository.getTask(taskId)
+        result.onSuccess {
+            taskView.value = it
+            assigned.addAll(it.assigned.map { activeUser -> activeUser.user.id })
+            taskItems.addAll(it.taskItems)
+        }
+
+        result.onError {
+            val event = SnackBarEvent(it ?: "") { setTask(taskId) }
+            snackBarChannel.send(event)
+        }
+    }
+
+    private fun getCurrentUserTag() {
+        viewModelScope.launch {
+            val result = repository.getUserTag("tasks", taskId)
+            result.onSuccess {
+                currentUserTag = it
+            }
+            result.onError {
+                val event = SnackBarEvent(it ?: "") { getCurrentUserTag() }
+                snackBarChannel.send(event)
+            }
+        }
+    }
+
+    fun getProjects() {
+        viewModelScope.launch {
+            projects.value = repository.getUserProjects()
+            projects.value.onError {
+                val event = SnackBarEvent(it ?: "") { getProjects() }
+                snackBarChannel.send(event)
+            }
+        }
     }
 
     fun setProject(id: String) {
         viewModelScope.launch {
-            project.value = repository.getProject(id)
-            assigned.clear()
+            assignProject(id)
         }
     }
-    fun setTaskTitle(title: String) = viewModelScope.launch {
-        task.value = task.value.copy(title = title)
-    }
 
-    fun setTaskDescription(description: String) = viewModelScope.launch {
-        task.value = task.value.copy(description = description)
-    }
-
-    fun addTaskAssigned(userId: String) = viewModelScope.launch {
-        assigned[userId] = assigned.getOrDefault(userId, false).not()
-    }
-
-    fun setTaskEstimatedTime(estimatedTime: Int?) = viewModelScope.launch {
-        task.value = task.value.copy(estimatedTime = estimatedTime)
-    }
-
-    fun setTaskPriority(priority: Priority) = viewModelScope.launch {
-        task.value = task.value.copy(priority = priority)
-    }
-
-    fun setTaskFinishDate(finishDate: Date) = viewModelScope.launch {
-        task.value = task.value.copy(finishDate = finishDate)
-    }
-
-
-    fun addTaskItem(value: String) = viewModelScope.launch {
-        taskItems.add(TaskItem(value, false))
-    }
-
-    fun resetTask() = viewModelScope.launch {
-        task.value = Task(
-            title = "",
-            owner = "",
-            description = "",
-            assigned = mutableListOf(),
-            project = project.value.data?.id ?: "",
-            status = TaskStatus.Pending,
-            taskItems = mutableListOf(),
-            comments = mutableListOf(),
-            estimatedTime = null,
-            priority = Priority.Low,
-            completeDate = null,
-            finishDate = null,
-            id = ""
-        )
-        taskItems.clear()
+    private suspend fun assignProject(id: String) {
+        project.value = repository.getProject(id)
+        project.value.onSuccess {
+            project.value =
+                Resource.Success(it.copy(members = it.members + ActiveUserDto(it.owner, null)))
+            taskView.value = taskView.value.copy(project = it.id)
+        }
+        project.value.onError {
+            val event = SnackBarEvent(it ?: "") { setProject(id) }
+            snackBarChannel.send(event)
+        }
         assigned.clear()
     }
 
-    fun saveTask(snackbarHostState: SnackbarHostState) = viewModelScope.launch {
-        task.value = task.value.copy(
-            assigned = emptyList(),
-            taskItems = taskItems.toMutableList(),
-            project = project.value.data?.id ?: ""
-        )
-        when (val saveTask = repository.saveTask(task.value)) {
-            is Resource.Success -> {
-                snackbarHostState.showSnackbar("task saved")
-                resetTask()
+    fun setTaskTitle(title: String) = viewModelScope.launch {
+        taskView.value = taskView.value.copy(title = title)
+    }
+
+    fun setTaskDescription(description: String) = viewModelScope.launch {
+        taskView.value = taskView.value.copy(description = description)
+    }
+
+    fun toggleTaskAssigned(userId: String) = viewModelScope.launch {
+        val exist = assigned.remove(userId)
+        if (!exist)
+            assigned.add(userId)
+    }
+
+    fun setTaskEstimatedTime(estimatedTime: Int?) = viewModelScope.launch {
+        taskView.value = taskView.value.copy(estimatedTime = estimatedTime)
+    }
+
+    fun setTaskPriority(priority: Priority) = viewModelScope.launch {
+        taskView.value = taskView.value.copy(priority = priority)
+    }
+
+    fun setTaskFinishDate(finishDate: Date) = viewModelScope.launch {
+        taskView.value = taskView.value.copy(finishDate = finishDate)
+    }
+
+    fun addTaskItem(value: TaskItem) = viewModelScope.launch {
+        taskItems.add(value)
+    }
+
+    fun removeTaskItem(value: TaskItem) = viewModelScope.launch {
+        taskItems.remove(value)
+    }
+
+
+    fun saveTask() {
+        viewModelScope.launch {
+            val task = taskView.value.toTask().copy(
+                taskItems = taskItems,
+                assigned = getAssignedMembers()
+            )
+            val result = if (isUpdating)
+                repository.updateTask(task)
+            else
+                repository.saveTask(task)
+            result.onSuccess {
+                val event = SnackBarEvent("task have been saved", null) {}
+                snackBarChannel.send(event)
             }
-            is Resource.Error -> snackbarHostState.showSnackbar(saveTask.message ?: "")
-            else -> Unit
+
+            result.onError {
+                val event = SnackBarEvent(it ?: "") { saveTask() }
+                snackBarChannel.send(event)
+            }
         }
     }
+
+    private fun getAssignedMembers() =
+        project.value.data?.members?.filter { assigned.contains(it.user.id) }
+            ?.map { it.toActiveUser() } ?: emptyList()
+
+    private fun getInitializedTaskView() = TaskView(
+        id = "",
+        title = "",
+        owner = User("", "", null, null, ""),
+        description = null,
+        assigned = emptyList(),
+        status = TaskStatus.Pending,
+        estimatedTime = null,
+        priority = Priority.Medium,
+        taskItems = emptyList(),
+        comments = emptyList(),
+        completeDate = null,
+        finishDate = null,
+        project = ""
+    )
+
+    fun hasPermission(requiredPermission: Permission): Boolean {
+        return currentUserTag?.isUserAuthorized(requiredPermission) ?: true
+    }
+
+    fun setOwner(user: User) {
+        taskView.value = taskView.value.copy(owner = user)
+    }
+
 }

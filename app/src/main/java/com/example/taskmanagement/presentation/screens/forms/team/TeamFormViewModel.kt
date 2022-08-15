@@ -33,7 +33,6 @@ class TeamFormViewModel(
     private var currentUserTag: Resource<Tag> = Resource.Initialized()
     val isUpdating = teamId.isNotBlank()
     val membersDialog = mutableStateOf(false)
-    val ownerDialog = mutableStateOf(false)
 
     val memberSuggestions = mutableStateOf(emptyList<User>())
     val teamNameValidationResult = mutableStateOf(ValidationResult(true))
@@ -60,10 +59,6 @@ class TeamFormViewModel(
 
     fun toggleMembersDialog() {
         membersDialog.value = !membersDialog.value
-    }
-
-    fun toggleOwnerDialog() {
-        ownerDialog.value = !ownerDialog.value
     }
 
 

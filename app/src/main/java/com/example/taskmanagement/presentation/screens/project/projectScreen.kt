@@ -40,8 +40,8 @@ fun ProjectScreen(
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun ProjectScreenContent(viewModel: ProjectViewModel, navHostController: NavHostController) {
-    val pages = listOf("Tasks", "Members", "Tags", "Options")
     val project by viewModel.project
+    val pages = listOf("Tasks", "Members", "Tags", "Options")
     val pagerState = rememberPagerState()
     val coroutine = rememberCoroutineScope()
     Column {
@@ -66,7 +66,7 @@ fun ProjectScreenContent(viewModel: ProjectViewModel, navHostController: NavHost
         }
         HorizontalPager(count = pages.size, state = pagerState) { page ->
             when (page) {
-                0 -> TasksPage()
+                0 -> TasksPage(navHostController, viewModel)
                 1 -> ProjectMembersPage(viewModel)
                 2 -> TagPage(tags = project.data?.tags ?: emptyList()) {
                     navHostController.navigate(

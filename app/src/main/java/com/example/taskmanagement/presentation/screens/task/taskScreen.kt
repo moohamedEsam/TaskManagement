@@ -143,7 +143,7 @@ private fun ActionRow(navHostController: NavHostController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskItemCard(taskItem: TaskItem) {
+private fun TaskItemCard(taskItem: TaskItem) {
     OutlinedCard(modifier = Modifier.padding(vertical = 8.dp)) {
         Row(
             modifier = Modifier

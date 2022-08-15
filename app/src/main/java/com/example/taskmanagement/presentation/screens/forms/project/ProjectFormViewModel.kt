@@ -32,7 +32,6 @@ class ProjectFormViewModel(
     val receiveChannel = snackbarChannel.receiveAsFlow()
     val members = mutableStateListOf<User>()
     val showTeamDialog = mutableStateOf(false)
-    val showOwnerDialog = mutableStateOf(false)
 
 
     init {
@@ -157,9 +156,6 @@ class ProjectFormViewModel(
         team.value.data?.members?.filter { members.contains(it.user) }
             ?.map { it.toActiveUser() } ?: emptyList()
 
-    fun toggleOwnerDialog() {
-        showOwnerDialog.value = !showOwnerDialog.value
-    }
 
     fun hasPermission(requiredPermission: Permission): Boolean {
         return currentUserPermission.data?.isUserAuthorized(requiredPermission) ?: true

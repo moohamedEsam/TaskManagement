@@ -5,7 +5,7 @@ import com.example.taskmanagement.domain.dataModels.task.TaskStatus
 import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 
 object Urls {
-    private const val BASE_URL = "http://192.168.1.6:8080"
+    private const val BASE_URL = "http://192.168.1.7:8080"
     const val REFRESH_TOKEN = "$BASE_URL/auth/refresh"
     const val PROFILE = "$BASE_URL/user"
     const val SIGN_IN = "$BASE_URL/user/signIn"

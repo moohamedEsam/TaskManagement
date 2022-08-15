@@ -1,6 +1,7 @@
 package com.example.taskmanagement.domain.dataModels.task
 
 import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUser
+import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
 import com.example.taskmanagement.domain.dataModels.task.Comment
 import com.example.taskmanagement.domain.dataModels.task.Priority
 import com.example.taskmanagement.domain.dataModels.task.TaskItem
@@ -12,18 +13,35 @@ import java.util.*
 
 @Serializable
 data class TaskView(
-    val publicId: String,
+    val id: String,
+    val project: String,
     val title: String,
     val owner: User,
     val description: String?,
-    val assigned: List<ActiveUser>?,
+    val assigned: List<ActiveUserDto>,
     val status: TaskStatus,
     val estimatedTime: Int?,
     val priority: Priority,
-    val taskItems: List<TaskItem>?,
-    val comments: List<Comment>?,
+    val taskItems: List<TaskItem>,
+    val comments: List<Comment>,
     @Serializable(with = DateSerializer::class)
     val completeDate: Date?,
     @Serializable(with = DateSerializer::class)
     val finishDate: Date?
-)
+) {
+    fun toTask() = Task(
+        title = title,
+        owner = owner.id,
+        description = description,
+        assigned = assigned.map { it.toActiveUser() },
+        project = project,
+        status = status,
+        taskItems = taskItems,
+        comments = comments,
+        estimatedTime = estimatedTime,
+        priority = priority,
+        completeDate = completeDate,
+        finishDate = finishDate,
+        id = id
+    )
+}

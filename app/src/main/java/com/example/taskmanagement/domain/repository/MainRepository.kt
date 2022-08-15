@@ -22,6 +22,7 @@ interface MainRepository {
     suspend fun getUserTasks(): Resource<List<Task>>
     suspend fun getTask(taskId: String): Resource<TaskView>
     suspend fun saveTask(task: Task): Resource<Task>
+    suspend fun updateTask(task: Task): Resource<Task>
 
     //suspend fun getUser(context: Context): Resource<User>
     suspend fun getUserProfile(): Resource<User>

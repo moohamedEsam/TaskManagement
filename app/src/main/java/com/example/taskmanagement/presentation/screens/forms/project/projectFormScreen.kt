@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.domain.dataModels.project.ProjectView
 import com.example.taskmanagement.domain.dataModels.team.Team
@@ -81,32 +80,24 @@ private fun ProjectHeader(
             leadingIcon = null,
             validationResult = ValidationResult(true)
         )
-        OwnerTextField(project, viewModel)
+        ProjectOwnerTextField(project, viewModel)
         TeamPicker(viewModel)
     }
 }
 
 @Composable
-private fun OwnerTextField(project: ProjectView, viewModel: ProjectFormViewModel) {
-    if (!viewModel.isUpdating) return
-    val ownerDialog by viewModel.showOwnerDialog
+private fun ProjectOwnerTextField(project: ProjectView, viewModel: ProjectFormViewModel) {
+    val showField = viewModel.isUpdating && viewModel.hasPermission(Permission.EditOwner)
+    if (!showField) return
     val team by viewModel.team
-    TextField(
-        value = project.owner.username,
-        label = { Text("Owner") },
-        onValueChange = { },
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { viewModel.toggleOwnerDialog() },
-        enabled = false
-    )
-    if (ownerDialog)
+    OwnerTextField(textFieldValue = project.owner.username) { onDismiss ->
         MembersSuggestionsDialog(
             suggestions = (team.data?.members?.map { it.user } ?: emptyList()) - project.owner,
-            onDismiss = { viewModel.toggleOwnerDialog() },
+            onDismiss = onDismiss,
             onSearchChanged = {},
             onUserSelected = { viewModel.setProjectOwner(it) }
         )
+    }
 }
 
 @Composable
@@ -135,7 +126,7 @@ fun TeamDialog(viewModel: ProjectFormViewModel, onDismiss: () -> Unit) {
     if (teams is Resource.Error || teams.data == null)
         return
 
-    Dialog(onDismissRequest = onDismiss) {
+    CardDialog(onDismiss = onDismiss) {
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier

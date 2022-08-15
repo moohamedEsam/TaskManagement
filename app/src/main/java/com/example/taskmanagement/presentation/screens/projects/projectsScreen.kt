@@ -104,11 +104,10 @@ fun ProjectsScreenContent(
 @Composable
 fun ProjectItem(project: Project, navHostController: NavHostController) {
     ElevatedCenteredCard(
-        modifier = Modifier
-            .fillMaxHeight(ratio)
-            .clickable {
-                navHostController.navigate("${Screens.Project.route}/${project.id}")
-            }
+        modifier = Modifier.fillMaxHeight(ratio),
+        onClick = {
+            navHostController.navigate(Screens.Project.withArgs(project.id))
+        }
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Text(
