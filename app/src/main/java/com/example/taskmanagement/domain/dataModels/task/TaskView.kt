@@ -24,6 +24,8 @@ data class TaskView(
     val priority: Priority,
     val taskItems: List<TaskItem>,
     val comments: List<Comment>,
+    val isMileStone: Boolean = false,
+    val mileStoneTitle: String = title,
     @Serializable(with = DateSerializer::class)
     val completeDate: Date?,
     @Serializable(with = DateSerializer::class)
@@ -37,7 +39,6 @@ data class TaskView(
         project = project,
         status = status,
         taskItems = taskItems,
-        comments = comments,
         estimatedTime = estimatedTime,
         priority = priority,
         completeDate = completeDate,

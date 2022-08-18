@@ -11,17 +11,19 @@ data class TeamView(
     val description: String?,
     val owner: User,
     val members: List<ActiveUserDto>,
+    val pendingMembers: List<User>,
     val projects: List<ProjectSummery>,
-    val tags:List<com.example.taskmanagement.domain.dataModels.Tag>,
+    val tags: List<com.example.taskmanagement.domain.dataModels.Tag>,
     val id: String
 ) {
     fun toTeam(): Team {
         return Team(
-            name,
-            description,
-            owner.id,
-            members.map { it.toActiveUser() },
-            id
+            name = name,
+            description = description,
+            owner = owner.id,
+            members = members.map { it.toActiveUser() },
+            pendingMembers = pendingMembers.map { it.id },
+            id = id
         )
     }
 }

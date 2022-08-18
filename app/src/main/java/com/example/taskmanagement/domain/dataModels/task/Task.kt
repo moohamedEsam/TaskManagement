@@ -14,7 +14,8 @@ data class Task(
     val project: String,
     val status: TaskStatus = TaskStatus.Pending,
     val taskItems: List<TaskItem>,
-    val comments: List<Comment> = emptyList(),
+    val isMileStone:Boolean = false,
+    val mileStoneTitle:String = title,
     val estimatedTime: Int? = null,
     val priority: Priority = Priority.Medium,
     @Serializable(with = DateSerializer::class)

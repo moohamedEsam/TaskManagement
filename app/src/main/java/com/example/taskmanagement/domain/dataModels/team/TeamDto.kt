@@ -9,6 +9,7 @@ data class TeamDto(
     val description: String?,
     val owner: User,
     val members: List<User>,
+    val pendingMembers:List<User>,
     val id: String
 )
 
