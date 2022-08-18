@@ -5,5 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TaskItem(
     val title: String,
-    val completed: Boolean = false
+    val completed: Boolean = false,
+    val id:String
 )

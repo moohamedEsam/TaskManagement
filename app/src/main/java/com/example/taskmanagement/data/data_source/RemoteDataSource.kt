@@ -9,6 +9,7 @@ import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.*
 import com.example.taskmanagement.domain.dataModels.project.ProjectView
 import com.example.taskmanagement.domain.dataModels.task.TaskView
+import com.example.taskmanagement.domain.dataModels.team.Invitation
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 
@@ -16,6 +17,9 @@ interface RemoteDataSource {
     suspend fun loginUser(credentials: Credentials): UserStatus
     suspend fun registerUser(user: SignUpUserBody): Resource<Token>
     suspend fun searchMembers(query: String): Resource<List<User>>
+    suspend fun acceptInvitation(invitationId: String): Resource<Boolean>
+    suspend fun rejectInvitation(invitationId: String): Resource<Boolean>
+    suspend fun getUserInvitations(): Resource<List<Invitation>>
     suspend fun getUserTag(parentRoute: String, id: String): Resource<Tag>
     suspend fun createTag(tag: Tag, parentRoute: ParentRoute): Resource<Tag>
 
@@ -29,6 +33,12 @@ interface RemoteDataSource {
     suspend fun createTaskComment(comment: Comment): Resource<Comment>
     suspend fun deleteTaskComment(commentId: String): Resource<ConfirmationResponse>
     suspend fun updateTaskComment(comment: Comment): Resource<Comment>
+    suspend fun createOrUpdateTaskItems(
+        taskId: String,
+        taskItems: List<TaskItem>
+    ): Resource<List<TaskItem>>
+
+    suspend fun deleteTaskItems(taskId: String, taskItemId: String): Resource<List<TaskItem>>
 
 
     suspend fun getUserProjects(): Resource<List<Project>>
@@ -42,6 +52,7 @@ interface RemoteDataSource {
     suspend fun createTeam(team: Team): Resource<TeamDto>
     suspend fun updateTeam(team: Team): Resource<TeamDto>
     suspend fun deleteTeam(teamId: String): Resource<ConfirmationResponse>
+    suspend fun sendInvitation(teamId: String, userIds: List<String>): Resource<Boolean>
     suspend fun getUserProfile(): Resource<User>
     suspend fun assignTag(
         id: String,

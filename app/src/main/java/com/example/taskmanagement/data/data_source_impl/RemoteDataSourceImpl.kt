@@ -11,6 +11,7 @@ import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.*
 import com.example.taskmanagement.domain.dataModels.project.ProjectView
 import com.example.taskmanagement.domain.dataModels.task.TaskView
+import com.example.taskmanagement.domain.dataModels.team.Invitation
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.utils.Urls
@@ -22,8 +23,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import java.io.File
 
-class RemoteDataSourceImpl(private val client: HttpClient) :
-    RemoteDataSource {
+class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     override suspend fun loginUser(credentials: Credentials): UserStatus {
         return try {
             val response = client.post(Urls.SIGN_IN) {
@@ -102,6 +102,78 @@ class RemoteDataSourceImpl(private val client: HttpClient) :
             }
             getResponseResource(response)
         } catch (exception: Exception) {
+            Resource.Error(exception.message)
+        }
+    }
+
+    override suspend fun acceptInvitation(invitationId: String): Resource<Boolean> {
+        return try {
+            val result = client.post(Urls.getAcceptInvitationUrl(invitationId))
+            getResponseResource(result)
+        } catch (exception: Exception) {
+            Log.e("RemoteDataSourceImpl", "acceptInvitation: ${exception.message}")
+            Resource.Error(exception.message)
+        }
+    }
+
+    override suspend fun rejectInvitation(invitationId: String): Resource<Boolean> {
+        return try {
+            val result = client.post(Urls.getRejectInvitationUrl(invitationId))
+            getResponseResource(result)
+        } catch (exception: Exception) {
+            Log.e("RemoteDataSourceImpl", "rejectInvitation: ${exception.message}")
+            Resource.Error(exception.message)
+        }
+    }
+
+    override suspend fun getUserInvitations(): Resource<List<Invitation>> {
+        return try {
+            val result = client.get(Urls.INVITATION)
+            getResponseResource(result)
+        } catch (exception: Exception) {
+            Log.e("RemoteDataSourceImpl", "getUserInvitations: ${exception.message}")
+            Resource.Error(exception.message)
+        }
+    }
+
+    override suspend fun createOrUpdateTaskItems(
+        taskId: String,
+        taskItems: List<TaskItem>
+    ): Resource<List<TaskItem>> {
+        return try {
+            val result = client.post(Urls.getTaskItemRoute(taskId)) {
+                setBody(taskItems)
+                contentType(ContentType.Application.Json)
+            }
+            getResponseResource(result)
+        } catch (exception: Exception) {
+            Log.e("RemoteDataSourceImpl", "createOrUpdateTaskItems: ${exception.message}")
+            Resource.Error(exception.message)
+        }
+    }
+
+    override suspend fun deleteTaskItems(
+        taskId: String,
+        taskItemId: String
+    ): Resource<List<TaskItem>> {
+        return try {
+            val result = client.delete(Urls.getDeleteTaskItemRoute(taskId, taskItemId))
+            getResponseResource(result)
+        } catch (exception: Exception) {
+            Log.e("RemoteDataSourceImpl", "deleteTaskItems: ${exception.message}")
+            Resource.Error(exception.message)
+        }
+    }
+
+    override suspend fun sendInvitation(teamId: String, userIds: List<String>): Resource<Boolean> {
+        return try {
+            val result = client.post(Urls.getTeamUrl(teamId)) {
+                setBody(userIds)
+                contentType(ContentType.Application.Json)
+            }
+            getResponseResource(result)
+        } catch (exception: Exception) {
+            Log.e("RemoteDataSourceImpl", "sendInvitation: ${exception.message}")
             Resource.Error(exception.message)
         }
     }
