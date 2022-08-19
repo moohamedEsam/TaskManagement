@@ -38,7 +38,7 @@ fun TasksPage(navHostController: NavHostController, viewModel: ProjectViewModel)
                 modifier = Modifier.fillMaxHeight(ratio),
                 onClick = {
                     navHostController.navigate(
-                        Screens.ProjectForm.withArgs(
+                        Screens.TaskForm.withArgs(
                             project.data?.id ?: "", " "
                         )
                     )
@@ -50,7 +50,7 @@ fun TasksPage(navHostController: NavHostController, viewModel: ProjectViewModel)
                         contentDescription = null,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
-                    Text(text = "New Project")
+                    Text(text = "New Task")
                 }
             }
         }

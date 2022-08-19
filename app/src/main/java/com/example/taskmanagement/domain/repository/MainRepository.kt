@@ -9,6 +9,7 @@ import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.*
 import com.example.taskmanagement.domain.dataModels.project.ProjectView
 import com.example.taskmanagement.domain.dataModels.task.TaskView
+import com.example.taskmanagement.domain.dataModels.team.Invitation
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 
@@ -36,6 +37,7 @@ interface MainRepository {
     suspend fun getUserTeams(): Resource<List<Team>>
     suspend fun updateTeam(team: Team): Resource<TeamDto>
     suspend fun createTeam(team: Team): Resource<TeamDto>
+    suspend fun sendInvitations(teamId: String, invitation: List<String>): Resource<Boolean>
     suspend fun createTag(tag: Tag, parentRoute: ParentRoute): Resource<Tag>
     suspend fun assignTag(
         id: String,

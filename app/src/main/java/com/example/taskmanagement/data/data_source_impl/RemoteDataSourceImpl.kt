@@ -171,7 +171,10 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
                 setBody(userIds)
                 contentType(ContentType.Application.Json)
             }
-            getResponseResource(result)
+            return if (result.status == HttpStatusCode.OK)
+                Resource.Success(true)
+            else
+                Resource.Error("something went wrong")
         } catch (exception: Exception) {
             Log.e("RemoteDataSourceImpl", "sendInvitation: ${exception.message}")
             Resource.Error(exception.message)
@@ -374,8 +377,10 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
 
     override suspend fun searchMembers(query: String): Resource<List<User>> {
         return try {
-            val response = client.get(Urls.searchMembers(query))
-            getResponseResource<List<User>>(response)
+            val response = client.get(Urls.SEARCH) {
+                parameter("q", query)
+            }
+            getResponseResource(response)
         } catch (exception: Exception) {
             Resource.Error(exception.message)
         }

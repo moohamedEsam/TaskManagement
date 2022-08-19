@@ -1,11 +1,13 @@
 package com.example.taskmanagement.presentation.screens.team
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
+import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
@@ -25,6 +27,9 @@ class TeamViewModel(
     val updateMade = mutableStateOf(false)
     private val snackBarChannel = Channel<SnackBarEvent>()
     val receiveChannel = snackBarChannel.receiveAsFlow()
+    private val currentUserTag: MutableState<Tag?> = mutableStateOf(null)
+    val invitations = mutableStateOf(emptySet<User>())
+    val suggestions = mutableStateOf(emptyList<User>())
 
     init {
         getTeam()
@@ -45,6 +50,19 @@ class TeamViewModel(
         }
     }
 
+    private fun getCurrentUserTag() {
+        viewModelScope.launch {
+            val result = repository.getUserTag("teams", teamId)
+            result.onSuccess {
+                currentUserTag.value = it
+            }
+            result.onError {
+                val event = SnackBarEvent(it ?: "") { getCurrentUserTag() }
+                snackBarChannel.send(event)
+            }
+        }
+    }
+
     fun toggleMemberToTaggedMembers(user: User, tag: Tag) {
         updateMade.value = true
         val index = taggedMembersList.indexOfFirst { user.id == it.user.id }
@@ -52,6 +70,42 @@ class TeamViewModel(
             taggedMembersList[index] = ActiveUserDto(user, tag)
         else
             taggedMembersList[index] = ActiveUserDto(user, null)
+    }
+
+    fun toggleUserToInvitations(user: User) {
+        if (invitations.value.contains(user))
+            invitations.value = invitations.value - user
+        else
+            invitations.value = invitations.value + user
+    }
+
+    fun searchUsers(query: String) {
+        viewModelScope.launch {
+            val result = repository.searchMembers(query)
+            result.onSuccess {
+                suggestions.value =
+                    it - (team.value.data?.members?.map { activeUser -> activeUser.user }
+                        ?: emptyList()).toSet()
+            }
+            result.onError {
+                val event = SnackBarEvent(it ?: "", null) {}
+                snackBarChannel.send(event)
+            }
+        }
+    }
+
+    fun sendInvitations() {
+        viewModelScope.launch {
+            val result = repository.sendInvitations(teamId, invitations.value.map { it.id })
+            result.onSuccess {
+                val event = SnackBarEvent("invitations has been sent", null) {}
+                snackBarChannel.send(event)
+            }
+            result.onError {
+                val event = SnackBarEvent(it ?: "") { sendInvitations() }
+                snackBarChannel.send(event)
+            }
+        }
     }
 
     fun saveTaggedMembers() {
@@ -72,4 +126,20 @@ class TeamViewModel(
             }
         }
     }
+
+    fun removePendingMember(user: User) {
+        team.value.onSuccess {
+            team.value = Resource.Success(it.copy(pendingMembers = it.pendingMembers - user))
+        }
+    }
+
+    fun isEditIconVisible() =
+        currentUserTag.value?.permissions?.any {
+            it == Permission.EditName || it == Permission.EditOwner || it == Permission.EditMembers || it == Permission.FullControl
+        } ?: true
+
+    fun isShareIconVisible() =
+        currentUserTag.value?.permissions?.any {
+            it == Permission.Share || it == Permission.FullControl
+        } ?: true
 }

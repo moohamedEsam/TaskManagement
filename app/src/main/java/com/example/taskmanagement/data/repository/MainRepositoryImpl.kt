@@ -10,6 +10,7 @@ import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.*
 import com.example.taskmanagement.domain.dataModels.project.ProjectView
 import com.example.taskmanagement.domain.dataModels.task.TaskView
+import com.example.taskmanagement.domain.dataModels.team.Invitation
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.repository.MainRepository
@@ -59,6 +60,13 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
 
     override suspend fun createTeam(team: Team): Resource<TeamDto> {
         return remote.createTeam(team)
+    }
+
+    override suspend fun sendInvitations(
+        teamId: String,
+        invitation: List<String>
+    ): Resource<Boolean> {
+        return remote.sendInvitation(teamId, invitation)
     }
 
     override suspend fun searchMembers(query: String): Resource<List<User>> {

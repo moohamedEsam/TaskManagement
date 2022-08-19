@@ -11,7 +11,7 @@ import androidx.navigation.NavHostController
 import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
 import com.example.taskmanagement.presentation.navigation.Screens
-import com.example.taskmanagement.presentation.screens.team.TagPage
+import com.example.taskmanagement.presentation.screens.team.TeamMemberPage
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -68,14 +68,7 @@ fun ProjectScreenContent(viewModel: ProjectViewModel, navHostController: NavHost
             when (page) {
                 0 -> TasksPage(navHostController, viewModel)
                 1 -> ProjectMembersPage(viewModel)
-                2 -> TagPage(tags = project.data?.tags ?: emptyList()) {
-                    navHostController.navigate(
-                        Screens.TagForm.withArgs(
-                            project.data?.id ?: "",
-                            ParentRoute.Projects
-                        )
-                    )
-                }
+                2 -> Box{}
                 else -> OptionsPage()
             }
         }

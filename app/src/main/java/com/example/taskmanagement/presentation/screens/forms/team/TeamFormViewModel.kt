@@ -16,6 +16,7 @@ import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.CreateTeamUseCase
 import com.example.taskmanagement.domain.useCases.UpdateTeamUseCase
+import com.example.taskmanagement.presentation.utils.MemberManager
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -25,6 +26,7 @@ class TeamFormViewModel(
     private val repository: MainRepository,
     private val updateTeamUseCase: UpdateTeamUseCase,
     private val createTeamUseCase: CreateTeamUseCase,
+    private val memberManager: MemberManager<TeamView>,
     private val teamId: String
 ) : ViewModel() {
     var teamView = mutableStateOf(getInitializedTeam())
@@ -32,7 +34,6 @@ class TeamFormViewModel(
 
     private var currentUserTag: Resource<Tag> = Resource.Initialized()
     val isUpdating = teamId.isNotBlank()
-    val membersDialog = mutableStateOf(false)
 
     val memberSuggestions = mutableStateOf(emptyList<User>())
     val teamNameValidationResult = mutableStateOf(ValidationResult(true))
@@ -54,11 +55,6 @@ class TeamFormViewModel(
                 snackBarChannel.send(event)
             }
         }
-    }
-
-
-    fun toggleMembersDialog() {
-        membersDialog.value = !membersDialog.value
     }
 
 
@@ -88,7 +84,8 @@ class TeamFormViewModel(
         members = emptyList(),
         projects = emptyList(),
         id = UUID.randomUUID().toString(),
-        tags = emptyList()
+        tags = emptyList(),
+        pendingMembers = emptyList()
     )
 
     fun setName(value: String) = viewModelScope.launch {
@@ -111,41 +108,17 @@ class TeamFormViewModel(
     }
 
     fun toggleMember(value: User) {
-        if (isUpdating)
-            toggleMemberUpdateCase(value)
-        else
-            toggleMemberCreateCase(value)
-
+        viewModelScope.launch {
+            memberManager.toggleMember(value, members, teamView)
+        }
     }
 
-    private fun toggleMemberUpdateCase(value: User) {
-        if (members.contains(value.id))
-            members.remove(value.id)
-        else
-            members.add(value.id)
-    }
-
-    private fun toggleMemberCreateCase(value: User) {
-        teamView.value = if (!userExistInTeamMembers(value))
-            addUserToTeamMembersUpdateCase(value)
-        else
-            removeTeamMember(value)
-    }
-
-    private fun removeTeamMember(value: User) =
-        teamView.value.copy(members = teamView.value.members - ActiveUserDto(value, null))
-
-    private fun addUserToTeamMembersUpdateCase(value: User) =
-        teamView.value.copy(members = teamView.value.members + ActiveUserDto(value, null))
 
     fun addMember(value: User) {
-        if (userExistInTeamMembers(value))
-            return
-        teamView.value = addUserToTeamMembersUpdateCase(value)
+        viewModelScope.launch {
+            memberManager.addMember(value, members, teamView)
+        }
     }
-
-    private fun userExistInTeamMembers(value: User) =
-        teamView.value.members.find { it.user.id == value.id } != null
 
 
     fun saveTeam(onSuccess: (String) -> Unit) {
@@ -155,6 +128,7 @@ class TeamFormViewModel(
             val team = teamView.value.toTeam()
             if (isUpdating)
                 team.members = team.members.filter { members.contains(it.id) }
+
             val result = if (isUpdating)
                 updateTeamUseCase(CreateTeamUseCase.Params(team))
             else
@@ -167,6 +141,7 @@ class TeamFormViewModel(
             snackBarChannel.send(event)
         }
     }
+
 
     fun searchMembers(query: String) = viewModelScope.launch {
         val response = repository.searchMembers(query)

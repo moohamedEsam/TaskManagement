@@ -1,78 +1,89 @@
 package com.example.taskmanagement.presentation.screens.team
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Circle
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.domain.dataModels.Tag
-import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
-import com.example.taskmanagement.domain.dataModels.team.TeamView
-import com.example.taskmanagement.presentation.composables.MemberComposable
+import com.example.taskmanagement.presentation.composables.GroupedMembersList
+import com.example.taskmanagement.presentation.composables.MembersDialog
 import com.example.taskmanagement.presentation.navigation.Screens
+import kotlin.math.exp
+
+private const val ratio = 6
 
 @Composable
-fun TagPage(tags: List<Tag>, onAddClick: () -> Unit) {
-    Box {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(tags) {
-                TagItem(it) {}
+fun TeamGroupedMembersPage(
+    viewModel: TeamViewModel,
+    navHostController: NavHostController
+) {
+    val team by viewModel.team
+    val taggedMembers = viewModel.taggedMembersList
+    val update by viewModel.updateMade
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
+    var currentTag: Tag? by remember {
+        mutableStateOf(null)
+    }
+    var expanded by remember {
+        mutableStateOf(true)
+    }
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                expanded = available.y > 0
+                return super.onPreScroll(available, source)
             }
         }
-        FloatingActionButton(
-            onClick = onAddClick,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(8.dp)
-        ) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = null)
-        }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TagItem(tag: Tag, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        SuggestionChip(
-            onClick = { },
-            label = { Text(text = tag.title) },
-            colors = SuggestionChipDefaults.suggestionChipColors(
-                containerColor = tag.getColor()
-            )
-        )
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            items(tag.permissions) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Circle,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Text(text = it.toString(), style = MaterialTheme.typography.bodySmall)
-                }
+        GroupedMembersList(
+            members = taggedMembers,
+            tags = team.data?.tags ?: emptyList(),
+            showUpdateButton = update,
+            ratio = ratio,
+            modifier = Modifier.nestedScroll(nestedScrollConnection),
+            onItemClick = {
+                currentTag = it
+                showDialog = true
             }
+        ) {
+            viewModel.saveTaggedMembers()
+        }
+        ExtendedFloatingActionButton(
+            onClick = {
+                navHostController.navigate(Screens.TagForm.withArgs(team.data?.id ?: "", "teams"))
+            },
+            icon = { Icon(imageVector = Icons.Default.Add, contentDescription = null) },
+            text = { Text(text = "Create New Tag") },
+            expanded = expanded,
+            modifier = Modifier.align(Alignment.BottomEnd)
+        )
+    }
+    if (showDialog)
+        MembersDialog(
+            selectedMembers = taggedMembers.filter { it.tag == currentTag }.map { it.user },
+            members = team.data?.members?.map { it.user } ?: emptyList(),
+            onDismiss = { showDialog = false }
+        ) {
+            viewModel.toggleMemberToTaggedMembers(it, currentTag!!)
         }
 
-    }
 }

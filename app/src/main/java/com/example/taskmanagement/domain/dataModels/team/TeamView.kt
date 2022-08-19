@@ -22,7 +22,6 @@ data class TeamView(
             description = description,
             owner = owner.id,
             members = members.map { it.toActiveUser() },
-            pendingMembers = pendingMembers.map { it.id },
             id = id
         )
     }

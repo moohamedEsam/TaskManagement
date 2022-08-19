@@ -1,11 +1,6 @@
 package com.example.taskmanagement.domain.dataModels.task
 
-import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUser
 import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
-import com.example.taskmanagement.domain.dataModels.task.Comment
-import com.example.taskmanagement.domain.dataModels.task.Priority
-import com.example.taskmanagement.domain.dataModels.task.TaskItem
-import com.example.taskmanagement.domain.dataModels.task.TaskStatus
 import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.utils.custom_serializers.DateSerializer
 import kotlinx.serialization.Serializable
@@ -24,8 +19,8 @@ data class TaskView(
     val priority: Priority,
     val taskItems: List<TaskItem>,
     val comments: List<Comment>,
-    val isMileStone: Boolean = false,
-    val mileStoneTitle: String = title,
+    val isMilestone: Boolean = false,
+    val milestoneTitle: String = title,
     @Serializable(with = DateSerializer::class)
     val completeDate: Date?,
     @Serializable(with = DateSerializer::class)
@@ -43,6 +38,8 @@ data class TaskView(
         priority = priority,
         completeDate = completeDate,
         finishDate = finishDate,
-        id = id
+        id = id,
+        isMilestone = isMilestone,
+        milestoneTitle = milestoneTitle
     )
 }

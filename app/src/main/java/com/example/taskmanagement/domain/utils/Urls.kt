@@ -9,6 +9,7 @@ object Urls {
     private const val BASE_URL = "http://192.168.1.7:8080"
     const val REFRESH_TOKEN = "$BASE_URL/auth/refresh"
     const val PROFILE = "$BASE_URL/user"
+    const val SEARCH = "$BASE_URL/user/search"
     const val INVITATION = "$BASE_URL/user/invitations"
     const val SIGN_IN = "$BASE_URL/user/signIn"
     const val SIGN_UP = "$BASE_URL/user/signUp"
@@ -16,7 +17,6 @@ object Urls {
     const val COMMENTS = "$BASE_URL/comments"
     const val TEAMS = "$BASE_URL/teams"
     const val PROJECTS = "$BASE_URL/projects"
-    fun searchMembers(query: String) = "$PROFILE/search/$query"
 
     fun getAcceptInvitationUrl(invitationId: String) =
         "$INVITATION/$invitationId/accept"

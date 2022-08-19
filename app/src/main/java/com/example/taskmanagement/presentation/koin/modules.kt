@@ -23,6 +23,8 @@ import com.example.taskmanagement.presentation.screens.forms.project.ProjectForm
 import com.example.taskmanagement.presentation.screens.forms.tags.TagViewModel
 import com.example.taskmanagement.presentation.screens.forms.task.TaskFormViewModel
 import com.example.taskmanagement.presentation.screens.forms.team.TeamFormViewModel
+import com.example.taskmanagement.presentation.screens.forms.team.TeamMemberManagerCreateCase
+import com.example.taskmanagement.presentation.screens.forms.team.TeamMemberManagerUpdateCase
 import com.example.taskmanagement.presentation.screens.home.HomeViewModel
 import com.example.taskmanagement.presentation.screens.login.LoginViewModel
 import com.example.taskmanagement.presentation.screens.profile.ProfileViewModel
@@ -85,7 +87,12 @@ val viewModelModule = module {
     viewModel { params -> TeamViewModel(get(), params[0]) }
     viewModel { params -> TaskFormViewModel(get(), params[0], params[1]) }
     viewModel { params -> ProjectFormViewModel(get(), params[0], params[1]) }
-    viewModel { params -> TeamFormViewModel(get(), get(), get(), params[0]) }
+    viewModel { params ->
+        if (params.get<String>(0).isBlank())
+            TeamFormViewModel(get(), get(), get(), TeamMemberManagerCreateCase(), params[0])
+        else
+            TeamFormViewModel(get(), get(), get(), TeamMemberManagerUpdateCase(), params[0])
+    }
 
 }
 

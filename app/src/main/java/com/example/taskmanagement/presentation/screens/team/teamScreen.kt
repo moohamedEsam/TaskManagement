@@ -49,7 +49,7 @@ fun TeamScreenContent(
     team: TeamView,
     viewModel: TeamViewModel
 ) {
-    val pages = listOf("Dashboard", "Members", "Tags", "Options")
+    val pages = listOf("Dashboard", "Tags", "Members", "Options")
     val pagerState = rememberPagerState()
     val coroutine = rememberCoroutineScope()
     Column {
@@ -79,12 +79,8 @@ fun TeamScreenContent(
                     viewModel = viewModel,
                     team = team
                 )
-                1 -> TeamMembersPage(viewModel = viewModel)
-                2 -> TagPage(tags = team.tags) {
-                    navHostController.navigate(
-                        Screens.TagForm.withArgs(team.id, ParentRoute.Teams)
-                    )
-                }
+                1 -> TeamGroupedMembersPage(viewModel = viewModel, navHostController=navHostController)
+                2 -> TeamMemberPage(team, viewModel)
                 else -> Box {}
             }
         }

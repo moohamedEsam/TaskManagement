@@ -9,6 +9,5 @@ data class Team(
     val description: String? = null,
     val owner: String = "",
     var members: List<ActiveUser>,
-    val pendingMembers: List<String>,
     val id: String = ""
 )

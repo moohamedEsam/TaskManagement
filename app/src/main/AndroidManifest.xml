@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <application
-            android:name=".domain.utils.ApplicationClass"
+            android:name=".presentation.utils.ApplicationClass"
             android:allowBackup="true"
             android:usesCleartextTraffic="true"
             android:dataExtractionRules="@xml/data_extraction_rules"

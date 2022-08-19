@@ -23,10 +23,7 @@ import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.domain.dataModels.task.Priority
 import com.example.taskmanagement.domain.dataModels.task.TaskView
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
-import com.example.taskmanagement.presentation.customComponents.CardDialog
-import com.example.taskmanagement.presentation.customComponents.MembersSuggestionsDialog
-import com.example.taskmanagement.presentation.customComponents.OwnerTextField
-import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
+import com.example.taskmanagement.presentation.customComponents.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -79,6 +76,27 @@ private fun TaskFormHeader(
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MilestoneTextField(task: TaskView, viewModel: TaskFormViewModel) {
+    if (task.isMilestone)
+        TextField(
+            value = task.milestoneTitle,
+            onValueChange = { viewModel.setTaskMilestoneTitle(it) },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(text = "Milestone Title") }
+        )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { viewModel.toggleIsMileStone(!task.isMilestone) }) {
+        Checkbox(checked = task.isMilestone, onCheckedChange = { viewModel.toggleIsMileStone(it) })
+        Text(text = "set task as milestone")
+    }
+
+}
+
 @Composable
 fun TaskOwnerTextField(viewModel: TaskFormViewModel, task: TaskView) {
     val showField = viewModel.isUpdating && viewModel.hasPermission(Permission.EditOwner)
@@ -111,6 +129,7 @@ private fun TaskFormFooter(
                 viewModel.setTaskEstimatedTime(it.toInt())
         }
     )*/
+    MilestoneTextField(task = task, viewModel = viewModel)
     PriorityList(task, viewModel)
 
 }

@@ -1,6 +1,5 @@
 package com.example.taskmanagement.presentation.screens.forms.task
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -119,6 +118,10 @@ class TaskFormViewModel(
         taskView.value = taskView.value.copy(estimatedTime = estimatedTime)
     }
 
+    fun setTaskMilestoneTitle(value: String) = viewModelScope.launch {
+        taskView.value = taskView.value.copy(milestoneTitle = value)
+    }
+
     fun setTaskPriority(priority: Priority) = viewModelScope.launch {
         taskView.value = taskView.value.copy(priority = priority)
     }
@@ -135,6 +138,9 @@ class TaskFormViewModel(
         taskItems.remove(value)
     }
 
+    fun toggleIsMileStone(value: Boolean) {
+        taskView.value = taskView.value.copy(isMilestone = value)
+    }
 
     fun saveTask() {
         viewModelScope.launch {

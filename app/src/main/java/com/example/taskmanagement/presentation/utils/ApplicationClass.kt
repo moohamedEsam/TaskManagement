@@ -1,7 +1,8 @@
-package com.example.taskmanagement.domain.utils
+package com.example.taskmanagement.presentation.utils
 
 import android.app.Application
- import android.util.Log
+import android.os.StrictMode
+import android.util.Log
 import com.example.taskmanagement.presentation.koin.repository
 import com.example.taskmanagement.presentation.koin.useCaseModules
 import com.example.taskmanagement.presentation.koin.utils

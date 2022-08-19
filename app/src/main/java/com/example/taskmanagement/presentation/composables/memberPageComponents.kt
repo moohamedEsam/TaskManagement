@@ -26,6 +26,7 @@ fun GroupedMembersList(
     tags: List<Tag>,
     ratio: Int,
     showUpdateButton: Boolean,
+    modifier: Modifier = Modifier,
     onItemClick: (Tag) -> Unit,
     onUpdateButtonClick: () -> Unit
 ) {
@@ -36,7 +37,7 @@ fun GroupedMembersList(
     }
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) {
         item {
             LazyRow(

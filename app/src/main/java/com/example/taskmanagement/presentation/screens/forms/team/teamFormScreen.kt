@@ -8,9 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -62,7 +60,7 @@ fun TeamFormScreenContent(
         Button(
             onClick = {
                 viewModel.saveTeam {
-                    navHostController.navigate(Screens.Team.withArgs(it))
+                    //navHostController.navigate(Screens.Team.withArgs(it))
                 }
             },
             modifier = Modifier.align(Alignment.End)
@@ -109,7 +107,9 @@ private fun MembersList(
     val team by viewModel.teamView
     val members = viewModel.members
     val suggestions by viewModel.memberSuggestions
-    val showDialog by viewModel.membersDialog
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.height((LocalConfiguration.current.screenHeightDp / 3).dp)
@@ -121,13 +121,13 @@ private fun MembersList(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "Members", style = MaterialTheme.typography.headlineMedium)
-                IconButton(onClick = { viewModel.toggleMembersDialog() }) {
+                IconButton(onClick = { showDialog = true }) {
                     Icon(imageVector = Icons.Default.Search, contentDescription = null)
                 }
             }
         }
 
-        items(team.members.map { it.user }) { user ->
+        items(if (isUpdating) team.members.map { it.user } else team.pendingMembers.toList()) { user ->
             MemberComposable(user = user) {
                 Checkbox(
                     checked = !isUpdating || members.contains(user.id),
@@ -139,7 +139,7 @@ private fun MembersList(
     if (showDialog)
         MembersSuggestionsDialog(
             suggestions = suggestions,
-            onDismiss = { viewModel.toggleMembersDialog() },
+            onDismiss = { showDialog = false },
             onSearchChanged = {
                 if (it.isNotBlank() && it.length > 2)
                     viewModel.searchMembers(it)
