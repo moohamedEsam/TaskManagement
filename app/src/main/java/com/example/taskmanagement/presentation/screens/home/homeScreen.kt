@@ -48,7 +48,7 @@ private fun HomeScreenContent(
     Column {
         TaskFilterHandler(viewModel)
         Spacer(modifier = Modifier.height(16.dp))
-        TaskList(if (searchMode) filteredTasks else tasks.data ?: emptyList(), navHostController)
+//        TaskList(if (searchMode) filteredTasks else tasks.data ?: emptyList(), navHostController)
     }
 }
 

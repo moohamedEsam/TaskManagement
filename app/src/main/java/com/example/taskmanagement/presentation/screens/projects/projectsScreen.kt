@@ -78,7 +78,7 @@ fun ProjectsScreenContent(
         ) {
             item {
                 OutlinedCenteredCard(
-                    modifier = Modifier.fillMaxHeight(ratio),
+                    modifier = Modifier.fillMaxHeight { it / ratio },
                     onClick = { navHostController.navigate(Screens.ProjectForm.withArgs(" ", " ")) }
                 ) {
                     Column {
@@ -104,7 +104,7 @@ fun ProjectsScreenContent(
 @Composable
 fun ProjectItem(project: Project, navHostController: NavHostController) {
     ElevatedCenteredCard(
-        modifier = Modifier.fillMaxHeight(ratio),
+        modifier = Modifier.fillMaxHeight { it / ratio },
         onClick = {
             navHostController.navigate(Screens.Project.withArgs(project.id))
         }

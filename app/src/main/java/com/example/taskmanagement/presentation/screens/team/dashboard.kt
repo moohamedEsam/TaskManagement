@@ -55,7 +55,7 @@ fun DashBoardPage(navHostController: NavHostController, team: TeamView, viewMode
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(4),
+                .fillMaxHeight { it / ratio },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -65,7 +65,11 @@ fun DashBoardPage(navHostController: NavHostController, team: TeamView, viewMode
                     .fillMaxWidth(0.7f)
                     .verticalScroll(rememberScrollState())
             )
-            TaskPie(team = team)
+            TaskPie(
+                createdTasks = team.projects.sumOf { it.createdTasks },
+                completedTasks = team.projects.sumOf { it.completedTasks },
+                inProgressTasks = team.projects.sumOf { it.inProgressTasks }
+            )
         }
 
 
@@ -80,13 +84,13 @@ fun DashBoardPage(navHostController: NavHostController, team: TeamView, viewMode
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(3)
+                .fillMaxHeight { it / ratio }
         ) {
             item {
                 NewProjectCard(
                     team = team,
                     navHostController = navHostController,
-                    modifier = Modifier.fillMaxHeight(ratio)
+                    modifier = Modifier.fillMaxHeight { it / ratio }
                 )
             }
 
@@ -95,7 +99,7 @@ fun DashBoardPage(navHostController: NavHostController, team: TeamView, viewMode
                     team = team,
                     projectSummery = it,
                     navHostController = navHostController,
-                    modifier = Modifier.fillMaxHeight(ratio)
+                    modifier = Modifier.fillMaxHeight { it / ratio }
                 )
             }
         }
@@ -163,7 +167,7 @@ fun InvitationsDialog(viewModel: TeamViewModel, onDismiss: () -> Unit) {
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.fillMaxHeight(2)
+                modifier = Modifier.fillMaxHeight { it / 2 }
             ) {
                 items(suggestions) {
                     MemberComposable(user = it) {
@@ -293,44 +297,5 @@ fun NewProjectCard(
             Icon(imageVector = Icons.Default.Add, contentDescription = null)
             Text(text = "New Project", style = MaterialTheme.typography.headlineMedium)
         }
-    }
-}
-
-@Composable
-fun TaskPie(team: TeamView, modifier: Modifier = Modifier) {
-    val created = team.projects.sumOf { it.createdTasks }
-    if (team.projects.isEmpty() || created == 0) {
-        Column(modifier = modifier) { DrawDonat(Color.Black to 1) }
-        return
-    }
-
-    val completed = team.projects.sumOf { it.completedTasks }
-    val inProgress = team.projects.sumOf { it.inProgressTasks }
-    val late = created - completed - inProgress
-    Column(modifier = modifier) {
-        Text(
-            text = "Task Overall",
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(bottom = 8.dp)
-        )
-        BoxWithConstraints(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(horizontal = 8.dp)
-                .fillMaxWidth()
-        ) {
-            DrawDonat(
-                Color.Red to late,
-                Color.Yellow to inProgress,
-                Color.Green to completed,
-                modifier = Modifier.size(maxWidth, maxHeight.div(1.9f))
-            )
-            Text(text = "${team.projects.sumOf { it.createdTasks }}")
-        }
-        Text(text = "Completed ${completed * 100 / created}%", color = Color.Green)
-        Text(text = "InProgress ${inProgress * 100 / created}%", color = Color.Yellow)
-        Text(text = "Late ${late * 100 / created}%", color = Color.Red)
     }
 }

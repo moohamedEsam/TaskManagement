@@ -1,17 +1,17 @@
 package com.example.taskmanagement.presentation.screens.project
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
+import com.example.taskmanagement.presentation.customComponents.fillMaxWidth
 import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
-import com.example.taskmanagement.presentation.navigation.Screens
-import com.example.taskmanagement.presentation.screens.team.TeamMemberPage
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -40,13 +40,12 @@ fun ProjectScreen(
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun ProjectScreenContent(viewModel: ProjectViewModel, navHostController: NavHostController) {
-    val project by viewModel.project
-    val pages = listOf("Tasks", "Members", "Tags", "Options")
+    val pages = listOf("Dashboard", "Tags", "Members", "Timeline", "Options")
     val pagerState = rememberPagerState()
     val coroutine = rememberCoroutineScope()
     Column {
-        TabRow(
-            selectedTabIndex = pagerState.currentPage,
+        ScrollableTabRow(
+            selectedTabIndex = pagerState.currentPage
         ) {
             pages.forEachIndexed { index, page ->
                 Tab(
@@ -59,7 +58,7 @@ fun ProjectScreenContent(viewModel: ProjectViewModel, navHostController: NavHost
                 ) {
                     Text(
                         text = page,
-                        modifier = Modifier.padding(start = 8.dp, bottom = 16.dp, end = 8.dp)
+                        modifier = Modifier.padding(bottom = 16.dp, end = 8.dp)
                     )
                 }
             }
@@ -67,8 +66,9 @@ fun ProjectScreenContent(viewModel: ProjectViewModel, navHostController: NavHost
         HorizontalPager(count = pages.size, state = pagerState) { page ->
             when (page) {
                 0 -> TasksPage(navHostController, viewModel)
-                1 -> ProjectMembersPage(viewModel)
-                2 -> Box{}
+                1 -> ProjectGroupedMembers(viewModel, navHostController)
+                2 -> ProjectMembersPage(viewModel = viewModel)
+                3 -> ProjectTimeLine(viewModel = viewModel, navHostController = navHostController)
                 else -> OptionsPage()
             }
         }

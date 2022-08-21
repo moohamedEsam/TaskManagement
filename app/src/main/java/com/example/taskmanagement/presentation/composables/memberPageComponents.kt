@@ -77,7 +77,10 @@ fun GroupedMembersList(
 
 @Composable
 fun MembersIcons(members: List<User>, ratio: Int) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(ratio)) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth { it / ratio }
+    ) {
         if (members.isNotEmpty())
             UserIcon(photoPath = members[0].photoPath)
         if (members.size > 1)
@@ -113,7 +116,7 @@ fun GroupedMemberCard(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            item { Text(text = tag.title, modifier = Modifier.fillMaxWidth(ratio)) }
+            item { Text(text = tag.title, modifier = Modifier.fillMaxWidth { it / ratio }) }
             item { MembersIcons(members = members, ratio) }
             item {
                 RadioButton(

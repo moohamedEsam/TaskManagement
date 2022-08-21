@@ -22,5 +22,7 @@ data class Task(
     val completeDate: Date? = null,
     @Serializable(with = DateSerializer::class)
     val finishDate: Date? = null,
+    @Serializable(with = DateSerializer::class)
+    val createdAt:Date = Date(),
     val id: String = ""
 )

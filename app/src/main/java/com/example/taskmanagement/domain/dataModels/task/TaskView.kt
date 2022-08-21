@@ -24,6 +24,8 @@ data class TaskView(
     @Serializable(with = DateSerializer::class)
     val completeDate: Date?,
     @Serializable(with = DateSerializer::class)
+    val createdAt:Date = Date(),
+    @Serializable(with = DateSerializer::class)
     val finishDate: Date?
 ) {
     fun toTask() = Task(
@@ -40,6 +42,7 @@ data class TaskView(
         finishDate = finishDate,
         id = id,
         isMilestone = isMilestone,
-        milestoneTitle = milestoneTitle
+        milestoneTitle = milestoneTitle,
+        createdAt = createdAt
     )
 }

@@ -1,4 +1,4 @@
-package com.example.taskmanagement.presentation.screens.team
+package com.example.taskmanagement.presentation.screens.project
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -6,19 +6,15 @@ import androidx.navigation.NavHostController
 import com.example.taskmanagement.presentation.composables.GroupedMembers
 import com.example.taskmanagement.presentation.navigation.Screens
 
-
 @Composable
-fun TeamGroupedMembersPage(
-    viewModel: TeamViewModel,
-    navHostController: NavHostController
-) {
-    val team by viewModel.team
-    val taggedMembers = viewModel.taggedMembersList
+fun ProjectGroupedMembers(viewModel: ProjectViewModel, navHostController: NavHostController) {
+    val projectView by viewModel.project
+    val taggedMembers = viewModel.taggedMembers
     val update by viewModel.updateMade
-    team.onSuccess {
+    projectView.onSuccess {
         GroupedMembers(
             tags = it.tags,
-            members = it.members.map { activeUserDto -> activeUserDto.user },
+            members = it.members.map { activeUser -> activeUser.user },
             update = update,
             taggedMembers = taggedMembers,
             onUpdateButtonClick = { viewModel.saveTaggedMembers() },
@@ -26,7 +22,7 @@ fun TeamGroupedMembersPage(
                 navHostController.navigate(
                     Screens.TagForm.withArgs(
                         it.id,
-                        "teams"
+                        "projects"
                     )
                 )
             },

@@ -1,41 +1,26 @@
 package com.example.taskmanagement.presentation.screens.project
 
-import androidx.compose.runtime.*
-import com.example.taskmanagement.domain.dataModels.Tag
-import com.example.taskmanagement.presentation.composables.GroupedMembersList
-import com.example.taskmanagement.presentation.composables.MembersDialog
-
-private const val ratio = 6
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.example.taskmanagement.presentation.composables.MemberComposable
 
 @Composable
 fun ProjectMembersPage(viewModel: ProjectViewModel) {
     val project by viewModel.project
-    val taggedMembers = viewModel.taggedMembers
-    val update by viewModel.updateMade
-    var showDialog by remember {
-        mutableStateOf(false)
-    }
-    var currentTag: Tag? by remember {
-        mutableStateOf(null)
-    }
-    GroupedMembersList(
-        members = taggedMembers,
-        tags = project.data?.tags ?: emptyList(),
-        showUpdateButton = update,
-        ratio = ratio,
-        onItemClick = {
-            currentTag = it
-            showDialog = true
-        }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        viewModel.saveTaggedMembers()
-    }
-    if (showDialog)
-        MembersDialog(
-            selectedMembers = taggedMembers.filter { it.tag == currentTag }.map { it.user },
-            members = project.data?.members?.map { it.user } ?: emptyList(),
-            onDismiss = { showDialog = false }
-        ) {
-            viewModel.toggleMemberToTaggedMembers(it, currentTag!!)
+        items(project.data?.members?.map { it.user } ?: emptyList()) {
+            MemberComposable(user = it) {
+
+            }
         }
+    }
 }

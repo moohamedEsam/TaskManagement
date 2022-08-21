@@ -67,13 +67,13 @@ fun TeamsScreenContent(navHostController: NavHostController, viewModel: TeamsVie
             item {
                 NewTeamCard(
                     navHostController = navHostController,
-                    modifier = Modifier.fillMaxHeight(ratio)
+                    modifier = Modifier.fillMaxHeight { it / ratio }
                 )
             }
             items(if (searchQuery.isBlank()) teams else filteredTeams) {
                 TeamCard(
                     navHostController = navHostController,
-                    modifier = Modifier.fillMaxHeight(ratio),
+                    modifier = Modifier.fillMaxHeight {width-> width / ratio },
                     team = it
                 )
             }

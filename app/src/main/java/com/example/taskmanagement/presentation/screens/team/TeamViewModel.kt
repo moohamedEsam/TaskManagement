@@ -17,6 +17,7 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.util.*
 
 class TeamViewModel(
     private val repository: MainRepository,
@@ -127,12 +128,6 @@ class TeamViewModel(
         }
     }
 
-    fun removePendingMember(user: User) {
-        team.value.onSuccess {
-            team.value = Resource.Success(it.copy(pendingMembers = it.pendingMembers - user))
-        }
-    }
-
     fun isEditIconVisible() =
         currentUserTag.value?.permissions?.any {
             it == Permission.EditName || it == Permission.EditOwner || it == Permission.EditMembers || it == Permission.FullControl
@@ -142,4 +137,5 @@ class TeamViewModel(
         currentUserTag.value?.permissions?.any {
             it == Permission.Share || it == Permission.FullControl
         } ?: true
+
 }

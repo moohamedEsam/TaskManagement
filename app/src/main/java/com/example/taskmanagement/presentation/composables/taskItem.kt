@@ -1,7 +1,8 @@
 package com.example.taskmanagement.presentation.composables
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -12,11 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
-import com.example.taskmanagement.presentation.customComponents.CircleCheckbox
 import com.example.taskmanagement.R
 import com.example.taskmanagement.domain.dataModels.task.Priority
 import com.example.taskmanagement.domain.dataModels.task.Task
 import com.example.taskmanagement.domain.dataModels.task.TaskStatus
+import com.example.taskmanagement.presentation.customComponents.CircleCheckbox
 import org.koin.androidx.compose.get
 import java.text.SimpleDateFormat
 import java.util.*
@@ -25,6 +26,7 @@ import java.util.*
 @Composable
 fun TaskItem(
     task: Task,
+    modifier: Modifier = Modifier,
     onCompleteClick: (Boolean) -> Unit,
     onclick: () -> Unit
 ) {
@@ -32,42 +34,55 @@ fun TaskItem(
         mutableStateOf(task.status == TaskStatus.Completed)
     }
     Card(
-        modifier = Modifier
-            .padding(8.dp)
-            .clickable { onclick() },
+        modifier = modifier,
+        onClick = onclick
     ) {
-        Column(modifier = Modifier.padding(8.dp)) {
-            Row {
-                CircleCheckbox(selected = completed) {
-                    completed = !completed
-                    onCompleteClick(completed)
-                }
-                Column {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Column {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(
                         text = task.title,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.headlineMedium,
                         maxLines = 1,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.primary
                     )
-                    Text(
-                        text = task.description ?: "",
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 1
-                    )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        TaskDate(task, task.finishDate)
-                        Text(
-                            text = task.priority.toString(),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = when (task.priority) {
-                                Priority.High, Priority.Urgent -> Color.Red
-                                Priority.Medium -> Color.Yellow
-                                Priority.Low -> Color.Green
-                            }
-                        )
-
+                    CircleCheckbox(selected = completed) {
+                        completed = !completed
+                        onCompleteClick(completed)
                     }
                 }
+                Text(
+                    text = task.description ?: "",
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+                TaskDate(task, task.finishDate)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "Priority: ")
+                    Text(
+                        text = task.priority.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = when (task.priority) {
+                            Priority.High, Priority.Urgent -> Color.Red
+                            Priority.Medium -> Color.Yellow
+                            Priority.Low -> Color.Green
+                        }
+                    )
+
+                }
+                Text(text = "Completed Task Items ${task.taskItems.count { it.completed }}")
+                Text(text = "Incomplete Task Items ${task.taskItems.count { !it.completed }}")
+                Text(text = "Members: ${task.assigned.size}")
+
             }
         }
     }
@@ -78,22 +93,23 @@ private fun TaskDate(
     task: Task,
     finishDate: Date?
 ) {
-    if (task.finishDate != null) {
-        SubcomposeAsyncImage(
-            model = R.drawable.date,
-            contentDescription = null,
-            imageLoader = get(),
-            modifier = Modifier.size(14.dp)
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = SimpleDateFormat.getDateInstance().format(task.finishDate),
-            style = MaterialTheme.typography.bodySmall,
-            color = if (task.status == TaskStatus.Completed && finishDate?.before(Date()) == true)
-                Color.Red
-            else
-                MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.width(4.dp))
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        if (task.finishDate != null) {
+            SubcomposeAsyncImage(
+                model = R.drawable.date,
+                contentDescription = null,
+                imageLoader = get(),
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = SimpleDateFormat.getDateInstance().format(task.finishDate),
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (task.status == TaskStatus.Completed && finishDate?.before(Date()) == true)
+                    Color.Red
+                else
+                    MaterialTheme.colorScheme.onSurface
+            )
+        }
     }
 }

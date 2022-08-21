@@ -13,7 +13,7 @@ data class ProjectView(
     val owner: User,
     val description: String,
     val members: List<ActiveUserDto>,
-    val tasks: List<AbstractTask>,
+    val tasks: List<Task>,
     val tags: List<Tag>,
     val team: String,
     val id: String
