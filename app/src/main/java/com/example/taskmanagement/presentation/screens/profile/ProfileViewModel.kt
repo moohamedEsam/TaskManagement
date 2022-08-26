@@ -8,12 +8,14 @@ import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.Token
 import com.example.taskmanagement.domain.repository.MainRepository
+import com.example.taskmanagement.domain.useCases.projects.GetCurrentUserProjectUseCase
+import com.example.taskmanagement.domain.useCases.user.GetCurrentUserProfileUseCase
 import com.example.taskmanagement.domain.vallidators.Validator
 import com.example.taskmanagement.presentation.koin.saveToken
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
-    private val repository: MainRepository,
+    private val getCurrentUserProfileUseCase: GetCurrentUserProfileUseCase,
     private val validator: Validator
 ) : ViewModel() {
     val user = mutableStateOf<Resource<User>>(Resource.Initialized())
@@ -23,7 +25,7 @@ class ProfileViewModel(
     }
 
     fun getUser() = viewModelScope.launch {
-        user.value = repository.getUserProfile()
+        user.value = getCurrentUserProfileUseCase(Unit)
     }
 
     fun setUsername(username: String) {

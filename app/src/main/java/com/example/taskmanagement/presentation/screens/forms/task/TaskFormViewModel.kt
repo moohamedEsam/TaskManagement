@@ -10,16 +10,28 @@ import com.example.taskmanagement.domain.dataModels.project.Project
 import com.example.taskmanagement.domain.dataModels.project.ProjectView
 import com.example.taskmanagement.domain.dataModels.task.*
 import com.example.taskmanagement.domain.dataModels.user.User
+import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.repository.MainRepository
+import com.example.taskmanagement.domain.useCases.projects.GetCurrentUserProjectUseCase
+import com.example.taskmanagement.domain.useCases.projects.GetProjectUseCase
+import com.example.taskmanagement.domain.useCases.tag.GetCurrentUserTag
+import com.example.taskmanagement.domain.useCases.tasks.CreateTaskUseCase
+import com.example.taskmanagement.domain.useCases.tasks.GetTaskUseCase
+import com.example.taskmanagement.domain.useCases.tasks.UpdateTaskUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.*
 
 class TaskFormViewModel(
-    private val repository: MainRepository,
+    private val getTaskUseCase: GetTaskUseCase,
+    private val getCurrentUserTag: GetCurrentUserTag,
+    private val getCurrentUserProjectUseCase: GetCurrentUserProjectUseCase,
+    private val getProjectUseCase: GetProjectUseCase,
+    private val createTaskUseCase: CreateTaskUseCase,
+    private val updateTaskUseCase: UpdateTaskUseCase,
     projectId: String,
     private val taskId: String
 ) : ViewModel() {
@@ -44,7 +56,7 @@ class TaskFormViewModel(
     }
 
     private suspend fun setTask(taskId: String) {
-        val result = repository.getTask(taskId)
+        val result = getTaskUseCase(taskId)
         result.onSuccess {
             taskView.value = it
             assigned.addAll(it.assigned.map { activeUser -> activeUser.user.id })
@@ -59,7 +71,12 @@ class TaskFormViewModel(
 
     private fun getCurrentUserTag() {
         viewModelScope.launch {
-            val result = repository.getUserTag("tasks", taskId)
+            val result = getCurrentUserTag(
+                GetCurrentUserTag.Params(
+                    ParentRoute.Projects,
+                    project.value.data?.id ?: ""
+                )
+            )
             result.onSuccess {
                 currentUserTag = it
             }
@@ -72,7 +89,7 @@ class TaskFormViewModel(
 
     fun getProjects() {
         viewModelScope.launch {
-            projects.value = repository.getUserProjects()
+            projects.value = getCurrentUserProjectUseCase(Unit)
             projects.value.onError {
                 val event = SnackBarEvent(it ?: "") { getProjects() }
                 snackBarChannel.send(event)
@@ -87,7 +104,7 @@ class TaskFormViewModel(
     }
 
     private suspend fun assignProject(id: String) {
-        project.value = repository.getProject(id)
+        project.value = getProjectUseCase(id)
         project.value.onSuccess {
             project.value =
                 Resource.Success(it.copy(members = it.members + ActiveUserDto(it.owner, null)))
@@ -149,9 +166,9 @@ class TaskFormViewModel(
                 assigned = getAssignedMembers()
             )
             val result = if (isUpdating)
-                repository.updateTask(task)
+                updateTaskUseCase(task)
             else
-                repository.saveTask(task)
+                createTaskUseCase(task)
             result.onSuccess {
                 val event = SnackBarEvent("task have been saved", null) {}
                 snackBarChannel.send(event)
@@ -173,12 +190,12 @@ class TaskFormViewModel(
         title = "",
         owner = User("", "", null, null, ""),
         description = null,
-        assigned = emptyList(),
+        assigned = mutableSetOf(),
         status = TaskStatus.Pending,
         estimatedTime = null,
         priority = Priority.Medium,
         taskItems = emptyList(),
-        comments = emptyList(),
+        comments = mutableSetOf(),
         completeDate = null,
         finishDate = null,
         project = ""

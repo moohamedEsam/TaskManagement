@@ -7,11 +7,13 @@ import com.example.taskmanagement.domain.dataModels.project.Project
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.repository.MainRepository
+import com.example.taskmanagement.domain.useCases.projects.GetCurrentUserProjectUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class ProjectsViewModel(private val repository: MainRepository) : ViewModel() {
+class ProjectsViewModel(private val getCurrentUserProjectUseCase: GetCurrentUserProjectUseCase) :
+    ViewModel() {
     private val projects = mutableStateOf<Resource<List<Project>>>(Resource.Initialized())
     val filteredProjects = mutableStateOf(emptyList<Project>())
     private val snackBarChannel = Channel<SnackBarEvent>()
@@ -23,7 +25,7 @@ class ProjectsViewModel(private val repository: MainRepository) : ViewModel() {
 
     private fun getProjects() {
         viewModelScope.launch {
-            projects.value = repository.getUserProjects()
+            projects.value = getCurrentUserProjectUseCase(Unit)
             projects.value.onSuccess {
                 filteredProjects.value = it
             }

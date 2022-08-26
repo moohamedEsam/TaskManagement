@@ -11,15 +11,27 @@ import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.domain.dataModels.team.Team
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.dataModels.user.User
+import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.repository.MainRepository
+import com.example.taskmanagement.domain.useCases.projects.CreateProjectUseCase
+import com.example.taskmanagement.domain.useCases.projects.GetProjectUseCase
+import com.example.taskmanagement.domain.useCases.projects.UpdateProjectUseCase
+import com.example.taskmanagement.domain.useCases.tag.GetCurrentUserTag
+import com.example.taskmanagement.domain.useCases.teams.GetCurrentUserTeamsUseCase
+import com.example.taskmanagement.domain.useCases.teams.GetTeamUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class ProjectFormViewModel(
-    private val repository: MainRepository,
+    private val getProjectUseCase: GetProjectUseCase,
+    private val getCurrentUserTeamsUseCase: GetCurrentUserTeamsUseCase,
+    private val getCurrentUserTag: GetCurrentUserTag,
+    private val getTeamUseCase: GetTeamUseCase,
+    private val createProjectUseCase: CreateProjectUseCase,
+    private val updateProjectUseCase: UpdateProjectUseCase,
     private val teamId: String,
     private val projectId: String
 ) : ViewModel() {
@@ -47,7 +59,7 @@ class ProjectFormViewModel(
     }
 
     private suspend fun getProject() {
-        val result = repository.getProject(projectId)
+        val result = getProjectUseCase(projectId)
         result.onSuccess {
             projectView.value = it
             members.addAll(it.members.map { activeUser -> activeUser.user })
@@ -63,7 +75,7 @@ class ProjectFormViewModel(
 
     fun setTeams() {
         viewModelScope.launch {
-            teams.value = repository.getUserTeams()
+            teams.value = getCurrentUserTeamsUseCase(Unit)
             teams.value.onError {
                 val event = SnackBarEvent(it ?: "") { setTeams() }
                 snackbarChannel.send(event)
@@ -73,7 +85,8 @@ class ProjectFormViewModel(
 
     private fun getUserTag() {
         viewModelScope.launch {
-            currentUserPermission = repository.getUserTag("projects", projectId)
+            currentUserPermission =
+                getCurrentUserTag(GetCurrentUserTag.Params(ParentRoute.Projects, projectId))
             currentUserPermission.onError {
                 val event = SnackBarEvent(it ?: "") { getUserTag() }
                 snackbarChannel.send(event)
@@ -88,7 +101,7 @@ class ProjectFormViewModel(
     }
 
     private suspend fun assignTeam(id: String) {
-        team.value = repository.getUserTeam(id)
+        team.value = getTeamUseCase(id)
         team.value.onError {
             val event = SnackBarEvent(it ?: "") { setTeam(id) }
             snackbarChannel.send(event)
@@ -138,9 +151,9 @@ class ProjectFormViewModel(
                 projectView.value.toProject()
                     .copy(members = getSelectedMembers())
             val result = if (isUpdating)
-                repository.updateProject(project)
+                updateProjectUseCase(project)
             else
-                repository.saveProject(project)
+                createProjectUseCase(project)
             result.onSuccess {
                 val event = SnackBarEvent("project has been saved", null) {}
                 snackbarChannel.send(event)

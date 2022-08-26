@@ -14,13 +14,21 @@ import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.repository.MainRepository
+import com.example.taskmanagement.domain.useCases.tag.AssignTagUseCase
+import com.example.taskmanagement.domain.useCases.tag.GetCurrentUserTag
+import com.example.taskmanagement.domain.useCases.teams.GetTeamUseCase
+import com.example.taskmanagement.domain.useCases.teams.invitation.SendInvitationUseCase
+import com.example.taskmanagement.domain.useCases.user.SearchMembersUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import java.util.*
 
 class TeamViewModel(
-    private val repository: MainRepository,
+    private val getTeamUseCase: GetTeamUseCase,
+    private val sendInvitationUseCase: SendInvitationUseCase,
+    private val getCurrentUserTag: GetCurrentUserTag,
+    private val searchMembersUseCase: SearchMembersUseCase,
+    private val assignTagUseCase: AssignTagUseCase,
     private val teamId: String
 ) : ViewModel() {
     val team = mutableStateOf<Resource<TeamView>>(Resource.Initialized())
@@ -38,7 +46,7 @@ class TeamViewModel(
 
     private fun getTeam() {
         viewModelScope.launch {
-            team.value = repository.getUserTeam(teamId)
+            team.value = getTeamUseCase(teamId)
             if (team.value is Resource.Error) {
                 val event = SnackBarEvent(team.value.message ?: "", "Retry") {
                     getTeam()
@@ -53,7 +61,7 @@ class TeamViewModel(
 
     private fun getCurrentUserTag() {
         viewModelScope.launch {
-            val result = repository.getUserTag("teams", teamId)
+            val result = getCurrentUserTag(GetCurrentUserTag.Params(ParentRoute.Teams, teamId))
             result.onSuccess {
                 currentUserTag.value = it
             }
@@ -82,7 +90,7 @@ class TeamViewModel(
 
     fun searchUsers(query: String) {
         viewModelScope.launch {
-            val result = repository.searchMembers(query)
+            val result = searchMembersUseCase(query)
             result.onSuccess {
                 suggestions.value =
                     it - (team.value.data?.members?.map { activeUser -> activeUser.user }
@@ -97,7 +105,11 @@ class TeamViewModel(
 
     fun sendInvitations() {
         viewModelScope.launch {
-            val result = repository.sendInvitations(teamId, invitations.value.map { it.id })
+            val result = sendInvitationUseCase(
+                SendInvitationUseCase.Param(
+                    teamId,
+                    invitations.value.map { it.id })
+            )
             result.onSuccess {
                 val event = SnackBarEvent("invitations has been sent", null) {}
                 snackBarChannel.send(event)
@@ -111,10 +123,11 @@ class TeamViewModel(
 
     fun saveTaggedMembers() {
         viewModelScope.launch {
-            val result = repository.assignTag(
-                teamId,
-                ParentRoute.Teams,
-                taggedMembersList.map { it.toActiveUser() })
+            val result = assignTagUseCase(
+                AssignTagUseCase.Params(teamId,
+                    ParentRoute.Teams,
+                    taggedMembersList.map { it.toActiveUser() })
+            )
             result.onError {
                 val event = SnackBarEvent(it ?: "") {
                     saveTaggedMembers()

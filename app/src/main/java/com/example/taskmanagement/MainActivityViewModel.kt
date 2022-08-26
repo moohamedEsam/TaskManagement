@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 class MainActivityViewModel(private val repository: MainRepository) : ViewModel() {
     val user = mutableStateOf<Resource<User>>(Resource.Initialized())
     fun getCurrentUserProfile() = viewModelScope.launch {
-        user.value = repository.getUserProfile()
+        user.value = repository.getCurrentUserProfile()
         Log.i("MainActivityViewModel", "getCurrentUserProfile: ${user.value.data?.username}")
     }
 }

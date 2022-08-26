@@ -5,17 +5,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.Tag
-import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUser
-import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
 import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.dataModels.user.User
+import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.domain.repository.MainRepository
-import com.example.taskmanagement.domain.useCases.CreateTeamUseCase
-import com.example.taskmanagement.domain.useCases.UpdateTeamUseCase
+import com.example.taskmanagement.domain.useCases.tag.GetCurrentUserTag
+import com.example.taskmanagement.domain.useCases.teams.CreateTeamUseCase
+import com.example.taskmanagement.domain.useCases.teams.GetTeamUseCase
+import com.example.taskmanagement.domain.useCases.teams.UpdateTeamUseCase
+import com.example.taskmanagement.domain.useCases.user.SearchMembersUseCase
 import com.example.taskmanagement.presentation.utils.MemberManager
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -23,7 +25,9 @@ import kotlinx.coroutines.launch
 import java.util.*
 
 class TeamFormViewModel(
-    private val repository: MainRepository,
+    private val searchMembersUseCase: SearchMembersUseCase,
+    private val getCurrentUserTag: GetCurrentUserTag,
+    private val getTeamUseCase: GetTeamUseCase,
     private val updateTeamUseCase: UpdateTeamUseCase,
     private val createTeamUseCase: CreateTeamUseCase,
     private val memberManager: MemberManager<TeamView>,
@@ -49,7 +53,7 @@ class TeamFormViewModel(
 
     private fun setCurrentUserTag() {
         viewModelScope.launch {
-            currentUserTag = repository.getUserTag("teams", teamId)
+            currentUserTag = getCurrentUserTag(GetCurrentUserTag.Params(ParentRoute.Teams, teamId))
             currentUserTag.onError {
                 val event = SnackBarEvent(it ?: "") { setCurrentUserTag() }
                 snackBarChannel.send(event)
@@ -60,7 +64,7 @@ class TeamFormViewModel(
 
     private fun setTeamView() {
         viewModelScope.launch {
-            val result = repository.getUserTeam(teamId)
+            val result = getTeamUseCase(teamId)
             if (result is Resource.Error) {
                 val event = SnackBarEvent(result.message ?: "") { setTeamView() }
                 snackBarChannel.send(event)
@@ -144,7 +148,7 @@ class TeamFormViewModel(
 
 
     fun searchMembers(query: String) = viewModelScope.launch {
-        val response = repository.searchMembers(query)
+        val response = searchMembersUseCase(query)
         response.onSuccess {
             memberSuggestions.value = it
         }

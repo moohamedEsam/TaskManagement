@@ -7,11 +7,13 @@ import com.example.taskmanagement.domain.dataModels.team.Team
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.repository.MainRepository
+import com.example.taskmanagement.domain.useCases.teams.GetCurrentUserTeamsUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class TeamsViewModel(private val repository: MainRepository) : ViewModel() {
+class TeamsViewModel(private val getCurrentUserTeamsUseCase: GetCurrentUserTeamsUseCase) :
+    ViewModel() {
     val teams = mutableStateOf(emptyList<Team>())
     val filteredTeams = mutableStateOf(emptyList<Team>())
     val searchQuery = mutableStateOf("")
@@ -24,7 +26,7 @@ class TeamsViewModel(private val repository: MainRepository) : ViewModel() {
 
     private fun getTeams() {
         viewModelScope.launch {
-            val result = repository.getUserTeams()
+            val result = getCurrentUserTeamsUseCase(Unit)
             if (result is Resource.Error) {
                 val event = SnackBarEvent(result.message ?: "", "Retry") {
                     getTeams()

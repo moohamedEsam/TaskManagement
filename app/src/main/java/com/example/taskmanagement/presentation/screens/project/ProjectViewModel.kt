@@ -13,6 +13,8 @@ import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.repository.MainRepository
+import com.example.taskmanagement.domain.useCases.projects.GetProjectUseCase
+import com.example.taskmanagement.domain.useCases.tag.AssignTagUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -21,7 +23,8 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 class ProjectViewModel(
-    private val repository: MainRepository,
+    private val getProjectUseCase: GetProjectUseCase,
+    private val assignTagUseCase: AssignTagUseCase,
     private val projectId: String
 ) : ViewModel() {
     val project = mutableStateOf<Resource<ProjectView>>(Resource.Initialized())
@@ -36,7 +39,7 @@ class ProjectViewModel(
 
     private fun getProject() {
         viewModelScope.launch {
-            project.value = repository.getProject(projectId)
+            project.value = getProjectUseCase(projectId)
             project.value.onSuccess {
                 taggedMembers.addAll(it.members)
             }
@@ -81,10 +84,12 @@ class ProjectViewModel(
 
     fun saveTaggedMembers() {
         viewModelScope.launch {
-            val result = repository.assignTag(
-                projectId,
-                ParentRoute.Projects,
-                taggedMembers.map { it.toActiveUser() })
+            val result = assignTagUseCase(
+                AssignTagUseCase.Params(
+                    projectId,
+                    ParentRoute.Projects,
+                    taggedMembers.map { it.toActiveUser() })
+            )
             result.onError {
                 val event = SnackBarEvent(it ?: "") {
                     saveTaggedMembers()
