@@ -3,10 +3,7 @@ package com.example.taskmanagement.presentation.utils
 import android.app.Application
 import android.os.StrictMode
 import android.util.Log
-import com.example.taskmanagement.presentation.koin.repository
-import com.example.taskmanagement.presentation.koin.useCaseModules
-import com.example.taskmanagement.presentation.koin.utils
-import com.example.taskmanagement.presentation.koin.viewModelModule
+import com.example.taskmanagement.presentation.koin.*
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.android.logger.AndroidLogger
@@ -20,7 +17,12 @@ class ApplicationClass : Application() {
         super.onCreate()
         startKoin {
             androidContext(this@ApplicationClass)
-            modules(listOf(utils, viewModelModule, repository, useCaseModules))
+            modules(
+                listOf(
+                    utils, viewModelModule, repository, teamUserCasesModule,
+                    projectUseCasesModule, taskUseCasesModule, userUseCasesModule
+                )
+            )
             androidLogger()
         }
     }

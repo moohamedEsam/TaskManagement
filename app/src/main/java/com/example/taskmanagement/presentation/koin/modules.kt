@@ -12,10 +12,30 @@ import com.example.taskmanagement.data.data_source_impl.RemoteDataSourceImpl
 import com.example.taskmanagement.data.repository.MainRepositoryImpl
 import com.example.taskmanagement.domain.dataModels.utils.Token
 import com.example.taskmanagement.domain.repository.MainRepository
-import com.example.taskmanagement.domain.useCases.CreateTeamUseCase
-import com.example.taskmanagement.domain.useCases.LoginUserUseCase
-import com.example.taskmanagement.domain.useCases.SignUpUseCase
-import com.example.taskmanagement.domain.useCases.UpdateTeamUseCase
+import com.example.taskmanagement.domain.useCases.projects.CreateProjectUseCase
+import com.example.taskmanagement.domain.useCases.projects.GetCurrentUserProjectUseCase
+import com.example.taskmanagement.domain.useCases.projects.GetProjectUseCase
+import com.example.taskmanagement.domain.useCases.projects.UpdateProjectUseCase
+import com.example.taskmanagement.domain.useCases.shared.RemoveMembersUseCase
+import com.example.taskmanagement.domain.useCases.tag.AssignTagUseCase
+import com.example.taskmanagement.domain.useCases.tag.CreateTagUseCase
+import com.example.taskmanagement.domain.useCases.tag.GetCurrentUserTag
+import com.example.taskmanagement.domain.useCases.tasks.CreateTaskUseCase
+import com.example.taskmanagement.domain.useCases.tasks.GetCurrentUserTasksUseCase
+import com.example.taskmanagement.domain.useCases.tasks.GetTaskUseCase
+import com.example.taskmanagement.domain.useCases.tasks.UpdateTaskUseCase
+import com.example.taskmanagement.domain.useCases.tasks.comments.CreateCommentUseCase
+import com.example.taskmanagement.domain.useCases.tasks.comments.UpdateCommentUseCase
+import com.example.taskmanagement.domain.useCases.tasks.taskItems.UpdateTaskItemsUseCase
+import com.example.taskmanagement.domain.useCases.teams.CreateTeamUseCase
+import com.example.taskmanagement.domain.useCases.teams.GetCurrentUserTeamsUseCase
+import com.example.taskmanagement.domain.useCases.teams.GetTeamUseCase
+import com.example.taskmanagement.domain.useCases.user.LoginUserUseCase
+import com.example.taskmanagement.domain.useCases.user.SignUpUseCase
+import com.example.taskmanagement.domain.useCases.teams.UpdateTeamUseCase
+import com.example.taskmanagement.domain.useCases.teams.invitation.SendInvitationUseCase
+import com.example.taskmanagement.domain.useCases.user.GetCurrentUserProfileUseCase
+import com.example.taskmanagement.domain.useCases.user.SearchMembersUseCase
 import com.example.taskmanagement.domain.utils.Urls
 import com.example.taskmanagement.domain.validatorsImpl.ProfileValidator
 import com.example.taskmanagement.domain.vallidators.Validator
@@ -61,11 +81,47 @@ val repository = module {
     single { provideRepository(get()) }
 }
 
-val useCaseModules = module {
-    factory { LoginUserUseCase(get()) }
-    factory { SignUpUseCase(get()) }
-    factory { CreateTeamUseCase(get()) }
-    factory { UpdateTeamUseCase(get()) }
+val teamUserCasesModule = module {
+    single { CreateTeamUseCase(get()) }
+    single { UpdateTeamUseCase(get()) }
+    single { GetCurrentUserTeamsUseCase(get()) }
+    single { GetTeamUseCase(get()) }
+    single { SendInvitationUseCase(get()) }
+    single { AssignTagUseCase(get()) }
+    single { CreateTagUseCase(get()) }
+    single { GetCurrentUserTag(get()) }
+    single { RemoveMembersUseCase(get()) }
+
+}
+
+val projectUseCasesModule = module {
+    single { CreateProjectUseCase(get()) }
+    single { GetCurrentUserProjectUseCase(get()) }
+    single { CreateProjectUseCase(get()) }
+    single { UpdateProjectUseCase(get()) }
+}
+
+val taskUseCasesModule = module {
+    single { CreateTaskUseCase(get()) }
+
+    single { UpdateTaskUseCase(get()) }
+
+    single { GetTaskUseCase(get()) }
+
+    single { CreateCommentUseCase(get()) }
+
+    single { UpdateCommentUseCase(get()) }
+
+    single { UpdateTaskItemsUseCase(get()) }
+
+    single { GetCurrentUserTasksUseCase(get()) }
+}
+
+val userUseCasesModule = module {
+    single { LoginUserUseCase(get()) }
+    single { SignUpUseCase(get()) }
+    single { GetCurrentUserProfileUseCase(get()) }
+    single { SearchMembersUseCase(get()) }
 }
 
 fun provideRepository(remoteDataSource: RemoteDataSource): MainRepository =
@@ -118,7 +174,7 @@ fun Scope.provideHttpClient() = HttpClient(CIO) {
         bearer {
             loadTokens {
                 val token = loadToken(androidContext())
-                BearerTokens(token.token, token.token)
+                BearerTokens(token.accessToken, token.accessToken)
             }
             refreshTokens {
                 val accessToken = oldTokens?.accessToken ?: ""
@@ -126,9 +182,9 @@ fun Scope.provideHttpClient() = HttpClient(CIO) {
                     setBody(accessToken)
                     markAsRefreshTokenRequest()
                 }.body<Token>()
-                if (refreshToken.token != accessToken)
+                if (refreshToken.accessToken != accessToken)
                     saveToken(androidContext(), refreshToken)
-                BearerTokens(refreshToken.token, refreshToken.token)
+                BearerTokens(refreshToken.accessToken, refreshToken.accessToken)
             }
             sendWithoutRequest {
                 it.url.host in listOf(Urls.REFRESH_TOKEN, Urls.SIGN_IN, Urls.SIGN_UP)
@@ -152,10 +208,10 @@ private fun Scope.provideCoilImageLoader() = ImageLoader
     .build()
 
 fun saveToken(context: Context, token: Token) {
-    Log.i("modules", "saveToken: ${token.token}")
+    Log.i("modules", "saveToken: ${token.accessToken}")
     context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
         .edit()
-        .putString("token", token.token)
+        .putString("token", token.accessToken)
         .apply()
 
 }

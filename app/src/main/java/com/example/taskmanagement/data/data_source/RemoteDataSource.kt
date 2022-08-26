@@ -14,50 +14,58 @@ import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 
 interface RemoteDataSource {
-    suspend fun loginUser(credentials: Credentials): UserStatus
-    suspend fun registerUser(user: SignUpUserBody): Resource<Token>
-    suspend fun searchMembers(query: String): Resource<List<User>>
-    suspend fun acceptInvitation(invitationId: String): Resource<Boolean>
-    suspend fun rejectInvitation(invitationId: String): Resource<Boolean>
-    suspend fun getUserInvitations(): Resource<List<Invitation>>
-    suspend fun getUserTag(parentRoute: String, id: String): Resource<Tag>
-    suspend fun createTag(tag: Tag, parentRoute: ParentRoute): Resource<Tag>
+    suspend fun loginUser(credentials: Credentials): Token
+    suspend fun registerUser(user: SignUpUserBody): Token
+    suspend fun searchMembers(query: String): List<User>
+    suspend fun acceptInvitation(invitationId: String): Boolean
+    suspend fun rejectInvitation(invitationId: String): Boolean
+    suspend fun getUserInvitations(): List<Invitation>
+    suspend fun getCurrentUserTag(parentRoute: ParentRoute, id: String): Tag
+    suspend fun createTag(tag: Tag, parentRoute: ParentRoute): Tag
 
-    suspend fun getUserTasks(): Resource<List<Task>>
-    suspend fun getUserTask(taskId: String): Resource<TaskView>
-    suspend fun createTask(task: Task): Resource<Task>
-    suspend fun updateTask(task: Task): Resource<Task>
-    suspend fun deleteTask(taskId: String): Resource<ConfirmationResponse>
-    suspend fun getUserTasksByStatus(status: TaskStatus): Resource<List<Task>>
-    suspend fun getUserTasksByPriority(priority: Priority): Resource<List<Task>>
-    suspend fun createTaskComment(comment: Comment): Resource<Comment>
-    suspend fun deleteTaskComment(commentId: String): Resource<ConfirmationResponse>
-    suspend fun updateTaskComment(comment: Comment): Resource<Comment>
+    suspend fun getCurrentUserTasks(): List<Task>
+    suspend fun getTask(taskId: String): TaskView
+    suspend fun createTask(task: Task): Task
+    suspend fun updateTask(task: Task): Task
+    suspend fun deleteTask(taskId: String): ConfirmationResponse
+    suspend fun getUserTasksByStatus(status: TaskStatus): List<Task>
+    suspend fun getUserTasksByPriority(priority: Priority): List<Task>
+    suspend fun createComments(comments: List<Comment>): List<Comment>
+    suspend fun deleteTaskComment(commentId: String): ConfirmationResponse
+    suspend fun updateTaskComment(comment: Comment): Comment
     suspend fun createOrUpdateTaskItems(
         taskId: String,
         taskItems: List<TaskItem>
-    ): Resource<List<TaskItem>>
+    ): List<TaskItem>
 
-    suspend fun deleteTaskItems(taskId: String, taskItemId: String): Resource<List<TaskItem>>
+    suspend fun deleteTaskItems(taskId: String, taskItemId: String): List<TaskItem>
 
 
-    suspend fun getUserProjects(): Resource<List<Project>>
-    suspend fun getUserProject(projectId: String): Resource<ProjectView>
-    suspend fun createProject(project: Project): Resource<Project>
-    suspend fun updateProject(project: Project): Resource<Project>
-    suspend fun deleteProject(projectId: String): Resource<ConfirmationResponse>
+    suspend fun getCurrentUserProjects(): List<Project>
+    suspend fun getProject(projectId: String): ProjectView
+    suspend fun createProject(project: Project): Project
+    suspend fun updateProject(project: Project): Project
+    suspend fun deleteProject(projectId: String): ConfirmationResponse
 
-    suspend fun getUserTeams(): Resource<List<Team>>
-    suspend fun getUserTeam(teamId: String): Resource<TeamView>
-    suspend fun createTeam(team: Team): Resource<TeamDto>
-    suspend fun updateTeam(team: Team): Resource<TeamDto>
-    suspend fun deleteTeam(teamId: String): Resource<ConfirmationResponse>
-    suspend fun sendInvitation(teamId: String, userIds: List<String>): Resource<Boolean>
-    suspend fun getUserProfile(): Resource<User>
+    suspend fun getCurrentUserTeams(): List<Team>
+    suspend fun getTeam(teamId: String): TeamView
+    suspend fun createTeam(team: Team): TeamDto
+    suspend fun updateTeam(team: Team): TeamDto
+    suspend fun deleteTeam(teamId: String): ConfirmationResponse
+    suspend fun sendInvitation(teamId: String, userIds: List<String>): Boolean
+    suspend fun getCurrentUserProfile(): User
     suspend fun assignTag(
         id: String,
         parentRoute: ParentRoute,
         members: List<ActiveUser>
-    ): Resource<List<ActiveUser>>
+    ): List<ActiveUser>
+
+    suspend fun removeMembers(
+        id: String,
+        parentRoute: ParentRoute,
+        members: List<String>
+    ): Boolean
+
+
 
 }

@@ -8,6 +8,8 @@ import com.example.taskmanagement.domain.dataModels.team.Team
 import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.*
 import com.example.taskmanagement.domain.dataModels.project.ProjectView
+import com.example.taskmanagement.domain.dataModels.task.Comment
+import com.example.taskmanagement.domain.dataModels.task.TaskItem
 import com.example.taskmanagement.domain.dataModels.task.TaskView
 import com.example.taskmanagement.domain.dataModels.team.Invitation
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
@@ -20,21 +22,24 @@ interface MainRepository {
     suspend fun searchMembers(query: String): Resource<List<User>>
 
     //suspend fun updateUser(user: User): Resource<User>
-    suspend fun getUserTasks(): Resource<List<Task>>
+    suspend fun getCurrentUserTasks(): Resource<List<Task>>
     suspend fun getTask(taskId: String): Resource<TaskView>
-    suspend fun saveTask(task: Task): Resource<Task>
+    suspend fun createTask(task: Task): Resource<Task>
     suspend fun updateTask(task: Task): Resource<Task>
+    suspend fun updateTaskItems(taskItems: List<TaskItem>, taskId: String): Resource<List<TaskItem>>
+    suspend fun createComments(comments: List<Comment>): Resource<List<Comment>>
+    suspend fun updateComment(comment: Comment): Resource<Comment>
 
     //suspend fun getUser(context: Context): Resource<User>
-    suspend fun getUserProfile(): Resource<User>
+    suspend fun getCurrentUserProfile(): Resource<User>
 
-    suspend fun getUserProjects(): Resource<List<Project>>
+    suspend fun getCurrentUserProjects(): Resource<List<Project>>
     suspend fun getProject(projectId: String): Resource<ProjectView>
-    suspend fun getUserTeam(teamId: String): Resource<TeamView>
-    suspend fun saveProject(project: Project): Resource<Project>
+    suspend fun getTeam(teamId: String): Resource<TeamView>
+    suspend fun createProject(project: Project): Resource<Project>
     suspend fun updateProject(project: Project): Resource<Project>
 
-    suspend fun getUserTeams(): Resource<List<Team>>
+    suspend fun getCurrentUserTeams(): Resource<List<Team>>
     suspend fun updateTeam(team: Team): Resource<TeamDto>
     suspend fun createTeam(team: Team): Resource<TeamDto>
     suspend fun sendInvitations(teamId: String, invitation: List<String>): Resource<Boolean>
@@ -45,5 +50,10 @@ interface MainRepository {
         members: List<ActiveUser>
     ): Resource<List<ActiveUser>>
 
-    suspend fun getUserTag(parentRoute: String, id: String): Resource<Tag>
+    suspend fun getCurrentUserTag(parentRoute: ParentRoute, id: String): Resource<Tag>
+    suspend fun removeMembers(
+        parentRoute: ParentRoute,
+        id: String,
+        members: List<String>
+    ): Resource<Boolean>
 }

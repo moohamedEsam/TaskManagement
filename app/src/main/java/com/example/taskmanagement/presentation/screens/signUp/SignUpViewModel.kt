@@ -8,7 +8,7 @@ import com.example.taskmanagement.domain.dataModels.utils.SignUpUserBody
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
-import com.example.taskmanagement.domain.useCases.SignUpUseCase
+import com.example.taskmanagement.domain.useCases.user.SignUpUseCase
 import com.example.taskmanagement.domain.vallidators.Validator
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow

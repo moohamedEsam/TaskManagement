@@ -31,13 +31,14 @@ object Urls {
 
     fun getTaskUrl(id: String) = "$BASE_URL/tasks/$id"
     fun getTaskCommentsUrl(id: String) = "$BASE_URL/comments/$id"
-    fun getUserTag(parentRoute: String, id: String) = "$BASE_URL/$parentRoute/$id/userTag"
+    fun getUserTag(parentRoute: ParentRoute, id: String) = "$BASE_URL/$parentRoute/$id/userTag"
 
     fun getTasksByStatusUrl(status: TaskStatus) = "$BASE_URL/tasks?status=$status"
     fun getTasksByPriorityUrl(priority: Priority) = "$BASE_URL/tasks?priority=$priority"
 
     fun getTeamUrl(id: String) = "$BASE_URL/teams/$id"
     fun assignTag(id: String, parentRoute: ParentRoute) = "$BASE_URL/$parentRoute/$id/assignTag"
+    fun removeMembers(id: String, parentRoute: ParentRoute) = "$BASE_URL/$parentRoute/$id/removeMembers"
     fun getProjectUrl(id: String) = "$BASE_URL/projects/$id"
 
     fun getUserImage(id: String?) = if (id != null) "$BASE_URL/user/Images/$id" else null
