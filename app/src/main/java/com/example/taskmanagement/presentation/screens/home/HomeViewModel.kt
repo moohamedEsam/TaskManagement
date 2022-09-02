@@ -65,7 +65,7 @@ class HomeViewModel(
 
     fun getUserTasks() {
         viewModelScope.launch {
-            tasks.value = repository.getUserTasks()
+            tasks.value = repository.getCurrentUserTasks()
         }
     }
 

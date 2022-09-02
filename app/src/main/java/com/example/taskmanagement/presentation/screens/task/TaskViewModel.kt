@@ -60,7 +60,7 @@ class TaskViewModel(
                     listOf("mohamedEsam"),
                     id = ""
                 )
-                task.value = task.value.copy(it.copy(comments = mutableSetOf(comment)))
+                task.value = task.value.copy(it.copy(comments = mutableListOf(comment)))
                 taskItems.addAll(it.taskItems)
             }
         }
@@ -245,7 +245,7 @@ class TaskViewModel(
                             }
                             result.onSuccess { commentsResponse ->
                                 task.value =
-                                    task.value.copy(it.copy(comments = commentsResponse.toMutableSet()))
+                                    task.value.copy(it.copy(comments = commentsResponse.toMutableList()))
                             }
                         }
                         is TaskScreenUIEvent.Comments.Edit -> {

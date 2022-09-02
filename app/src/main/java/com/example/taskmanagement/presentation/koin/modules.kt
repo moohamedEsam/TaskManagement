@@ -103,17 +103,11 @@ val projectUseCasesModule = module {
 
 val taskUseCasesModule = module {
     single { CreateTaskUseCase(get()) }
-
     single { UpdateTaskUseCase(get()) }
-
     single { GetTaskUseCase(get()) }
-
     single { CreateCommentUseCase(get()) }
-
     single { UpdateCommentUseCase(get()) }
-
     single { UpdateTaskItemsUseCase(get()) }
-
     single { GetCurrentUserTasksUseCase(get()) }
 }
 
@@ -134,20 +128,61 @@ val viewModelModule = module {
     viewModel { HomeViewModel(get()) }
     viewModel { LoginViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get()) }
-    viewModel { params -> TaskViewModel(get(), params[0]) }
+    viewModel { params ->
+        TaskViewModel(
+            getTaskUseCase = get(),
+            getCurrentUserProfileUseCase = get(),
+            updateTaskUseCase = get(),
+            updateCommentUseCase = get(),
+            updateTaskItemsUseCase = get(),
+            removeMembersUseCase = get(),
+            createCommentUseCase = get(),
+            taskId = params[0]
+        )
+    }
     viewModel { ProfileViewModel(get(), get()) }
     viewModel { ProjectsViewModel(get()) }
     viewModel { TeamsViewModel(get()) }
-    viewModel { params -> ProjectViewModel(get(), params[0]) }
+    viewModel { params -> ProjectViewModel(get(), get(), params[0]) }
     viewModel { params -> TagViewModel(get(), params[0], params[1]) }
-    viewModel { params -> TeamViewModel(get(), params[0]) }
-    viewModel { params -> TaskFormViewModel(get(), params[0], params[1]) }
-    viewModel { params -> ProjectFormViewModel(get(), params[0], params[1]) }
+    viewModel { params -> TeamViewModel(get(), get(), get(), get(), get(), params[0]) }
     viewModel { params ->
-        if (params.get<String>(0).isBlank())
-            TeamFormViewModel(get(), get(), get(), TeamMemberManagerCreateCase(), params[0])
-        else
-            TeamFormViewModel(get(), get(), get(), TeamMemberManagerUpdateCase(), params[0])
+        TaskFormViewModel(
+            getTaskUseCase = get(),
+            getCurrentUserTag = get(),
+            getCurrentUserProjectUseCase = get(),
+            getProjectUseCase = get(),
+            createTaskUseCase = get(),
+            updateTaskUseCase = get(),
+            projectId = params[0],
+            taskId = params[1]
+        )
+    }
+    viewModel { params ->
+        ProjectFormViewModel(
+            getProjectUseCase = get(),
+            getCurrentUserTag = get(),
+            getCurrentUserTeamsUseCase = get(),
+            getTeamUseCase = get(),
+            createProjectUseCase = get(),
+            updateProjectUseCase = get(),
+            teamId = params[0],
+            projectId = params[1]
+        )
+    }
+    viewModel { params ->
+        TeamFormViewModel(
+            searchMembersUseCase = get(),
+            getCurrentUserTag = get(),
+            getTeamUseCase = get(),
+            updateTeamUseCase = get(),
+            createTeamUseCase = get(),
+            memberManager = if (params.get<String>(0).isBlank())
+                TeamMemberManagerCreateCase()
+            else
+                TeamMemberManagerUpdateCase(),
+            teamId = params[0]
+        )
     }
 
 }
@@ -174,17 +209,17 @@ fun Scope.provideHttpClient() = HttpClient(CIO) {
         bearer {
             loadTokens {
                 val token = loadToken(androidContext())
-                BearerTokens(token.accessToken, token.accessToken)
+                BearerTokens(token.token, token.token)
             }
             refreshTokens {
-                val accessToken = oldTokens?.accessToken ?: ""
+                val token = oldTokens?.accessToken ?: ""
                 val refreshToken = client.post(Urls.REFRESH_TOKEN) {
-                    setBody(accessToken)
+                    setBody(token)
                     markAsRefreshTokenRequest()
                 }.body<Token>()
-                if (refreshToken.accessToken != accessToken)
+                if (refreshToken.token != token)
                     saveToken(androidContext(), refreshToken)
-                BearerTokens(refreshToken.accessToken, refreshToken.accessToken)
+                BearerTokens(refreshToken.token, refreshToken.token)
             }
             sendWithoutRequest {
                 it.url.host in listOf(Urls.REFRESH_TOKEN, Urls.SIGN_IN, Urls.SIGN_UP)
@@ -208,10 +243,10 @@ private fun Scope.provideCoilImageLoader() = ImageLoader
     .build()
 
 fun saveToken(context: Context, token: Token) {
-    Log.i("modules", "saveToken: ${token.accessToken}")
+    Log.i("modules", "saveToken: ${token.token}")
     context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
         .edit()
-        .putString("token", token.accessToken)
+        .putString("token", token.token)
         .apply()
 
 }

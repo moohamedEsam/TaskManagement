@@ -29,13 +29,6 @@ fun TaskScreen(
     val viewModel by inject<TaskViewModel> { parametersOf(taskId) }
     val taskResource by viewModel.task
     val task = taskResource.data ?: return
-    HandleResourceChange(
-        resource = taskResource,
-        onSuccess = {},
-        snackbarHostState = snackbarHostState,
-        onSnackbarClick = {
-            viewModel.getTask()
-        })
     Box {
         TaskScreenContent(navHostController, task)
 
