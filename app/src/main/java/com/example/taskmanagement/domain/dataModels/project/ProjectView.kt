@@ -10,13 +10,13 @@ import java.util.*
 
 @Serializable
 data class ProjectView(
-    val name: String = "",
-    val owner: User,
+    val name: String,
+    val owner: User = User("owner"),
     val description: String = "",
     val members: List<ActiveUserDto> = emptyList(),
     val tasks: List<Task> = emptyList(),
     val tags: List<Tag> = emptyList(),
-    val team: String = "",
+    val team: String = UUID.randomUUID().toString(),
     val id: String = UUID.randomUUID().toString()
 ) {
     fun toProject() = Project(

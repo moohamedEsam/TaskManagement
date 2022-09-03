@@ -36,10 +36,6 @@ fun TeamFormScreen(
     val viewModel: TeamFormViewModel by inject { parametersOf(teamId) }
     val channel = viewModel.receiveChannel
     LaunchedEffect(key1 = Unit) {
-        if (teamId.isNotBlank()){
-            viewModel.setCurrentUserTag()
-            viewModel.setTeamView()
-        }
         channel.collectLatest {
             handleSnackBarEvent(it, snackbarHostState)
         }

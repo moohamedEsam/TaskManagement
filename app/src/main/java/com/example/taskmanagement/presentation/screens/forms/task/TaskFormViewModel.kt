@@ -147,28 +147,31 @@ class TaskFormViewModel(
 
     fun setTaskDescription(description: String) = viewModelScope.launch {
         _taskView.update { it.copy(description = description) }
-        _taskTitleValidationResult.update { validator.nameValidator.validate(description) }
     }
 
     fun toggleTaskAssigned(userId: String) = viewModelScope.launch {
-       _assigned.update {
-           if (it.contains(userId))
-               it - userId
-           else
-               it + userId
-       }
+        _assigned.update {
+            if (it.contains(userId))
+                it - userId
+            else
+                it + userId
+        }
     }
 
     fun setTaskEstimatedTime(estimatedTime: String) = viewModelScope.launch {
         _taskEstimatedTimeText.update { estimatedTime }
-        _taskEstimatedTimeValidationResult.update { validator.estimatedTimeValidator.validate(estimatedTime) }
+        _taskEstimatedTimeValidationResult.update {
+            validator.estimatedTimeValidator.validate(
+                estimatedTime
+            )
+        }
         if (taskEstimatedTimeValidationResult.value.isValid)
             _taskView.update { it.copy(estimatedTime = estimatedTime.toInt()) }
     }
 
     fun setTaskMilestoneTitle(milestoneTitle: String) = viewModelScope.launch {
         _taskView.update { it.copy(milestoneTitle = milestoneTitle) }
-        _taskTitleValidationResult.update { validator.nameValidator.validate(milestoneTitle) }
+        _taskMilestoneTitleValidationResult.update { validator.nameValidator.validate(milestoneTitle) }
     }
 
     fun setTaskPriority(priority: Priority) = viewModelScope.launch {
@@ -177,7 +180,11 @@ class TaskFormViewModel(
 
     fun setTaskFinishDate(finishDate: Date) = viewModelScope.launch {
         _taskView.update { it.copy(finishDate = finishDate) }
-        _taskMilestoneTitleValidationResult.update { validator.dateValidator.validate(finishDate) }
+        _taskFinishDateValidationResult.update { validator.dateValidator.validate(finishDate) }
+    }
+
+    fun validateTaskItemTitle(title: String) = viewModelScope.launch {
+        _taskItemValidationResult.update { validator.nameValidator.validate(title) }
     }
 
     fun addTaskItem(value: TaskItem) = viewModelScope.launch {

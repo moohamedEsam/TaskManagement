@@ -14,6 +14,7 @@ import com.example.taskmanagement.domain.dataModels.utils.Token
 import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.projects.CreateProjectUseCase
 import com.example.taskmanagement.domain.useCases.projects.GetCurrentUserProjectUseCase
+import com.example.taskmanagement.domain.useCases.projects.GetProjectUseCase
 import com.example.taskmanagement.domain.useCases.projects.UpdateProjectUseCase
 import com.example.taskmanagement.domain.useCases.shared.RemoveMembersUseCase
 import com.example.taskmanagement.domain.useCases.tag.AssignTagUseCase
@@ -95,10 +96,10 @@ val teamUserCasesModule = module {
 }
 
 val projectUseCasesModule = module {
-    single { CreateProjectUseCase(get()) }
     single { GetCurrentUserProjectUseCase(get()) }
     single { CreateProjectUseCase(get()) }
     single { UpdateProjectUseCase(get()) }
+    single { GetProjectUseCase(get()) }
 }
 
 val taskUseCasesModule = module {

@@ -7,7 +7,7 @@ import java.util.*
 
 @Serializable
 data class User(
-    val username: String = "",
+    val username: String,
     val email: String = "",
     val photoPath: String? = null,
     val phone: String? = null,

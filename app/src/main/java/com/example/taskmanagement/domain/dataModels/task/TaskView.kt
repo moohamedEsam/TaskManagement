@@ -8,10 +8,10 @@ import java.util.*
 
 @Serializable
 data class TaskView(
+    val title: String,
     val id: String = UUID.randomUUID().toString(),
     val project: String = UUID.randomUUID().toString(),
-    val title: String = "",
-    val owner: User = User(),
+    val owner: User = User(""),
     val description: String? = null,
     val assigned: MutableList<ActiveUserDto> = mutableListOf(),
     val status: TaskStatus = TaskStatus.Pending,

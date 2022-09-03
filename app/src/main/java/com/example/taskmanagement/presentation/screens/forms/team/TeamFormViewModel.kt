@@ -49,7 +49,14 @@ class TeamFormViewModel(
     private val snackBarChannel = Channel<SnackBarEvent>()
     val receiveChannel = snackBarChannel.receiveAsFlow()
 
-    fun setCurrentUserTag(): Job = viewModelScope.launch {
+    init {
+        if (teamId.isNotBlank()) {
+            setCurrentUserTag()
+            setTeamView()
+        }
+    }
+
+    private fun setCurrentUserTag(): Job = viewModelScope.launch {
         currentUserTag = getCurrentUserTag(GetCurrentUserTag.Params(ParentRoute.Teams, teamId))
         currentUserTag.onError {
             val event = SnackBarEvent(it ?: "") { setCurrentUserTag() }
@@ -58,7 +65,7 @@ class TeamFormViewModel(
     }
 
 
-    fun setTeamView(): Job = viewModelScope.launch {
+    private fun setTeamView(): Job = viewModelScope.launch {
         val result = getTeamUseCase(teamId)
         if (result is Resource.Error) {
             val event = SnackBarEvent(result.message ?: "") { setTeamView() }
@@ -75,7 +82,7 @@ class TeamFormViewModel(
         return currentUserTag.data?.isUserAuthorized(requiredPermission) ?: true
     }
 
-    private fun getInitializedTeam() = TeamView(owner = User(id = "owner"))
+    private fun getInitializedTeam() = TeamView("")
 
     fun setName(value: String) = viewModelScope.launch {
         _teamView.update { it.copy(name = value) }

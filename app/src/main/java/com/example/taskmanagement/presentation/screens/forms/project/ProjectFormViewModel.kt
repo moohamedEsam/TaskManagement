@@ -125,7 +125,7 @@ class ProjectFormViewModel(
         }
     }
 
-    private fun getInitializedProjectView() = ProjectView(owner = User())
+    private fun getInitializedProjectView() = ProjectView("")
 
     fun toggleProjectMember(user: User) = viewModelScope.launch {
         _members.update {
@@ -154,6 +154,8 @@ class ProjectFormViewModel(
 
     fun saveProject() {
         viewModelScope.launch {
+            if(_projectNameValidationResult.value.isValid)
+                return@launch
             val project =
                 projectView.value.toProject()
                     .copy(members = getSelectedMembers())

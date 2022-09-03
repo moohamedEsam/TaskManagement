@@ -6,9 +6,9 @@ import java.util.*
 
 @Serializable
 data class TeamDto(
-    val name: String = "",
+    val name: String ,
     val description: String? = null,
-    val owner: User = User(),
+    val owner: User,
     val members: List<User> = emptyList(),
     val id: String = UUID.randomUUID().toString()
 )
