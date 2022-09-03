@@ -6,11 +6,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Tag(
-    val permissions: List<Permission>,
-    val title: String,
-    val color: List<Float>,
-    val owner: String,
-    val id: String
+    val permissions: List<Permission> = emptyList(),
+    val title: String = "",
+    val color: List<Float> = listOf(0f, 0f, 0f),
+    val owner: String = "",
+    val id: String = ""
 ) {
     fun getColor() = Color(color[0], color[1], color[2])
     fun isUserAuthorized(requiredPermission: Permission) =

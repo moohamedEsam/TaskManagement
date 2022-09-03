@@ -8,25 +8,25 @@ import java.util.*
 
 @Serializable
 data class TaskView(
-    val id: String,
-    val project: String,
-    val title: String,
-    val owner: User,
-    val description: String?,
-    val assigned: MutableList<ActiveUserDto>,
-    val status: TaskStatus,
-    val estimatedTime: Int?,
-    val priority: Priority,
-    val taskItems: List<TaskItem>,
-    val comments: MutableList<Comment>,
+    val id: String = UUID.randomUUID().toString(),
+    val project: String = UUID.randomUUID().toString(),
+    val title: String = "",
+    val owner: User = User(),
+    val description: String? = null,
+    val assigned: MutableList<ActiveUserDto> = mutableListOf(),
+    val status: TaskStatus = TaskStatus.Pending,
+    val estimatedTime: Int? = null,
+    val priority: Priority = Priority.Medium,
+    val taskItems: List<TaskItem> = emptyList(),
+    val comments: MutableList<Comment> = mutableListOf(),
     val isMilestone: Boolean = false,
     val milestoneTitle: String = title,
     @Serializable(with = DateSerializer::class)
-    val completeDate: Date?,
+    val completeDate: Date? = null,
     @Serializable(with = DateSerializer::class)
-    val createdAt:Date = Date(),
+    val createdAt: Date = Date(),
     @Serializable(with = DateSerializer::class)
-    val finishDate: Date?
+    val finishDate: Date? = null
 ) {
     fun toTask() = Task(
         title = title,

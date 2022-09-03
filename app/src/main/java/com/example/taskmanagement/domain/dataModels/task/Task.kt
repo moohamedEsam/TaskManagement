@@ -7,13 +7,13 @@ import java.util.*
 
 @Serializable
 data class Task(
-    val title: String,
+    val title: String = "",
     val owner: String = "",
     val description: String? = null,
     val assigned: List<ActiveUser> = emptyList(),
-    val project: String,
+    val project: String = "",
     val status: TaskStatus = TaskStatus.Pending,
-    val taskItems: List<TaskItem>,
+    val taskItems: List<TaskItem> = emptyList(),
     val isMilestone:Boolean = false,
     val milestoneTitle:String = title,
     val estimatedTime: Int? = null,
@@ -24,5 +24,5 @@ data class Task(
     val finishDate: Date? = null,
     @Serializable(with = DateSerializer::class)
     val createdAt:Date = Date(),
-    val id: String = ""
+    val id: String = UUID.randomUUID().toString()
 )
