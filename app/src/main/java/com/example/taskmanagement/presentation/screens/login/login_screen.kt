@@ -14,9 +14,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.presentation.navigation.Screens
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
+import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.presentation.customComponents.PasswordTextField
 import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
 import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import org.koin.androidx.compose.inject
@@ -47,8 +50,6 @@ fun BoxScope.LoginScreen(
 @Composable
 fun BoxScope.LoginScreenContent(navHostController: NavHostController, viewModel: LoginViewModel) {
     val userCredentials by viewModel.userCredentials
-    val usernameValidation by viewModel.usernameValidation
-    val passwordValidation by viewModel.passwordValidation
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -69,7 +70,7 @@ fun BoxScope.LoginScreenContent(navHostController: NavHostController, viewModel:
             TextFieldSetup(
                 value = userCredentials.email,
                 label = "Email",
-                validationResult = usernameValidation,
+                validationResult = viewModel.usernameValidation.asStateFlow(),
                 leadingIcon = null,
             ) {
                 viewModel.setEmail(it)
@@ -77,7 +78,7 @@ fun BoxScope.LoginScreenContent(navHostController: NavHostController, viewModel:
             Spacer(modifier = Modifier.height(8.dp))
             PasswordTextField(
                 value = userCredentials.password,
-                validationResult = passwordValidation
+                validationResult = viewModel.passwordValidation.value
             ) {
                 viewModel.setPassword(it)
             }

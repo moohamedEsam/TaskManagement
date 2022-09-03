@@ -1,5 +1,6 @@
 package com.example.taskmanagement.presentation.screens.forms.task
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.taskmanagement.domain.dataModels.task.TaskItem
+import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,7 +31,7 @@ fun TaskItemsList(viewModel: TaskFormViewModel) {
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                NewTaskItemTextField {
+                NewTaskItemTextField(viewModel) {
                     viewModel.addTaskItem(it)
                 }
             }
@@ -67,28 +69,45 @@ private fun TaskItemCard(taskItem: TaskItem, viewModel: TaskFormViewModel) {
 }
 
 @Composable
-fun NewTaskItemTextField(onSave: (TaskItem) -> Unit) {
+fun NewTaskItemTextField(viewModel: TaskFormViewModel, onSave: (TaskItem) -> Unit) {
     var value by remember {
         mutableStateOf("")
     }
-    TextField(
-        value = value,
-        onValueChange = { value = it },
-        label = { Text(text = "task item title") },
-        modifier = Modifier.fillMaxWidth(),
-        trailingIcon = {
-            Icon(
-                imageVector = Icons.Default.Done,
-                contentDescription = null,
-                modifier = Modifier.clickable {
-                    onSave(TaskItem(value))
-                    value = ""
+    val validationResult by viewModel.taskItemValidationResult.collectAsState()
+    Column(modifier = Modifier
+        .padding(8.dp)
+        .animateContentSize()) {
+        TextField(
+            value = value,
+            onValueChange = {
+                viewModel.validateTaskItemTitle(it)
+                value = it
+            },
+            label = { Text(text = "task item title") },
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Done,
+                    contentDescription = null,
+                    modifier = Modifier.clickable {
+                        if (!validationResult.isValid)
+                            return@clickable
+                        onSave(TaskItem(value))
+                        value = ""
+                    }
+                )
+            },
+            isError = !validationResult.isValid,
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    if (validationResult.isValid)
+                        onSave(TaskItem((value)))
                 }
-            )
-        },
-        keyboardActions = KeyboardActions(
-            onDone = { onSave(TaskItem((value))) }
-        ),
-        singleLine = true
-    )
+            ),
+            singleLine = true
+        )
+        if (!validationResult.isValid)
+            Text(text = validationResult.message ?: "", color = MaterialTheme.colorScheme.error)
+
+    }
 }

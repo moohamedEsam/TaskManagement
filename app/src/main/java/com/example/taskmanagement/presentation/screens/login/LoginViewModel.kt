@@ -12,6 +12,7 @@ import com.example.taskmanagement.domain.useCases.user.LoginUserUseCase
 import com.example.taskmanagement.domain.validatorsImpl.ProfileValidator
 import com.example.taskmanagement.domain.vallidators.Validator
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
@@ -21,8 +22,8 @@ class LoginViewModel(
 ) : ViewModel() {
     val userStatus = mutableStateOf<UserStatus>(UserStatus.LoggedOut)
     val userCredentials = mutableStateOf(Credentials("", ""))
-    val usernameValidation = mutableStateOf(ValidationResult(true))
-    val passwordValidation = mutableStateOf(ValidationResult(true))
+    val usernameValidation = MutableStateFlow(ValidationResult(true))
+    val passwordValidation = MutableStateFlow(ValidationResult(true))
     private val snackBarChannel = Channel<SnackBarEvent>()
     val receiveChannel = snackBarChannel.receiveAsFlow()
     fun setEmail(value: String) {

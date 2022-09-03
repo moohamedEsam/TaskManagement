@@ -27,6 +27,7 @@ import com.example.taskmanagement.presentation.customComponents.PasswordTextFiel
 import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
 import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
 import com.example.taskmanagement.presentation.navigation.Screens
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.inject
@@ -60,12 +61,6 @@ fun SignUpScreen(navHostController: NavHostController, snackbarHostState: Snackb
 @Composable
 fun SignUpForm(viewModel: SignUpViewModel) {
     val user by viewModel.user
-    val confirmPassword by viewModel.confirmPassword
-    val usernameValidation by viewModel.usernameValidationResult
-    val passwordValidation by viewModel.passwordValidationResult
-    val passwordConfirmationValidation by viewModel.confirmPasswordValidationResult
-    val emailValidation by viewModel.emailValidationResult
-    val phoneValidation by viewModel.phoneValidationResult
     var image: Bitmap? by remember {
         mutableStateOf(null)
     }
@@ -122,7 +117,7 @@ fun SignUpForm(viewModel: SignUpViewModel) {
         TextFieldSetup(
             value = user.email,
             label = "Email",
-            validationResult = emailValidation,
+            validationResult = viewModel.emailValidationResult.asStateFlow(),
             leadingIcon = null
         ) {
             viewModel.setEmail(it)
@@ -133,7 +128,7 @@ fun SignUpForm(viewModel: SignUpViewModel) {
         TextFieldSetup(
             value = user.username,
             label = "Username",
-            validationResult = usernameValidation,
+            validationResult = viewModel.usernameValidationResult.asStateFlow(),
             leadingIcon = null
         ) {
             viewModel.setUsername(it)
@@ -143,15 +138,15 @@ fun SignUpForm(viewModel: SignUpViewModel) {
 
         PasswordTextField(
             value = user.password,
-            validationResult = passwordValidation,
+            validationResult = viewModel.passwordValidationResult.value,
         ) {
             viewModel.setPassword(it)
         }
         Spacer(modifier = Modifier.height(8.dp))
         PasswordTextField(
-            value = confirmPassword,
+            value = "",
             label = "Confirm Password",
-            validationResult = passwordConfirmationValidation,
+            validationResult = viewModel.confirmPasswordValidationResult.value,
         ) {
             viewModel.setConfirmPassword(it)
         }
@@ -159,7 +154,7 @@ fun SignUpForm(viewModel: SignUpViewModel) {
         TextFieldSetup(
             value = user.phone ?: "",
             label = "Phone",
-            validationResult = phoneValidation,
+            validationResult = viewModel.phoneValidationResult.asStateFlow(),
             leadingIcon = null
         ) {
             viewModel.setPhone(it)

@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.taskmanagement.domain.dataModels.project.Project
 import com.example.taskmanagement.domain.dataModels.task.Permission
@@ -57,17 +58,16 @@ private fun TaskFormHeader(
     TextFieldSetup(
         value = task.title,
         label = "Title",
-        validationResult = ValidationResult(true),
+        validationResult = viewModel.taskTitleValidationResult,
         leadingIcon = null,
         onValueChange = { viewModel.setTaskTitle(it) },
         enabled = viewModel.hasPermission(Permission.EditName)
     )
 
-    TextFieldSetup(
+    TextField(
         value = task.description ?: "",
-        label = "Description",
-        validationResult = ValidationResult(true),
-        leadingIcon = null,
+        label = { Text("Description") },
+        modifier = Modifier.fillMaxWidth(),
         onValueChange = { viewModel.setTaskDescription(it) },
         enabled = viewModel.hasPermission(Permission.EditName)
     )
@@ -80,11 +80,11 @@ private fun TaskFormHeader(
 @Composable
 fun MilestoneTextField(task: TaskView, viewModel: TaskFormViewModel) {
     if (task.isMilestone)
-        TextField(
+        TextFieldSetup(
             value = task.milestoneTitle,
+            validationResult = viewModel.taskMilestoneTitleValidationResult,
             onValueChange = { viewModel.setTaskMilestoneTitle(it) },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(text = "Milestone Title") }
+            label = "Milestone Title"
         )
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -117,17 +117,18 @@ private fun TaskFormFooter(
     viewModel: TaskFormViewModel
 ) {
     val task by viewModel.taskView.collectAsState()
+    val estimatedTime by viewModel.taskEstimatedTimeText.collectAsState()
     TaskDatePicker(task, viewModel)
-    /*TextFieldSetup(
-        value = task.estimatedTime?.toString() ?: "",
+    TextFieldSetup(
+        value = estimatedTime,
         label = "Estimated Time",
-        validationResult = ValidationResult(true),
+        validationResult = viewModel.taskEstimatedTimeValidationResult,
         leadingIcon = null,
         onValueChange = {
-            if (it.all { value -> value.isDigit() } && it.isNotEmpty())
-                viewModel.setTaskEstimatedTime(it.toInt())
-        }
-    )*/
+            viewModel.setTaskEstimatedTime(it)
+        },
+        keyboardType = KeyboardType.Number
+    )
     MilestoneTextField(task = task, viewModel = viewModel)
     PriorityList(task, viewModel)
 
@@ -166,9 +167,9 @@ private fun TaskDatePicker(
             SimpleDateFormat.MEDIUM,
             SimpleDateFormat.SHORT
         )
-    TextField(
+    TextFieldSetup(
         value = task.finishDate?.let { simpleDateFormat.format(it) } ?: "",
-        label = { Text("Finish date") },
+        label ="Finish date",
         onValueChange = {},
         enabled = false,
         modifier = Modifier
@@ -185,7 +186,8 @@ private fun TaskDatePicker(
                 imageVector = Icons.Default.CalendarMonth,
                 contentDescription = null
             )
-        }
+        },
+        validationResult = viewModel.taskFinishDateValidationResult
     )
 }
 

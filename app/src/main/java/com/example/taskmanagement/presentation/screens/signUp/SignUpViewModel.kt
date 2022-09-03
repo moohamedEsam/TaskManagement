@@ -12,6 +12,7 @@ import com.example.taskmanagement.domain.useCases.user.SignUpUseCase
 import com.example.taskmanagement.domain.validatorsImpl.ProfileValidator
 import com.example.taskmanagement.domain.vallidators.Validator
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
@@ -21,12 +22,12 @@ class SignUpViewModel(
 ) : ViewModel() {
     val user = mutableStateOf(SignUpUserBody("", "", "", null, ""))
     val userStatus = mutableStateOf<UserStatus>(UserStatus.LoggedOut)
-    val confirmPassword = mutableStateOf("")
-    val usernameValidationResult = mutableStateOf(ValidationResult(true))
-    val emailValidationResult = mutableStateOf(ValidationResult(true))
-    val passwordValidationResult = mutableStateOf(ValidationResult(true))
-    val confirmPasswordValidationResult = mutableStateOf(ValidationResult(true))
-    val phoneValidationResult = mutableStateOf(ValidationResult(true))
+    val confirmPassword = MutableStateFlow("")
+    val usernameValidationResult = MutableStateFlow(ValidationResult(true))
+    val emailValidationResult = MutableStateFlow(ValidationResult(true))
+    val passwordValidationResult = MutableStateFlow(ValidationResult(true))
+    val confirmPasswordValidationResult = MutableStateFlow(ValidationResult(true))
+    val phoneValidationResult = MutableStateFlow(ValidationResult(true))
     private val snackBarChannel = Channel<SnackBarEvent>()
     val receiveChannel = snackBarChannel.receiveAsFlow()
     fun setEmail(value: String) {

@@ -75,12 +75,10 @@ private fun TeamFormScreenHeader(
     team: TeamView,
     viewModel: TeamFormViewModel
 ) {
-    val titleValidationResult by viewModel.teamNameValidationResult.collectAsState()
-
     TextFieldSetup(
         value = team.name,
         label = "Title",
-        validationResult = titleValidationResult,
+        validationResult = viewModel.teamNameValidationResult,
         enabled = viewModel.hasPermission(Permission.EditName),
         leadingIcon = null,
         onValueChange = { viewModel.setName(it) }
@@ -88,12 +86,11 @@ private fun TeamFormScreenHeader(
 
     TeamOwnerTextField(viewModel, team)
 
-    TextFieldSetup(
+    TextField(
         value = team.description ?: "",
-        label = "Description",
-        validationResult = ValidationResult(true),
+        label = { Text("Description") },
         enabled = viewModel.hasPermission(Permission.EditName),
-        leadingIcon = null,
+        modifier = Modifier.fillMaxWidth(),
         onValueChange = { viewModel.setDescription(it) }
     )
 }

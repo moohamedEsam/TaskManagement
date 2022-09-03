@@ -64,35 +64,26 @@ private fun ProjectHeader(
     viewModel: ProjectFormViewModel
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        ProjectNameTextField(project, viewModel)
         TextFieldSetup(
+            value = project.name,
+            label = "Project Name",
+            validationResult = viewModel.projectNameValidationResult,
+            leadingIcon = null,
+            onValueChange = { viewModel.setProjectName(it) },
+            enabled = viewModel.hasPermission(Permission.EditName)
+        )
+        TextField(
             value = project.description,
-            label = "Project Description",
+            label = { Text("Project Description") },
             onValueChange = { viewModel.setProjectDescription(it) },
             enabled = viewModel.hasPermission(Permission.EditName),
-            leadingIcon = null,
-            validationResult = ValidationResult(true)
+            modifier = Modifier.fillMaxWidth()
         )
         ProjectOwnerTextField(project, viewModel)
         TeamPicker(viewModel)
     }
 }
 
-@Composable
-private fun ProjectNameTextField(
-    project: ProjectView,
-    viewModel: ProjectFormViewModel
-) {
-    val validationResult by viewModel.projectNameValidationResult.collectAsState()
-    TextFieldSetup(
-        value = project.name,
-        label = "Project Name",
-        validationResult = validationResult,
-        leadingIcon = null,
-        onValueChange = { viewModel.setProjectName(it) },
-        enabled = viewModel.hasPermission(Permission.EditName)
-    )
-}
 
 @Composable
 private fun ProjectOwnerTextField(project: ProjectView, viewModel: ProjectFormViewModel) {
