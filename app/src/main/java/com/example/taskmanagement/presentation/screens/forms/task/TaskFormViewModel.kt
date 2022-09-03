@@ -1,7 +1,5 @@
 package com.example.taskmanagement.presentation.screens.forms.task
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.Tag
@@ -10,18 +8,21 @@ import com.example.taskmanagement.domain.dataModels.project.Project
 import com.example.taskmanagement.domain.dataModels.project.ProjectView
 import com.example.taskmanagement.domain.dataModels.task.*
 import com.example.taskmanagement.domain.dataModels.user.User
-import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
-import com.example.taskmanagement.domain.repository.MainRepository
+import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.domain.useCases.projects.GetCurrentUserProjectUseCase
 import com.example.taskmanagement.domain.useCases.projects.GetProjectUseCase
 import com.example.taskmanagement.domain.useCases.tag.GetCurrentUserTag
 import com.example.taskmanagement.domain.useCases.tasks.CreateTaskUseCase
 import com.example.taskmanagement.domain.useCases.tasks.GetTaskUseCase
 import com.example.taskmanagement.domain.useCases.tasks.UpdateTaskUseCase
+import com.example.taskmanagement.domain.validatorsImpl.TaskFormValidator
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -32,18 +33,42 @@ class TaskFormViewModel(
     private val getProjectUseCase: GetProjectUseCase,
     private val createTaskUseCase: CreateTaskUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
+    private val validator: TaskFormValidator,
     projectId: String,
     private val taskId: String
 ) : ViewModel() {
-    val project = mutableStateOf<Resource<ProjectView>>(Resource.Initialized())
-    val projects = mutableStateOf<Resource<List<Project>>>(Resource.Initialized())
+    private val _project = MutableStateFlow<Resource<ProjectView>>(Resource.Initialized())
+    val project = _project.asStateFlow()
+    private val _projects = MutableStateFlow<Resource<List<Project>>>(Resource.Initialized())
+    val projects = _projects.asStateFlow()
     val isUpdating = taskId.isNotBlank()
     private var currentUserTag: Tag? = null
     private val snackBarChannel = Channel<SnackBarEvent>()
     val receiveChannel = snackBarChannel.receiveAsFlow()
-    val assigned = mutableStateListOf<String>()
-    val taskView = mutableStateOf(getInitializedTaskView())
-    val taskItems = mutableStateListOf<TaskItem>()
+    private val _assigned = MutableStateFlow(emptySet<String>())
+    val assigned = _assigned.asStateFlow()
+    private val _taskView = MutableStateFlow(getInitializedTaskView())
+    val taskView = _taskView.asStateFlow()
+    private val _taskItems = MutableStateFlow(emptySet<TaskItem>())
+    val taskItems = _taskItems.asStateFlow()
+
+    private val _taskEstimatedTimeText = MutableStateFlow("")
+    val taskEstimatedTimeText = _taskEstimatedTimeText.asStateFlow()
+
+    private val _taskTitleValidationResult = MutableStateFlow(ValidationResult(true))
+    val taskTitleValidationResult = _taskTitleValidationResult.asStateFlow()
+
+    private val _taskMilestoneTitleValidationResult = MutableStateFlow(ValidationResult(true))
+    val taskMilestoneTitleValidationResult = _taskMilestoneTitleValidationResult.asStateFlow()
+
+    private val _taskEstimatedTimeValidationResult = MutableStateFlow(ValidationResult(true))
+    val taskEstimatedTimeValidationResult = _taskEstimatedTimeValidationResult.asStateFlow()
+
+    private val _taskFinishDateValidationResult = MutableStateFlow(ValidationResult(true))
+    val taskFinishDateValidationResult = _taskFinishDateValidationResult.asStateFlow()
+
+    private val _taskItemValidationResult = MutableStateFlow(ValidationResult(true))
+    val taskItemValidationResult = _taskItemValidationResult.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -58,9 +83,11 @@ class TaskFormViewModel(
     private suspend fun setTask(taskId: String) {
         val result = getTaskUseCase(taskId)
         result.onSuccess {
-            taskView.value = it
-            assigned.addAll(it.assigned.map { activeUser -> activeUser.user.id })
-            taskItems.addAll(it.taskItems)
+            _taskView.update { _ -> it }
+            _assigned.update { _ ->
+                emptySet()
+            }
+            _taskItems.update { _ -> it.taskItems.toSet() }
         }
 
         result.onError {
@@ -69,27 +96,12 @@ class TaskFormViewModel(
         }
     }
 
-    private fun getCurrentUserTag() {
-        viewModelScope.launch {
-            val result = getCurrentUserTag(
-                GetCurrentUserTag.Params(
-                    ParentRoute.Projects,
-                    project.value.data?.id ?: ""
-                )
-            )
-            result.onSuccess {
-                currentUserTag = it
-            }
-            result.onError {
-                val event = SnackBarEvent(it ?: "") { getCurrentUserTag() }
-                snackBarChannel.send(event)
-            }
-        }
-    }
 
     fun getProjects() {
         viewModelScope.launch {
-            projects.value = getCurrentUserProjectUseCase(Unit)
+            _projects.update {
+                getCurrentUserProjectUseCase(Unit)
+            }
             projects.value.onError {
                 val event = SnackBarEvent(it ?: "") { getProjects() }
                 snackBarChannel.send(event)
@@ -104,65 +116,87 @@ class TaskFormViewModel(
     }
 
     private suspend fun assignProject(id: String) {
-        project.value = getProjectUseCase(id)
-        project.value.onSuccess {
-            project.value =
-                Resource.Success(it.copy(members = it.members + ActiveUserDto(it.owner, null)))
-            taskView.value = taskView.value.copy(project = it.id)
+        _project.update {
+            var result = getProjectUseCase(id)
+            result.onSuccess { projectView ->
+                result = result.copy(
+                    projectView.copy(
+                        members = projectView.members + ActiveUserDto(projectView.owner)
+                    )
+                )
+            }
+            result
         }
+
         project.value.onError {
             val event = SnackBarEvent(it ?: "") { setProject(id) }
             snackBarChannel.send(event)
         }
-        assigned.clear()
+
+        project.value.onSuccess {
+            _assigned.update { emptySet() }
+            _taskView.update { taskView -> taskView.copy(project = it.id) }
+        }
+
     }
 
     fun setTaskTitle(title: String) = viewModelScope.launch {
-        taskView.value = taskView.value.copy(title = title)
+        _taskView.update { it.copy(title = title) }
+        _taskTitleValidationResult.update { validator.nameValidator.validate(title) }
     }
 
     fun setTaskDescription(description: String) = viewModelScope.launch {
-        taskView.value = taskView.value.copy(description = description)
+        _taskView.update { it.copy(description = description) }
+        _taskTitleValidationResult.update { validator.nameValidator.validate(description) }
     }
 
     fun toggleTaskAssigned(userId: String) = viewModelScope.launch {
-        val exist = assigned.remove(userId)
-        if (!exist)
-            assigned.add(userId)
+       _assigned.update {
+           if (it.contains(userId))
+               it - userId
+           else
+               it + userId
+       }
     }
 
-    fun setTaskEstimatedTime(estimatedTime: Int?) = viewModelScope.launch {
-        taskView.value = taskView.value.copy(estimatedTime = estimatedTime)
+    fun setTaskEstimatedTime(estimatedTime: String) = viewModelScope.launch {
+        _taskEstimatedTimeText.update { estimatedTime }
+        _taskEstimatedTimeValidationResult.update { validator.estimatedTimeValidator.validate(estimatedTime) }
+        if (taskEstimatedTimeValidationResult.value.isValid)
+            _taskView.update { it.copy(estimatedTime = estimatedTime.toInt()) }
     }
 
-    fun setTaskMilestoneTitle(value: String) = viewModelScope.launch {
-        taskView.value = taskView.value.copy(milestoneTitle = value)
+    fun setTaskMilestoneTitle(milestoneTitle: String) = viewModelScope.launch {
+        _taskView.update { it.copy(milestoneTitle = milestoneTitle) }
+        _taskTitleValidationResult.update { validator.nameValidator.validate(milestoneTitle) }
     }
 
     fun setTaskPriority(priority: Priority) = viewModelScope.launch {
-        taskView.value = taskView.value.copy(priority = priority)
+        _taskView.update { it.copy(priority = priority) }
     }
 
     fun setTaskFinishDate(finishDate: Date) = viewModelScope.launch {
-        taskView.value = taskView.value.copy(finishDate = finishDate)
+        _taskView.update { it.copy(finishDate = finishDate) }
+        _taskMilestoneTitleValidationResult.update { validator.dateValidator.validate(finishDate) }
     }
 
     fun addTaskItem(value: TaskItem) = viewModelScope.launch {
-        taskItems.add(value)
+        if (taskItemValidationResult.value.isValid)
+            _taskItems.update { it + value }
     }
 
     fun removeTaskItem(value: TaskItem) = viewModelScope.launch {
-        taskItems.remove(value)
+        _taskItems.update { it - value }
     }
 
     fun toggleIsMileStone(value: Boolean) {
-        taskView.value = taskView.value.copy(isMilestone = value)
+        _taskView.update { it.copy(isMilestone = value) }
     }
 
     fun saveTask() {
         viewModelScope.launch {
             val task = taskView.value.toTask().copy(
-                taskItems = taskItems,
+                taskItems = taskItems.value.toList(),
                 assigned = getAssignedMembers()
             )
             val result = if (isUpdating)
@@ -182,7 +216,7 @@ class TaskFormViewModel(
     }
 
     private fun getAssignedMembers() =
-        project.value.data?.members?.filter { assigned.contains(it.user.id) }
+        project.value.data?.members?.filter { assigned.value.contains(it.user.id) }
             ?.map { it.toActiveUser() } ?: emptyList()
 
     private fun getInitializedTaskView() = TaskView(
@@ -206,7 +240,7 @@ class TaskFormViewModel(
     }
 
     fun setOwner(user: User) {
-        taskView.value = taskView.value.copy(owner = user)
+        _taskView.update { it.copy(owner = user) }
     }
 
 }

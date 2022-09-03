@@ -9,6 +9,7 @@ import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.domain.useCases.user.LoginUserUseCase
+import com.example.taskmanagement.domain.validatorsImpl.ProfileValidator
 import com.example.taskmanagement.domain.vallidators.Validator
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -16,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel(
     private val loginUserUseCase: LoginUserUseCase,
-    private val validator: Validator
+    private val validator: ProfileValidator
 ) : ViewModel() {
     val userStatus = mutableStateOf<UserStatus>(UserStatus.LoggedOut)
     val userCredentials = mutableStateOf(Credentials("", ""))
@@ -46,8 +47,8 @@ class LoginViewModel(
     }
 
     fun submit(context: Context) = viewModelScope.launch {
-        usernameValidation.value = validator.validateUsername(userCredentials.value.email)
-        passwordValidation.value = validator.validatePassword(userCredentials.value.password)
+        usernameValidation.value = validator.usernameValidator.validate(userCredentials.value.email)
+        passwordValidation.value = validator.passwordValidator.validate(userCredentials.value.password)
         if (usernameValidation.value.isValid && passwordValidation.value.isValid)
             loginUser(context)
     }

@@ -171,6 +171,7 @@ fun InvitationsDialog(viewModel: TeamViewModel, onDismiss: () -> Unit) {
             ) {
                 items(suggestions) {
                     MemberComposable(user = it) {
+                        Spacer(modifier = Modifier.weight(0.8f))
                         Checkbox(
                             checked = invitation.contains(it),
                             onCheckedChange = { _ -> viewModel.toggleUserToInvitations(it) }

@@ -9,6 +9,7 @@ import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.domain.useCases.user.SignUpUseCase
+import com.example.taskmanagement.domain.validatorsImpl.ProfileValidator
 import com.example.taskmanagement.domain.vallidators.Validator
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -16,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class SignUpViewModel(
     private val signUpUseCase: SignUpUseCase,
-    private val validator: Validator
+    private val validator: ProfileValidator
 ) : ViewModel() {
     val user = mutableStateOf(SignUpUserBody("", "", "", null, ""))
     val userStatus = mutableStateOf<UserStatus>(UserStatus.LoggedOut)
@@ -55,12 +56,14 @@ class SignUpViewModel(
 
     fun submit(context: Context) {
         viewModelScope.launch {
-            usernameValidationResult.value = validator.validateUsername(user.value.username)
-            emailValidationResult.value = validator.validateEmail(user.value.email)
-            passwordValidationResult.value = validator.validatePassword(user.value.password)
+            usernameValidationResult.value =
+                validator.usernameValidator.validate(user.value.username)
+            emailValidationResult.value = validator.emailValidator.validate(user.value.email)
+            passwordValidationResult.value =
+                validator.passwordValidator.validate(user.value.password)
             confirmPasswordValidationResult.value =
-                validator.validateConfirmPassword(user.value.password, confirmPassword.value)
-            phoneValidationResult.value = validator.validatePhone(user.value.phone)
+                validator.passwordConfirmValidator.validate(user.value.password to confirmPassword.value)
+            phoneValidationResult.value = validator.phoneValidator.validate(user.value.phone?:"")
             if (usernameValidationResult.value.isValid &&
                 emailValidationResult.value.isValid &&
                 passwordValidationResult.value.isValid &&

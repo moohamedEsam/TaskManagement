@@ -171,6 +171,7 @@ fun MembersDialog(
             }
             items(members) {
                 MemberComposable(user = it) {
+                    Spacer(modifier = Modifier.weight(0.8f))
                     Checkbox(
                         checked = selectedMembers.contains(it),
                         onCheckedChange = { _ ->

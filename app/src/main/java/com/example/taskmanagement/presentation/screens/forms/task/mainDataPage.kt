@@ -31,7 +31,7 @@ import java.util.*
 fun MainTaskFromPage(
     viewModel: TaskFormViewModel
 ) {
-    val task by viewModel.taskView
+    val task by viewModel.taskView.collectAsState()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -100,15 +100,14 @@ fun MilestoneTextField(task: TaskView, viewModel: TaskFormViewModel) {
 @Composable
 fun TaskOwnerTextField(viewModel: TaskFormViewModel, task: TaskView) {
     val showField = viewModel.isUpdating && viewModel.hasPermission(Permission.EditOwner)
-    val project by viewModel.project
+    val project by viewModel.project.collectAsState()
     if (!showField) return
     OwnerTextField(textFieldValue = task.owner.username) { onDismiss ->
         MembersSuggestionsDialog(
-            suggestions = project.data?.members?.map { it.user } ?: emptyList(),
+            suggestions = project.data?.members?.map { it.user }?.toSet() ?: emptySet(),
             onDismiss = onDismiss,
-            onSearchChanged = {},
-            onUserSelected = { viewModel.setOwner(it) }
-        )
+            onSearchChanged = {}
+        ) { viewModel.setOwner(it) }
     }
 }
 
@@ -117,7 +116,7 @@ fun TaskOwnerTextField(viewModel: TaskFormViewModel, task: TaskView) {
 private fun TaskFormFooter(
     viewModel: TaskFormViewModel
 ) {
-    val task by viewModel.taskView
+    val task by viewModel.taskView.collectAsState()
     TaskDatePicker(task, viewModel)
     /*TextFieldSetup(
         value = task.estimatedTime?.toString() ?: "",
@@ -193,7 +192,7 @@ private fun TaskDatePicker(
 
 @Composable
 private fun ProjectPicker(viewModel: TaskFormViewModel) {
-    val project by viewModel.project
+    val project by viewModel.project.collectAsState()
     var showDialog by remember {
         mutableStateOf(false)
     }
@@ -220,7 +219,7 @@ private fun ProjectDialog(
     LaunchedEffect(key1 = Unit) {
         viewModel.getProjects()
     }
-    val projects by viewModel.projects
+    val projects by viewModel.projects.collectAsState()
     CardDialog(onDismiss = onDismissDialog) {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             items(projects.data ?: emptyList()) {

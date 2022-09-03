@@ -31,7 +31,6 @@ fun MemberComposable(
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
         }
-        Spacer(modifier = Modifier.weight(0.8f))
         action()
     }
 }

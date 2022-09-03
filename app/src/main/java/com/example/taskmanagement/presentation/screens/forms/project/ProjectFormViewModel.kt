@@ -1,6 +1,5 @@
 package com.example.taskmanagement.presentation.screens.forms.project
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,15 +13,19 @@ import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
-import com.example.taskmanagement.domain.repository.MainRepository
+import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.domain.useCases.projects.CreateProjectUseCase
 import com.example.taskmanagement.domain.useCases.projects.GetProjectUseCase
 import com.example.taskmanagement.domain.useCases.projects.UpdateProjectUseCase
 import com.example.taskmanagement.domain.useCases.tag.GetCurrentUserTag
 import com.example.taskmanagement.domain.useCases.teams.GetCurrentUserTeamsUseCase
 import com.example.taskmanagement.domain.useCases.teams.GetTeamUseCase
+import com.example.taskmanagement.domain.validatorsImpl.BaseValidator
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ProjectFormViewModel(
@@ -32,19 +35,25 @@ class ProjectFormViewModel(
     private val getTeamUseCase: GetTeamUseCase,
     private val createProjectUseCase: CreateProjectUseCase,
     private val updateProjectUseCase: UpdateProjectUseCase,
+    private val validator: BaseValidator,
     private val teamId: String,
     private val projectId: String
 ) : ViewModel() {
-    val team = mutableStateOf<Resource<TeamView>>(Resource.Initialized())
-    val teams = mutableStateOf<Resource<List<Team>>>(Resource.Initialized())
+    private val _team = MutableStateFlow<Resource<TeamView>>(Resource.Initialized())
+    val team = _team.asStateFlow()
+    private val _teams = MutableStateFlow<Resource<List<Team>>>(Resource.Initialized())
+    val teams = _teams.asStateFlow()
     val isUpdating = projectId.isNotBlank()
     private var currentUserPermission: Resource<Tag> = Resource.Initialized()
-    var projectView = mutableStateOf(getInitializedProjectView())
+    private val _projectView = MutableStateFlow(getInitializedProjectView())
+    val projectView = _projectView.asStateFlow()
     private val snackbarChannel = Channel<SnackBarEvent>()
     val receiveChannel = snackbarChannel.receiveAsFlow()
-    val members = mutableStateListOf<User>()
+    private val _members = MutableStateFlow(emptySet<String>())
+    val members = _members.asStateFlow()
     val showTeamDialog = mutableStateOf(false)
-
+    private val _projectNameValidationResult = MutableStateFlow(ValidationResult(true))
+    val projectNameValidationResult = _projectNameValidationResult.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -60,9 +69,9 @@ class ProjectFormViewModel(
 
     private suspend fun getProject() {
         val result = getProjectUseCase(projectId)
-        result.onSuccess {
-            projectView.value = it
-            members.addAll(it.members.map { activeUser -> activeUser.user })
+        result.onSuccess { project ->
+            _projectView.update { project }
+            _members.update { project.members.map { it.user.id }.toSet() }
         }
         result.onError {
             val event = SnackBarEvent(it ?: "") {
@@ -75,7 +84,7 @@ class ProjectFormViewModel(
 
     fun setTeams() {
         viewModelScope.launch {
-            teams.value = getCurrentUserTeamsUseCase(Unit)
+            _teams.update { getCurrentUserTeamsUseCase(Unit) }
             teams.value.onError {
                 val event = SnackBarEvent(it ?: "") { setTeams() }
                 snackbarChannel.send(event)
@@ -101,48 +110,46 @@ class ProjectFormViewModel(
     }
 
     private suspend fun assignTeam(id: String) {
-        team.value = getTeamUseCase(id)
+        _team.update {
+            var result = getTeamUseCase(id)
+            result.onSuccess { teamView ->
+                result =
+                    result.copy(teamView.copy(members = teamView.members + ActiveUserDto(teamView.owner)))
+            }
+            _members.update { emptySet() }
+            result
+        }
         team.value.onError {
             val event = SnackBarEvent(it ?: "") { setTeam(id) }
             snackbarChannel.send(event)
         }
-        team.value.onSuccess {
-            if (isUpdating)
-                team.value =
-                    Resource.Success(it.copy(members = it.members + ActiveUserDto(it.owner, null)))
-            members.clear()
+    }
+
+    private fun getInitializedProjectView() = ProjectView(owner = User())
+
+    fun toggleProjectMember(user: User) = viewModelScope.launch {
+        _members.update {
+            if (it.contains(user.id))
+                it - user.id
+            else
+                it + user.id
         }
     }
 
-    private fun getInitializedProjectView() = ProjectView(
-        name = "",
-        owner = User("", "", null, null, ""),
-        description = "",
-        members = emptyList(),
-        tasks = emptyList(),
-        team = teamId,
-        id = projectId,
-        tags = emptyList()
-    )
-
-    fun toggleProjectMember(user: User) = viewModelScope.launch {
-        val exist = members.remove(user)
-        if (!exist)
-            members.add(user)
-    }
-
     fun setProjectName(name: String) {
-        projectView.value = projectView.value.copy(name = name)
+        _projectView.update { it.copy(name = name) }
+        _projectNameValidationResult.update { validator.nameValidator.validate(name) }
     }
 
     fun setProjectDescription(description: String) {
-        projectView.value = projectView.value.copy(description = description)
+        _projectView.update { it.copy(description = description) }
     }
 
     fun setProjectOwner(owner: User) {
-        toggleProjectMember(projectView.value.owner)
-        projectView.value = projectView.value.copy(owner = owner)
-        members.remove(owner)
+        _members.update {
+            it + projectView.value.owner.id - owner.id
+        }
+        _projectView.update { it.copy(owner = owner) }
     }
 
     fun saveProject() {
@@ -166,7 +173,7 @@ class ProjectFormViewModel(
     }
 
     private fun getSelectedMembers() =
-        team.value.data?.members?.filter { members.contains(it.user) }
+        team.value.data?.members?.filter { members.value.contains(it.user.id) }
             ?.map { it.toActiveUser() } ?: emptyList()
 
 

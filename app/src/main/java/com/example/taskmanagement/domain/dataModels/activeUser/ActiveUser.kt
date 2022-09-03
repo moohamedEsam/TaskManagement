@@ -7,6 +7,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ActiveUser(
     val id: String,
-    val tag: String?
+    val tag: String? = null
 )
 

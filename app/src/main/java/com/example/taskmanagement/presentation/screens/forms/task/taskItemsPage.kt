@@ -19,7 +19,7 @@ import com.example.taskmanagement.domain.dataModels.task.TaskItem
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskItemsList(viewModel: TaskFormViewModel) {
-    val taskItems = viewModel.taskItems
+    val taskItems by viewModel.taskItems.collectAsState()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -34,7 +34,7 @@ fun TaskItemsList(viewModel: TaskFormViewModel) {
                 }
             }
         }
-        items(taskItems) {
+        items(taskItems.toList()) {
             TaskItemCard(taskItem = it, viewModel = viewModel)
         }
     }

@@ -14,7 +14,6 @@ import com.example.taskmanagement.domain.dataModels.utils.Token
 import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.projects.CreateProjectUseCase
 import com.example.taskmanagement.domain.useCases.projects.GetCurrentUserProjectUseCase
-import com.example.taskmanagement.domain.useCases.projects.GetProjectUseCase
 import com.example.taskmanagement.domain.useCases.projects.UpdateProjectUseCase
 import com.example.taskmanagement.domain.useCases.shared.RemoveMembersUseCase
 import com.example.taskmanagement.domain.useCases.tag.AssignTagUseCase
@@ -37,14 +36,13 @@ import com.example.taskmanagement.domain.useCases.teams.invitation.SendInvitatio
 import com.example.taskmanagement.domain.useCases.user.GetCurrentUserProfileUseCase
 import com.example.taskmanagement.domain.useCases.user.SearchMembersUseCase
 import com.example.taskmanagement.domain.utils.Urls
+import com.example.taskmanagement.domain.validatorsImpl.BaseValidator
 import com.example.taskmanagement.domain.validatorsImpl.ProfileValidator
-import com.example.taskmanagement.domain.vallidators.Validator
+import com.example.taskmanagement.domain.validatorsImpl.TaskFormValidator
 import com.example.taskmanagement.presentation.screens.forms.project.ProjectFormViewModel
 import com.example.taskmanagement.presentation.screens.forms.tags.TagViewModel
 import com.example.taskmanagement.presentation.screens.forms.task.TaskFormViewModel
 import com.example.taskmanagement.presentation.screens.forms.team.TeamFormViewModel
-import com.example.taskmanagement.presentation.screens.forms.team.TeamMemberManagerCreateCase
-import com.example.taskmanagement.presentation.screens.forms.team.TeamMemberManagerUpdateCase
 import com.example.taskmanagement.presentation.screens.home.HomeViewModel
 import com.example.taskmanagement.presentation.screens.login.LoginViewModel
 import com.example.taskmanagement.presentation.screens.profile.ProfileViewModel
@@ -73,7 +71,9 @@ import org.koin.dsl.module
 val utils = module {
     single { provideCoilImageLoader() }
     single { provideHttpClient() }
-    single { provideLoginValidator() }
+    single { ProfileValidator() }
+    single { BaseValidator() }
+    single { TaskFormValidator() }
 }
 
 val repository = module {
@@ -140,7 +140,7 @@ val viewModelModule = module {
             taskId = params[0]
         )
     }
-    viewModel { ProfileViewModel(get(), get()) }
+    viewModel { ProfileViewModel(get()) }
     viewModel { ProjectsViewModel(get()) }
     viewModel { TeamsViewModel(get()) }
     viewModel { params -> ProjectViewModel(get(), get(), params[0]) }
@@ -154,6 +154,7 @@ val viewModelModule = module {
             getProjectUseCase = get(),
             createTaskUseCase = get(),
             updateTaskUseCase = get(),
+            validator = get(),
             projectId = params[0],
             taskId = params[1]
         )
@@ -166,6 +167,7 @@ val viewModelModule = module {
             getTeamUseCase = get(),
             createProjectUseCase = get(),
             updateProjectUseCase = get(),
+            validator = get(),
             teamId = params[0],
             projectId = params[1]
         )
@@ -177,10 +179,7 @@ val viewModelModule = module {
             getTeamUseCase = get(),
             updateTeamUseCase = get(),
             createTeamUseCase = get(),
-            memberManager = if (params.get<String>(0).isBlank())
-                TeamMemberManagerCreateCase()
-            else
-                TeamMemberManagerUpdateCase(),
+            validator = get(),
             teamId = params[0]
         )
     }
@@ -229,7 +228,6 @@ fun Scope.provideHttpClient() = HttpClient(CIO) {
 
 }
 
-fun provideLoginValidator(): Validator = ProfileValidator()
 
 private fun Scope.provideCoilImageLoader() = ImageLoader
     .Builder(androidContext())

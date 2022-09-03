@@ -19,7 +19,7 @@ import com.example.taskmanagement.presentation.composables.MemberComposable
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MembersSuggestionsDialog(
-    suggestions: List<User>,
+    suggestions: Set<User>,
     onDismiss: () -> Unit,
     onSearchChanged: (String) -> Unit,
     onUserSelected: (User) -> Unit
@@ -59,7 +59,7 @@ fun MembersSuggestionsDialog(
 
 @Composable
 fun MemberSuggestionsList(
-    suggestions: List<User>,
+    suggestions: Set<User>,
     onClick: (User) -> Unit
 ) {
     LazyColumn(
@@ -68,8 +68,9 @@ fun MemberSuggestionsList(
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        items(suggestions) {
+        items(suggestions.toList()) {
             MemberComposable(user = it) {
+                Spacer(modifier = Modifier.weight(0.8f))
                 IconButton(onClick = { onClick(it) }) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = null)
                 }

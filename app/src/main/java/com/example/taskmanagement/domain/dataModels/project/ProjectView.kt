@@ -6,17 +6,18 @@ import com.example.taskmanagement.domain.dataModels.task.AbstractTask
 import com.example.taskmanagement.domain.dataModels.task.Task
 import com.example.taskmanagement.domain.dataModels.user.User
 import kotlinx.serialization.Serializable
+import java.util.*
 
 @Serializable
 data class ProjectView(
-    val name: String,
+    val name: String = "",
     val owner: User,
-    val description: String,
-    val members: List<ActiveUserDto>,
-    val tasks: List<Task>,
-    val tags: List<Tag>,
-    val team: String,
-    val id: String
+    val description: String = "",
+    val members: List<ActiveUserDto> = emptyList(),
+    val tasks: List<Task> = emptyList(),
+    val tags: List<Tag> = emptyList(),
+    val team: String = "",
+    val id: String = UUID.randomUUID().toString()
 ) {
     fun toProject() = Project(
         name = name,

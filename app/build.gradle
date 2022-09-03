@@ -69,7 +69,6 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
 
-    testImplementation "com.google.truth:truth:$truth_version"
     implementation "androidx.core:core-splashscreen:$splash_screen_version"
 
     implementation "androidx.palette:palette:$palette_version"
@@ -86,4 +85,9 @@ dependencies {
     implementation "com.google.accompanist:accompanist-pager-indicators:$accompanist_version"
 
     implementation 'com.godaddy.android.colorpicker:compose-color-picker:0.4.2'
+
+    testImplementation "com.google.truth:truth:$truth_version"
+    testImplementation 'app.cash.turbine:turbine:0.9.0'
+    testImplementation 'org.mockito:mockito-core:2.19.0'
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
 }

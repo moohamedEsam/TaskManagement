@@ -11,6 +11,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,8 +22,8 @@ import com.example.taskmanagement.presentation.composables.MemberComposable
 fun AssignedList(
     viewModel: TaskFormViewModel
 ) {
-    val project by viewModel.project
-    val assigned = viewModel.assigned
+    val project by viewModel.project.collectAsState()
+    val assigned by viewModel.assigned.collectAsState()
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.fillMaxSize()

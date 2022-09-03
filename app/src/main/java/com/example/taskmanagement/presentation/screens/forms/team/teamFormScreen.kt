@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,7 +23,6 @@ import com.example.taskmanagement.presentation.customComponents.MembersSuggestio
 import com.example.taskmanagement.presentation.customComponents.OwnerTextField
 import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
 import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
-import com.example.taskmanagement.presentation.navigation.Screens
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.inject
 import org.koin.core.parameter.parametersOf
@@ -47,7 +47,7 @@ fun TeamFormScreen(
 fun TeamFormScreenContent(
     viewModel: TeamFormViewModel, navHostController: NavHostController
 ) {
-    val team by viewModel.teamView
+    val team by viewModel.teamView.collectAsState()
     val isUpdating = viewModel.isUpdating
     Column(
         modifier = Modifier
@@ -75,7 +75,7 @@ private fun TeamFormScreenHeader(
     team: TeamView,
     viewModel: TeamFormViewModel
 ) {
-    val titleValidationResult by viewModel.teamNameValidationResult
+    val titleValidationResult by viewModel.teamNameValidationResult.collectAsState()
 
     TextFieldSetup(
         value = team.name,
@@ -104,9 +104,9 @@ private fun MembersList(
     viewModel: TeamFormViewModel
 ) {
     val isUpdating = viewModel.isUpdating
-    val team by viewModel.teamView
-    val members = viewModel.members
-    val suggestions by viewModel.memberSuggestions
+    val team by viewModel.teamView.collectAsState()
+    val members by viewModel.members.collectAsState()
+    val suggestions by viewModel.membersSuggestions.collectAsState()
     var showDialog by remember {
         mutableStateOf(false)
     }
@@ -127,11 +127,18 @@ private fun MembersList(
             }
         }
 
-        items(if (isUpdating) team.members.map { it.user } else team.pendingMembers.toList()) { user ->
+        items(if (isUpdating) team.members.map { it.user } else members.toList()) { user ->
             MemberComposable(user = user) {
-                Checkbox(
-                    checked = !isUpdating || members.contains(user.id),
-                    onCheckedChange = { viewModel.toggleMember(user) })
+                Spacer(modifier = Modifier.weight(0.8f))
+                if (isUpdating)
+                    Checkbox(
+                        checked = members.contains(user),
+                        onCheckedChange = { viewModel.toggleMember(user) }
+                    )
+                else
+                    IconButton(onClick = { viewModel.toggleMember(user) }) {
+                        Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+                    }
             }
         }
     }
@@ -143,11 +150,10 @@ private fun MembersList(
             onSearchChanged = {
                 if (it.isNotBlank() && it.length > 2)
                     viewModel.searchMembers(it)
-            },
-            onUserSelected = {
-                viewModel.addMember(it)
             }
-        )
+        ) {
+            viewModel.addMember(it)
+        }
 
 }
 
@@ -157,10 +163,9 @@ private fun TeamOwnerTextField(viewModel: TeamFormViewModel, team: TeamView) {
     if (!showField) return
     OwnerTextField(textFieldValue = team.owner.username) { onDismiss ->
         MembersSuggestionsDialog(
-            suggestions = team.members.map { it.user },
+            suggestions = team.members.map { it.user }.toSet(),
             onDismiss = onDismiss,
-            onSearchChanged = {},
-            onUserSelected = { viewModel.setOwner(it) }
-        )
+            onSearchChanged = {}
+        ) { viewModel.setOwner(it) }
     }
 }

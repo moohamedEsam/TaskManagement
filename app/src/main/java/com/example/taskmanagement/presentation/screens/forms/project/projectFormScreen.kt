@@ -45,7 +45,7 @@ fun ProjectFormScreen(
 fun ProjectFormScreenContent(
     viewModel: ProjectFormViewModel
 ) {
-    val project by viewModel.projectView
+    val project by viewModel.projectView.collectAsState()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -64,14 +64,7 @@ private fun ProjectHeader(
     viewModel: ProjectFormViewModel
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        TextFieldSetup(
-            value = project.name,
-            label = "Project Name",
-            validationResult = ValidationResult(true),
-            leadingIcon = null,
-            onValueChange = { viewModel.setProjectName(it) },
-            enabled = viewModel.hasPermission(Permission.EditName)
-        )
+        ProjectNameTextField(project, viewModel)
         TextFieldSetup(
             value = project.description,
             label = "Project Description",
@@ -86,23 +79,38 @@ private fun ProjectHeader(
 }
 
 @Composable
+private fun ProjectNameTextField(
+    project: ProjectView,
+    viewModel: ProjectFormViewModel
+) {
+    val validationResult by viewModel.projectNameValidationResult.collectAsState()
+    TextFieldSetup(
+        value = project.name,
+        label = "Project Name",
+        validationResult = validationResult,
+        leadingIcon = null,
+        onValueChange = { viewModel.setProjectName(it) },
+        enabled = viewModel.hasPermission(Permission.EditName)
+    )
+}
+
+@Composable
 private fun ProjectOwnerTextField(project: ProjectView, viewModel: ProjectFormViewModel) {
     val showField = viewModel.isUpdating && viewModel.hasPermission(Permission.EditOwner)
     if (!showField) return
-    val team by viewModel.team
+    val team by viewModel.team.collectAsState()
     OwnerTextField(textFieldValue = project.owner.username) { onDismiss ->
         MembersSuggestionsDialog(
-            suggestions = (team.data?.members?.map { it.user } ?: emptyList()) - project.owner,
+            suggestions = (team.data?.members?.map { it.user }?.toSet() ?: emptySet()) - project.owner,
             onDismiss = onDismiss,
-            onSearchChanged = {},
-            onUserSelected = { viewModel.setProjectOwner(it) }
-        )
+            onSearchChanged = {}
+        ) { viewModel.setProjectOwner(it) }
     }
 }
 
 @Composable
 fun TeamPicker(viewModel: ProjectFormViewModel) {
-    val team by viewModel.team
+    val team by viewModel.team.collectAsState()
     val showTeamDialog by viewModel.showTeamDialog
     PickerController(
         value = showTeamDialog,
@@ -118,7 +126,7 @@ fun TeamPicker(viewModel: ProjectFormViewModel) {
 
 @Composable
 fun TeamDialog(viewModel: ProjectFormViewModel, onDismiss: () -> Unit) {
-    val teams by viewModel.teams
+    val teams by viewModel.teams.collectAsState()
     LaunchedEffect(key1 = teams) {
         if (teams is Resource.Initialized)
             viewModel.setTeams()
@@ -145,8 +153,8 @@ fun TeamDialog(viewModel: ProjectFormViewModel, onDismiss: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColumnScope.ProjectMembersList(viewModel: ProjectFormViewModel) {
-    val members = viewModel.members
-    val team by viewModel.team
+    val members by viewModel.members.collectAsState()
+    val team by viewModel.team.collectAsState()
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -157,8 +165,9 @@ fun ColumnScope.ProjectMembersList(viewModel: ProjectFormViewModel) {
         }
         items(team.data?.members?.map { it.user } ?: emptyList()) { user ->
             MemberComposable(user = user) {
+                Spacer(modifier = Modifier.weight(0.8f))
                 Checkbox(
-                    checked = members.contains(user),
+                    checked = members.contains(user.id),
                     onCheckedChange = { viewModel.toggleProjectMember(user) }
                 )
             }

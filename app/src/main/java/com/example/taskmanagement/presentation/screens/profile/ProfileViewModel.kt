@@ -15,8 +15,7 @@ import com.example.taskmanagement.presentation.koin.saveToken
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
-    private val getCurrentUserProfileUseCase: GetCurrentUserProfileUseCase,
-    private val validator: Validator
+    private val getCurrentUserProfileUseCase: GetCurrentUserProfileUseCase
 ) : ViewModel() {
     val user = mutableStateOf<Resource<User>>(Resource.Initialized())
 
