@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.domain.dataModels.team.TeamView
-import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.presentation.composables.MemberComposable
 import com.example.taskmanagement.presentation.customComponents.MembersSuggestionsDialog
 import com.example.taskmanagement.presentation.customComponents.OwnerTextField

@@ -23,7 +23,6 @@ import com.example.taskmanagement.domain.dataModels.project.Project
 import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.domain.dataModels.task.Priority
 import com.example.taskmanagement.domain.dataModels.task.TaskView
-import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.presentation.customComponents.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -84,14 +83,20 @@ fun MilestoneTextField(task: TaskView, viewModel: TaskFormViewModel) {
             value = task.milestoneTitle,
             validationResult = viewModel.taskMilestoneTitleValidationResult,
             onValueChange = { viewModel.setTaskMilestoneTitle(it) },
-            label = "Milestone Title"
+            label = "Milestone Title",
+            enabled = viewModel.hasPermission(Permission.EditName)
         )
+    val onClick: (Boolean) -> Unit = { value ->
+        if (viewModel.hasPermission(Permission.EditName))
+            viewModel.toggleIsMileStone(value)
+    }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { viewModel.toggleIsMileStone(!task.isMilestone) }) {
-        Checkbox(checked = task.isMilestone, onCheckedChange = { viewModel.toggleIsMileStone(it) })
+            .clickable { onClick(!task.isMilestone) }
+    ) {
+        Checkbox(checked = task.isMilestone, onCheckedChange = onClick)
         Text(text = "set task as milestone")
     }
 
@@ -127,7 +132,8 @@ private fun TaskFormFooter(
         onValueChange = {
             viewModel.setTaskEstimatedTime(it)
         },
-        keyboardType = KeyboardType.Number
+        keyboardType = KeyboardType.Number,
+        enabled = viewModel.hasPermission(Permission.EditName)
     )
     MilestoneTextField(task = task, viewModel = viewModel)
     PriorityList(task, viewModel)
@@ -148,7 +154,8 @@ private fun PriorityList(
                 selected = task.priority == it,
                 onClick = { viewModel.setTaskPriority(it) },
                 label = { Text(it.name) },
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(8.dp),
+                enabled = viewModel.hasPermission(Permission.EditName)
             )
         }
     }
@@ -169,12 +176,13 @@ private fun TaskDatePicker(
         )
     TextFieldSetup(
         value = task.finishDate?.let { simpleDateFormat.format(it) } ?: "",
-        label ="Finish date",
+        label = "Finish date",
         onValueChange = {},
         enabled = false,
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
+                if (!viewModel.hasPermission(Permission.EditName)) return@clickable
                 dateDialog.setOnDateSetListener { _, year, month, dayOfMonth ->
                     calendar.set(year, month, dayOfMonth)
                     viewModel.setTaskFinishDate(calendar.time)
@@ -204,7 +212,10 @@ private fun ProjectPicker(viewModel: TaskFormViewModel) {
         enabled = false,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { showDialog = true },
+            .clickable {
+                if (viewModel.hasPermission(Permission.EditName))
+                    showDialog = true
+            },
         label = { Text(text = "Project") }
     )
     if (showDialog)

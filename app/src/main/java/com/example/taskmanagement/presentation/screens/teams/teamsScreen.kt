@@ -11,6 +11,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,9 +42,9 @@ fun TeamsScreen(navHostController: NavHostController, snackbarHostState: Snackba
 
 @Composable
 fun TeamsScreenContent(navHostController: NavHostController, viewModel: TeamsViewModel) {
-    val teams by viewModel.teams
-    val searchQuery by viewModel.searchQuery
-    val filteredTeams by viewModel.filteredTeams
+    val teams by viewModel.teams.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val filteredTeams by viewModel.filteredTeams.collectAsState()
     val ratio = 4
     Column(
         modifier = Modifier

@@ -43,7 +43,12 @@ fun TaskFormScreen(
 fun TaskFormScreenContent(
     viewModel: TaskFormViewModel,
 ) {
-    val pages = listOf("Main Data", "Members", "Task Items")
+    val pages = buildList {
+        add("Main Data")
+        add("Members")
+        if (!viewModel.isUpdating)
+            add("Task Items")
+    }
     val pagerState = rememberPagerState()
     val coroutine = rememberCoroutineScope()
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

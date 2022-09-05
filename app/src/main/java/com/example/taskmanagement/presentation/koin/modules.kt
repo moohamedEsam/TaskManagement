@@ -113,8 +113,8 @@ val taskUseCasesModule = module {
 }
 
 val userUseCasesModule = module {
-    single { LoginUserUseCase(get()) }
-    single { SignUpUseCase(get()) }
+    single { LoginUserUseCase(get(), androidContext()) }
+    single { SignUpUseCase(get(), androidContext()) }
     single { GetCurrentUserProfileUseCase(get()) }
     single { SearchMembersUseCase(get()) }
 }

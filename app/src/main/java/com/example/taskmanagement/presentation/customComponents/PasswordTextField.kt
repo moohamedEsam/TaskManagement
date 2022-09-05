@@ -19,18 +19,21 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 
 @Composable
 fun PasswordTextField(
     value: String,
     label: String = "Password",
-    validationResult: ValidationResult,
+    validationResult: StateFlow<ValidationResult>,
     onValueChange: (String) -> Unit
 ) {
     var showPassword by remember {
         mutableStateOf(false)
     }
+    val validation by validationResult.collectAsState()
     Column(modifier = Modifier.animateContentSize()) {
         TextField(
             value = value,
@@ -52,11 +55,11 @@ fun PasswordTextField(
             else
                 PasswordVisualTransformation(),
             maxLines = 1,
-            isError = !validationResult.isValid,
+            isError = !validation.isValid,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
-        if (!validationResult.message.isNullOrBlank())
-            Text(text = validationResult.message, color = MaterialTheme.colorScheme.error)
+        if (!validation.message.isNullOrBlank())
+            Text(text = validation.message ?: "", color = MaterialTheme.colorScheme.error)
     }
 
 }

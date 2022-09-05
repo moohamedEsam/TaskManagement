@@ -5,26 +5,13 @@ import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.domain.vallidators.Validator
 
-class ProfileValidator {
+class ProfileValidator : BaseValidator() {
     val emailValidator = Validator<String> { email ->
         when {
             email.isBlank() || email.isEmpty() -> ValidationResult(false, "email empty or blank")
             !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> ValidationResult(
                 false,
                 "not valid email pattern"
-            )
-            else -> ValidationResult(true)
-        }
-    }
-    val usernameValidator = Validator<String> { username ->
-        when {
-            username.isBlank() || username.isEmpty() -> ValidationResult(
-                false,
-                "username empty or blank"
-            )
-            username.length < 3 -> ValidationResult(
-                false,
-                "username length must be more than 3"
             )
             else -> ValidationResult(true)
         }
@@ -42,7 +29,7 @@ class ProfileValidator {
             )
             password != confirm -> ValidationResult(
                 false,
-                "password and confirm password must be equal"
+                "password and confirm password doesn't match"
             )
             else -> ValidationResult(true)
         }
@@ -60,7 +47,7 @@ class ProfileValidator {
         }
     }
 
-    val passwordValidator = Validator<String> {password->
+    val passwordValidator = Validator<String> { password ->
         when {
             password.isEmpty() || password.isBlank() -> ValidationResult(
                 false,

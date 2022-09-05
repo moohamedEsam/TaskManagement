@@ -12,6 +12,6 @@ open class BaseValidator {
         }
     }
 
-    fun isFormValid(validationResults: List<ValidationResult>) =
+    fun isFormValid(vararg validationResults: ValidationResult) =
         validationResults.all { it.isValid }
 }

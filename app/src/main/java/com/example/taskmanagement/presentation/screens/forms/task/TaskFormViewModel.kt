@@ -242,8 +242,8 @@ class TaskFormViewModel(
         project = ""
     )
 
-    fun hasPermission(requiredPermission: Permission): Boolean {
-        return currentUserTag?.isUserAuthorized(requiredPermission) ?: true
+    fun hasPermission(vararg requiredPermission: Permission): Boolean {
+        return currentUserTag?.isUserAuthorized(requiredPermission = requiredPermission) ?: true
     }
 
     fun setOwner(user: User) {
