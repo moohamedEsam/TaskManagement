@@ -33,12 +33,13 @@ interface RemoteDataSource {
     suspend fun createComments(comments: List<Comment>): List<Comment>
     suspend fun deleteTaskComment(commentId: String): ConfirmationResponse
     suspend fun updateTaskComment(comment: Comment): Comment
-    suspend fun createOrUpdateTaskItems(
+    suspend fun createTaskItems(
         taskId: String,
         taskItems: List<TaskItem>
     ): List<TaskItem>
 
-    suspend fun deleteTaskItems(taskId: String, taskItemId: String): List<TaskItem>
+    suspend fun updateTaskItems(taskId: String, taskItems: List<TaskItem>): List<TaskItem>
+    suspend fun deleteTaskItem(taskId: String, taskItemId: String): List<TaskItem>
 
 
     suspend fun getCurrentUserProjects(): List<Project>
@@ -65,7 +66,6 @@ interface RemoteDataSource {
         parentRoute: ParentRoute,
         members: List<String>
     ): Boolean
-
 
 
 }

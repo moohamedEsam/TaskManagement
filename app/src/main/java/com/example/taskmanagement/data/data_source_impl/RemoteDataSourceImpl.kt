@@ -25,7 +25,6 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     override suspend fun loginUser(credentials: Credentials): Token {
         val response = client.post(Urls.SIGN_IN) {
             setBody(credentials)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }
@@ -54,7 +53,6 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     override suspend fun createTask(task: Task): Task {
         val response = client.post(Urls.TASKS) {
             setBody(task)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }
@@ -62,7 +60,6 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     override suspend fun updateTask(task: Task): Task {
         val response = client.put(Urls.TASKS) {
             setBody(task)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }
@@ -82,18 +79,27 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
         return getResponseResult(response)
     }
 
-    override suspend fun createOrUpdateTaskItems(
+    override suspend fun createTaskItems(
         taskId: String,
         taskItems: List<TaskItem>
     ): List<TaskItem> {
         val response = client.post(Urls.getTaskItemRoute(taskId)) {
             setBody(taskItems)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }
 
-    override suspend fun deleteTaskItems(
+    override suspend fun updateTaskItems(
+        taskId: String,
+        taskItems: List<TaskItem>
+    ): List<TaskItem> {
+        val response = client.put(Urls.getTaskItemRoute(taskId)) {
+            setBody(taskItems)
+        }
+        return getResponseResult(response)
+    }
+
+    override suspend fun deleteTaskItem(
         taskId: String,
         taskItemId: String
     ): List<TaskItem> {
@@ -104,7 +110,6 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     override suspend fun sendInvitation(teamId: String, userIds: List<String>): Boolean {
         val response = client.post(Urls.getTeamUrl(teamId)) {
             setBody(userIds)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }
@@ -134,7 +139,6 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     ): List<Comment> {
         val response = client.post(Urls.COMMENTS) {
             setBody(comments)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }
@@ -152,7 +156,6 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     ): Comment {
         val response = client.put(Urls.COMMENTS) {
             setBody(comment)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }
@@ -171,7 +174,6 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
 
         val response = client.post(Urls.PROJECTS) {
             setBody(project)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }
@@ -179,7 +181,6 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     override suspend fun updateProject(project: Project): Project {
         val response = client.put(Urls.PROJECTS) {
             setBody(project)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }
@@ -205,7 +206,6 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     override suspend fun createTeam(team: Team): TeamDto {
         val response = client.post(Urls.TEAMS) {
             setBody(team)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }
@@ -213,7 +213,6 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     override suspend fun createTag(tag: Tag, parentRoute: ParentRoute): Tag {
         val response = client.post(Urls.getTagsUrl(parentRoute)) {
             setBody(tag)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }
@@ -225,7 +224,6 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     ): List<ActiveUser> {
         val response = client.put(Urls.assignTag(id, parentRoute)) {
             setBody(members)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }
@@ -237,7 +235,6 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     ): Boolean {
         val response = client.delete(Urls.removeMembers(id, parentRoute)) {
             setBody(members)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }
@@ -245,7 +242,6 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     override suspend fun updateTeam(team: Team): TeamDto {
         val response = client.put(Urls.TEAMS) {
             setBody(team)
-            contentType(ContentType.Application.Json)
         }
         return getResponseResult(response)
     }

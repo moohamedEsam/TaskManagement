@@ -27,6 +27,7 @@ interface MainRepository {
     suspend fun createTask(task: Task): Resource<Task>
     suspend fun updateTask(task: Task): Resource<Task>
     suspend fun updateTaskItems(taskItems: List<TaskItem>, taskId: String): Resource<List<TaskItem>>
+    suspend fun createTaskItems(taskItems: List<TaskItem>, taskId: String): Resource<List<TaskItem>>
     suspend fun createComments(comments: List<Comment>): Resource<List<Comment>>
     suspend fun updateComment(comment: Comment): Resource<Comment>
 

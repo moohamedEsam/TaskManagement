@@ -27,6 +27,11 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
         }
     }
 
+    override suspend fun createTaskItems(
+        taskItems: List<TaskItem>,
+        taskId: String
+    ): Resource<List<TaskItem>> = baseMapApiToResource { remote.createTaskItems(taskId, taskItems) }
+
     override suspend fun registerUser(userProfile: SignUpUserBody): Resource<Token> =
         baseMapApiToResource { remote.registerUser(userProfile) }
 
@@ -52,7 +57,8 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
     override suspend fun getCurrentUserTag(parentRoute: ParentRoute, id: String): Resource<Tag> =
         baseMapApiToResource { remote.getCurrentUserTag(parentRoute, id) }
 
-    override suspend fun updateComment(comment: Comment): Resource<Comment> = baseMapApiToResource { remote.updateTaskComment(comment) }
+    override suspend fun updateComment(comment: Comment): Resource<Comment> =
+        baseMapApiToResource { remote.updateTaskComment(comment) }
 
     override suspend fun updateProject(project: Project): Resource<Project> =
         baseMapApiToResource { remote.updateProject(project) }
@@ -95,7 +101,7 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
         taskItems: List<TaskItem>,
         taskId: String
     ): Resource<List<TaskItem>> =
-        baseMapApiToResource { remote.createOrUpdateTaskItems(taskId, taskItems) }
+        baseMapApiToResource { remote.createTaskItems(taskId, taskItems) }
 
     override suspend fun removeMembers(
         parentRoute: ParentRoute,

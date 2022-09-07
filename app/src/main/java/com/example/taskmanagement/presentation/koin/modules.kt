@@ -56,11 +56,13 @@ import com.example.taskmanagement.presentation.screens.teams.TeamsViewModel
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.koin.androidContext
@@ -226,7 +228,9 @@ fun Scope.provideHttpClient() = HttpClient(CIO) {
             }
         }
     }
-
+    defaultRequest {
+        contentType(ContentType.Application.Json)
+    }
 }
 
 

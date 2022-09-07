@@ -27,7 +27,7 @@ fun TaskScreen(
     snackbarHostState: SnackbarHostState
 ) {
     val viewModel by inject<TaskViewModel> { parametersOf(taskId) }
-    val taskResource by viewModel.task
+    val taskResource by viewModel.task.collectAsState()
     val task = taskResource.data ?: return
     Box {
         TaskScreenContent(navHostController, task)
