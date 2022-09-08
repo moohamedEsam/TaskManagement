@@ -79,8 +79,8 @@ fun TaskItem(
                     )
 
                 }
-                Text(text = "Completed Task Items ${task.taskItems.count { it.completed }}")
-                Text(text = "Incomplete Task Items ${task.taskItems.count { !it.completed }}")
+                Text(text = "Completed Task Items ${task.taskItems.count { it.isCompleted }}")
+                Text(text = "Incomplete Task Items ${task.taskItems.count { !it.isCompleted }}")
                 Text(text = "Members: ${task.assigned.size}")
 
             }

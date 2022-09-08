@@ -26,6 +26,8 @@ import com.example.taskmanagement.domain.useCases.tasks.GetTaskUseCase
 import com.example.taskmanagement.domain.useCases.tasks.UpdateTaskUseCase
 import com.example.taskmanagement.domain.useCases.tasks.comments.CreateCommentUseCase
 import com.example.taskmanagement.domain.useCases.tasks.comments.UpdateCommentUseCase
+import com.example.taskmanagement.domain.useCases.tasks.taskItems.CreateTaskItemsUseCase
+import com.example.taskmanagement.domain.useCases.tasks.taskItems.DeleteTaskItemsUseCase
 import com.example.taskmanagement.domain.useCases.tasks.taskItems.UpdateTaskItemsUseCase
 import com.example.taskmanagement.domain.useCases.teams.CreateTeamUseCase
 import com.example.taskmanagement.domain.useCases.teams.GetCurrentUserTeamsUseCase
@@ -111,6 +113,8 @@ val taskUseCasesModule = module {
     single { CreateCommentUseCase(get()) }
     single { UpdateCommentUseCase(get()) }
     single { UpdateTaskItemsUseCase(get()) }
+    single { CreateTaskItemsUseCase(get()) }
+    single { DeleteTaskItemsUseCase(get()) }
     single { GetCurrentUserTasksUseCase(get()) }
 }
 
@@ -140,6 +144,8 @@ val viewModelModule = module {
             updateTaskItemsUseCase = get(),
             removeMembersUseCase = get(),
             createCommentUseCase = get(),
+            createTaskItemsUseCase = get(),
+            deleteTaskItemsUseCase = get(),
             taskId = params[0]
         )
     }

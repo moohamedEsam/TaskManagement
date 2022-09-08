@@ -105,7 +105,7 @@ private fun DashboardContent(
                     onCompleteClick = {},
                     modifier = Modifier.fillMaxHeight { it / ratio }
                 ) {
-                    navHostController.navigate(Screens.TaskForm.withArgs(project.id, task.id))
+                    navHostController.navigate(Screens.Task.withArgs(task.id))
                 }
             }
         }

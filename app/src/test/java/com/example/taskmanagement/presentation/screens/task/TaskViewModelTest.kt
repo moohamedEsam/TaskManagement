@@ -16,6 +16,8 @@ import com.example.taskmanagement.domain.useCases.tasks.GetTaskUseCase
 import com.example.taskmanagement.domain.useCases.tasks.UpdateTaskUseCase
 import com.example.taskmanagement.domain.useCases.tasks.comments.CreateCommentUseCase
 import com.example.taskmanagement.domain.useCases.tasks.comments.UpdateCommentUseCase
+import com.example.taskmanagement.domain.useCases.tasks.taskItems.CreateTaskItemsUseCase
+import com.example.taskmanagement.domain.useCases.tasks.taskItems.DeleteTaskItemsUseCase
 import com.example.taskmanagement.domain.useCases.tasks.taskItems.UpdateTaskItemsUseCase
 import com.example.taskmanagement.domain.useCases.user.GetCurrentUserProfileUseCase
 import com.google.common.truth.Truth.assertThat
@@ -80,6 +82,8 @@ class TaskViewModelTest {
             removeMembersUseCase = RemoveMembersUseCase(repository),
             createCommentUseCase = CreateCommentUseCase(repository),
             updateCommentUseCase = UpdateCommentUseCase(repository),
+            createTaskItemsUseCase = CreateTaskItemsUseCase(repository),
+            deleteTaskItemsUseCase = DeleteTaskItemsUseCase(repository),
             taskId = taskId
         )
         viewModel.setUserId().join()
@@ -147,7 +151,7 @@ class TaskViewModelTest {
                 viewModel.addEventUI(
                     TaskScreenUIEvent.TaskItems.Edit(
                         it,
-                        it.copy(completed = true)
+                        it.copy(isCompleted = true)
                     )
                 )
             }
@@ -155,6 +159,64 @@ class TaskViewModelTest {
             viewModel.task.test {
                 val item = awaitItem()
                 assertThat(item.data?.status).isEqualTo(TaskStatus.Completed)
+            }
+        }
+
+    @Test
+    fun `optimize events - edit event is deleted  add event is updated- edit event after add event with the same item`() =
+        runTest {
+            val taskItem = TaskItem("item")
+            val addEvent = TaskScreenUIEvent.TaskItems.Add(taskItem)
+            viewModel.addEventUI(addEvent).join()
+            val editEvent =
+                TaskScreenUIEvent.TaskItems.Edit(taskItem.copy(isCompleted = true), taskItem)
+            viewModel.addEventUI(editEvent).join()
+            viewModel.optimizeEvents().join()
+            viewModel.uiEventState.test {
+                val events = awaitItem()
+                assertThat(events).doesNotContain(editEvent)
+                val newAddEvent =
+                    events.find { it is TaskScreenUIEvent.TaskItems.Add && it.taskItem == editEvent.taskItem }
+                assertThat(newAddEvent).isNotNull()
+            }
+        }
+
+    @Test
+    fun `optimize events - edit events are deleted  add event is updated to last edit- edit events after add event with the same item`() =
+        runTest {
+            val taskItem = TaskItem("item")
+            val addEvent = TaskScreenUIEvent.TaskItems.Add(taskItem)
+            viewModel.addEventUI(addEvent).join()
+            val editEvent =
+                TaskScreenUIEvent.TaskItems.Edit(taskItem.copy(isCompleted = true), taskItem)
+            val lastEditEvent = TaskScreenUIEvent.TaskItems.Edit(taskItem.copy(isCompleted = false), editEvent.taskItem)
+            viewModel.addEventUI(editEvent).join()
+            viewModel.addEventUI(lastEditEvent).join()
+            viewModel.optimizeEvents().join()
+            viewModel.uiEventState.test {
+                val events = awaitItem()
+                assertThat(events).doesNotContain(editEvent)
+                assertThat(events).doesNotContain(lastEditEvent)
+                val newAddEvent =
+                    events.find { it is TaskScreenUIEvent.TaskItems.Add && it.taskItem == lastEditEvent.taskItem }
+                assertThat(newAddEvent).isNotNull()
+            }
+        }
+
+    @Test
+    fun `optimize events - remove and add events are deleted - remove event after add event with the same item`() =
+        runTest {
+            val taskItem = TaskItem("item")
+            val addEvent = TaskScreenUIEvent.TaskItems.Add(taskItem)
+            viewModel.addEventUI(addEvent).join()
+            val removeEvent =
+                TaskScreenUIEvent.TaskItems.Remove(taskItem)
+            viewModel.addEventUI(removeEvent).join()
+            viewModel.optimizeEvents().join()
+            viewModel.uiEventState.test {
+                val events = awaitItem()
+                assertThat(events).doesNotContain(removeEvent)
+                assertThat(events).doesNotContain(addEvent)
             }
         }
 

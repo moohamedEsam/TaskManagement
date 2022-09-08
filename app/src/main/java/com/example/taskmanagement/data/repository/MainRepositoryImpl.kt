@@ -27,6 +27,11 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
         }
     }
 
+    override suspend fun deleteTaskItems(
+        taskItems: List<String>,
+        taskId: String
+    ): Resource<Boolean> = baseMapApiToResource { remote.deleteTaskItems(taskId, taskItems) }
+
     override suspend fun createTaskItems(
         taskItems: List<TaskItem>,
         taskId: String

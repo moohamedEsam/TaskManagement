@@ -39,7 +39,7 @@ interface RemoteDataSource {
     ): List<TaskItem>
 
     suspend fun updateTaskItems(taskId: String, taskItems: List<TaskItem>): List<TaskItem>
-    suspend fun deleteTaskItem(taskId: String, taskItemId: String): List<TaskItem>
+    suspend fun deleteTaskItems(taskId: String, taskItems: List<String>): Boolean
 
 
     suspend fun getCurrentUserProjects(): List<Project>

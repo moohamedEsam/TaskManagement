@@ -1,24 +1,26 @@
 package com.example.taskmanagement.presentation.screens.task
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.domain.dataModels.task.TaskItem
-import com.example.taskmanagement.domain.dataModels.task.TaskView
 import com.example.taskmanagement.presentation.customComponents.CircleCheckbox
-import com.example.taskmanagement.presentation.customComponents.HandleResourceChange
+import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.inject
 import org.koin.core.parameter.parametersOf
-import java.text.SimpleDateFormat
 
 @Composable
 fun TaskScreen(
@@ -27,112 +29,62 @@ fun TaskScreen(
     snackbarHostState: SnackbarHostState
 ) {
     val viewModel by inject<TaskViewModel> { parametersOf(taskId) }
-    val taskResource by viewModel.task.collectAsState()
-    val task = taskResource.data ?: return
-    Box {
-        TaskScreenContent(navHostController, task)
-
+    LaunchedEffect(key1 = Unit) {
+        viewModel.receiveChannel.collectLatest {
+            handleSnackBarEvent(it, snackbarHostState)
+        }
     }
+    TaskScreenContent(navHostController = navHostController, viewModel = viewModel)
 }
 
 @Composable
 private fun TaskScreenContent(
     navHostController: NavHostController,
-    task: TaskView
+    viewModel: TaskViewModel
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-    ) {
-        ActionRow(navHostController)
-        Spacer(modifier = Modifier.padding(8.dp))
-        Text(text = task.title, style = MaterialTheme.typography.headlineLarge)
-        Spacer(modifier = Modifier.padding(16.dp))
-        TaskMainInfo(task)
-        Divider()
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Priority", style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.padding(4.dp))
-                Text(text = task.priority.toString(), style = MaterialTheme.typography.bodyLarge)
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Status", style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.padding(4.dp))
-                Text(text = task.status.toString(), style = MaterialTheme.typography.bodyLarge)
-            }
-
-        }
-        Spacer(modifier = Modifier.padding(8.dp))
-        Text(text = "Description", style = MaterialTheme.typography.bodyLarge)
-        Text(text = task.description ?: "", style = MaterialTheme.typography.bodyMedium)
-        Spacer(modifier = Modifier.padding(8.dp))
-        Text(text = "task items", style = MaterialTheme.typography.bodyLarge)
-        Spacer(modifier = Modifier.padding(8.dp))
-        LazyColumn {
-            items(task.taskItems ?: emptyList()) {
-                TaskItemCard(it)
-            }
-        }
-    }
-}
-
-@Composable
-private fun TaskMainInfo(task: TaskView) {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
-        Column(modifier = Modifier.align(Alignment.TopStart)) {
-            if (task.completeDate != null) {
-                Text(text = "complete Date", style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    text = SimpleDateFormat.getDateInstance().format(task.completeDate),
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            TaskMainInfo(viewModel, navHostController)
+            TaskInfoPager(viewModel = viewModel)
         }
-        Divider(
-            modifier = Modifier
-                .fillMaxHeight()
-                .align(Alignment.TopCenter)
-                .width(1.dp)
-        )
 
-        Column(modifier = Modifier.align(Alignment.TopEnd)) {
-            if (task.finishDate != null) {
-                Text(text = "Finish Date", style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    text = SimpleDateFormat.getDateInstance().format(task.finishDate),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        }
     }
 }
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
-private fun ActionRow(navHostController: NavHostController) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = { navHostController.popBackStack() }) {
-            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+private fun TaskInfoPager(viewModel: TaskViewModel) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        val pages = listOf("Task Items", "Description", "Assigned", "Comments", "History")
+        val pager = rememberPagerState()
+        val coroutine = rememberCoroutineScope()
+        ScrollableTabRow(selectedTabIndex = pager.currentPage, divider = {}) {
+            pages.forEachIndexed { index, value ->
+                Tab(
+                    selected = pager.currentPage == index,
+                    onClick = { coroutine.launch { pager.animateScrollToPage(index) } }
+                ) {
+                    Text(text = value, modifier = Modifier.padding(bottom = 16.dp, end = 8.dp))
+                }
+            }
         }
-        IconButton(onClick = { }) {
-            Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
+
+        HorizontalPager(count = pages.size, state = pager, itemSpacing = 4.dp) { page ->
+            when (page) {
+                0 -> Unit
+                1 -> Unit
+                2 -> Unit
+                3 -> Unit
+                else -> Unit
+            }
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,7 +96,7 @@ private fun TaskItemCard(taskItem: TaskItem) {
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CircleCheckbox(selected = taskItem.completed) {
+            CircleCheckbox(selected = taskItem.isCompleted) {
 
             }
             Text(text = taskItem.title, style = MaterialTheme.typography.bodyLarge)

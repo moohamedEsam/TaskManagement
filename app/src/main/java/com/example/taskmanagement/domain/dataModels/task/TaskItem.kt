@@ -6,6 +6,7 @@ import java.util.*
 @Serializable
 data class TaskItem(
     val title: String,
-    val completed: Boolean = false,
-    val id:String = UUID.randomUUID().toString()
+    val isCompleted: Boolean = false,
+    val completedBy: String? = null,
+    val id: String = UUID.randomUUID().toString()
 )
