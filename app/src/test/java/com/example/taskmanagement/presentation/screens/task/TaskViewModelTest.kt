@@ -20,6 +20,7 @@ import com.example.taskmanagement.domain.useCases.tasks.taskItems.CreateTaskItem
 import com.example.taskmanagement.domain.useCases.tasks.taskItems.DeleteTaskItemsUseCase
 import com.example.taskmanagement.domain.useCases.tasks.taskItems.UpdateTaskItemsUseCase
 import com.example.taskmanagement.domain.useCases.user.GetCurrentUserProfileUseCase
+import com.example.taskmanagement.domain.validatorsImpl.BaseValidator
 import com.google.common.truth.Truth.assertThat
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -84,6 +85,7 @@ class TaskViewModelTest {
             updateCommentUseCase = UpdateCommentUseCase(repository),
             createTaskItemsUseCase = CreateTaskItemsUseCase(repository),
             deleteTaskItemsUseCase = DeleteTaskItemsUseCase(repository),
+            validator = BaseValidator(),
             taskId = taskId
         )
         viewModel.setUserId().join()
@@ -118,14 +120,14 @@ class TaskViewModelTest {
         runTest {
             user = taskView.owner
             viewModel.setUserId().join()
-            viewModel.onTaskStatusClick(showEvent = false).join()
+            viewModel.onTaskStatusClick(showSnackBarOnError = false).join()
             assertThat(viewModel.showTaskStatusDialog.value).isFalse()
         }
 
     @Test
     fun `toggle task status - status change to inProgress - current status is pending`() =
         runTest {
-            viewModel.onTaskStatusClick(showEvent = false).join()
+            viewModel.onTaskStatusClick(showSnackBarOnError = false).join()
             viewModel.showTaskStatusDialog.test {
                 val item = awaitItem()
                 assertThat(item).isTrue()
@@ -136,7 +138,7 @@ class TaskViewModelTest {
     fun `on task status click - show dialog is false - current status is inProgress and task items not completed`() =
         runTest {
             viewModel.onTaskStatusConfirmClick().join()
-            viewModel.onTaskStatusClick(showEvent = false).join()
+            viewModel.onTaskStatusClick(showSnackBarOnError = false).join()
             viewModel.showTaskStatusDialog.test {
                 val item = awaitItem()
                 assertThat(item).isFalse()
@@ -220,4 +222,24 @@ class TaskViewModelTest {
             }
         }
 
+    @Test
+    fun `add event ui - update made is true - add event ui set the update made`()= runTest{
+        val taskItem = TaskItem("")
+        viewModel.addEventUI(TaskScreenUIEvent.TaskItems.Add(taskItem))
+        viewModel.updateMade.test {
+            val value = awaitItem()
+            assertThat(value).isTrue()
+        }
+    }
+
+    @Test
+    fun `add event ui - update made is false - add event ui then remove it`()= runTest{
+        val taskItem = TaskItem("")
+        viewModel.addEventUI(TaskScreenUIEvent.TaskItems.Add(taskItem))
+        viewModel.undoLastEvent()
+        viewModel.updateMade.test {
+            val value = awaitItem()
+            assertThat(value).isFalse()
+        }
+    }
 }

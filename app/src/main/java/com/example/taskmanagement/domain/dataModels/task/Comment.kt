@@ -1,7 +1,6 @@
 package com.example.taskmanagement.domain.dataModels.task
 
 import com.example.taskmanagement.domain.utils.custom_serializers.DateSerializer
-import com.example.taskmanagement.domain.utils.custom_serializers.UUIDSerializer
 import kotlinx.serialization.Serializable
 import java.util.*
 

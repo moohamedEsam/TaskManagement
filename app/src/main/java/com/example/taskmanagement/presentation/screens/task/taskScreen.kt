@@ -1,19 +1,24 @@
 package com.example.taskmanagement.presentation.screens.task
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.taskmanagement.domain.dataModels.task.TaskItem
-import com.example.taskmanagement.presentation.customComponents.CircleCheckbox
+import com.example.taskmanagement.presentation.customComponents.fillMaxHeight
 import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
+import com.example.taskmanagement.presentation.screens.forms.project.ProjectMembersList
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -51,6 +56,39 @@ private fun TaskScreenContent(
             TaskMainInfo(viewModel, navHostController)
             TaskInfoPager(viewModel = viewModel)
         }
+        SaveButton(
+            viewModel,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(8.dp)
+        )
+    }
+}
+
+@Composable
+private fun SaveButton(
+    viewModel: TaskViewModel,
+    modifier: Modifier = Modifier
+) {
+    val updateMade by viewModel.updateMade.collectAsState()
+    if (!updateMade) return
+    val show = remember {
+        MutableTransitionState(updateMade)
+    }
+    LaunchedEffect(key1 = updateMade) {
+        show.targetState = updateMade
+    }
+    AnimatedVisibility(
+        visibleState = show,
+        enter = fadeIn(tween(2000)),
+        exit = fadeOut(tween(1000)),
+        modifier = modifier
+    ) {
+        ExtendedFloatingActionButton(
+            onClick = viewModel::saveChanges,
+            text = { Text(text = "Save Changes") },
+            icon = { Icon(imageVector = Icons.Default.Check, contentDescription = null) }
+        )
 
     }
 }
@@ -58,7 +96,12 @@ private fun TaskScreenContent(
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun TaskInfoPager(viewModel: TaskViewModel) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight { it / 2 },
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         val pages = listOf("Task Items", "Description", "Assigned", "Comments", "History")
         val pager = rememberPagerState()
         val coroutine = rememberCoroutineScope()
@@ -66,7 +109,8 @@ private fun TaskInfoPager(viewModel: TaskViewModel) {
             pages.forEachIndexed { index, value ->
                 Tab(
                     selected = pager.currentPage == index,
-                    onClick = { coroutine.launch { pager.animateScrollToPage(index) } }
+                    onClick = { coroutine.launch { pager.animateScrollToPage(index) } },
+                    modifier = Modifier.padding(8.dp)
                 ) {
                     Text(text = value, modifier = Modifier.padding(bottom = 16.dp, end = 8.dp))
                 }
@@ -75,31 +119,26 @@ private fun TaskInfoPager(viewModel: TaskViewModel) {
 
         HorizontalPager(count = pages.size, state = pager, itemSpacing = 4.dp) { page ->
             when (page) {
-                0 -> Unit
-                1 -> Unit
-                2 -> Unit
-                3 -> Unit
+                0 -> TaskItemsPage(
+                    viewModel = viewModel,
+                    modifier = Modifier.fillMaxSize()
+                )
+                1 -> TaskDescriptionPage(viewModel = viewModel)
+                2 -> TaskAssignedPage(viewModel = viewModel, modifier = Modifier.fillMaxSize())
+                3 -> TaskCommentsPage(viewModel = viewModel, modifier = Modifier.fillMaxSize())
                 else -> Unit
             }
         }
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TaskItemCard(taskItem: TaskItem) {
-    OutlinedCard(modifier = Modifier.padding(vertical = 8.dp)) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CircleCheckbox(selected = taskItem.isCompleted) {
-
-            }
-            Text(text = taskItem.title, style = MaterialTheme.typography.bodyLarge)
+private fun TaskDescriptionPage(viewModel: TaskViewModel) {
+    val task by viewModel.task.collectAsState()
+    val taskDescription by remember {
+        derivedStateOf {
+            task.data?.description ?: ""
         }
     }
+    Text(text = taskDescription, modifier = Modifier.fillMaxSize().padding(8.dp))
 }

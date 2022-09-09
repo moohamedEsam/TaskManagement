@@ -146,6 +146,7 @@ val viewModelModule = module {
             createCommentUseCase = get(),
             createTaskItemsUseCase = get(),
             deleteTaskItemsUseCase = get(),
+            validator = get(),
             taskId = params[0]
         )
     }

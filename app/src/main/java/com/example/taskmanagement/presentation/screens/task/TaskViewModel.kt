@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.task.*
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
+import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.domain.useCases.shared.RemoveMembersUseCase
 import com.example.taskmanagement.domain.useCases.tasks.GetTaskUseCase
 import com.example.taskmanagement.domain.useCases.tasks.UpdateTaskUseCase
@@ -14,6 +15,7 @@ import com.example.taskmanagement.domain.useCases.tasks.taskItems.CreateTaskItem
 import com.example.taskmanagement.domain.useCases.tasks.taskItems.DeleteTaskItemsUseCase
 import com.example.taskmanagement.domain.useCases.tasks.taskItems.UpdateTaskItemsUseCase
 import com.example.taskmanagement.domain.useCases.user.GetCurrentUserProfileUseCase
+import com.example.taskmanagement.domain.validatorsImpl.BaseValidator
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -29,6 +31,7 @@ class TaskViewModel(
     private val createCommentUseCase: CreateCommentUseCase,
     private val updateCommentUseCase: UpdateCommentUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
+    private val validator: BaseValidator,
     private val taskId: String
 ) : ViewModel() {
     private val _task = MutableStateFlow<Resource<TaskView>>(Resource.Initialized())
@@ -45,7 +48,8 @@ class TaskViewModel(
     val uiEventState = uiEvents.asStateFlow()
     private val _updateMade = MutableStateFlow(false)
     val updateMade = _updateMade.asStateFlow()
-
+    private val _taskItemTitleValidationResult = MutableStateFlow(ValidationResult(true))
+    val taskItemTitleValidationResult = _taskItemTitleValidationResult.asStateFlow()
     private var userId = ""
 
     init {
@@ -86,11 +90,11 @@ class TaskViewModel(
     }
 
 
-    fun onTaskStatusClick(showEvent: Boolean = true): Job = viewModelScope.launch {
+    fun onTaskStatusClick(showSnackBarOnError: Boolean = true): Job = viewModelScope.launch {
         task.value.onSuccess {
             val exist = it.assigned.find { activeUser -> activeUser.user.id == userId } != null
             if (!exist) {
-                if (!showEvent) return@launch
+                if (!showSnackBarOnError) return@launch
                 val event =
                     SnackBarEvent("only assigned members can change task status", null) {}
                 snackBarChannel.send(event)
@@ -104,6 +108,9 @@ class TaskViewModel(
         }
     }
 
+    fun validateTaskItemTitle(value:String){
+        _taskItemTitleValidationResult.update { validator.nameValidator.validate(value) }
+    }
 
     fun addEventUI(uiEvent: TaskScreenUIEvent): Job = viewModelScope.launch {
         task.value.onSuccess { taskView ->
@@ -236,7 +243,7 @@ class TaskViewModel(
     }
 
 
-    private fun setShowTaskStatusDialog(value: Boolean) {
+    fun setShowTaskStatusDialog(value: Boolean) {
         _showTaskStatusDialog.update { value }
     }
 
