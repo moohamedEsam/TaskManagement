@@ -6,12 +6,16 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.BaseUseCaseBuilder
 
 class SearchMembersUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<String, Resource<List<User>>> {
+    BaseUseCaseBuilder<String, List<User>>() {
     private var lastQuery: String? = null
     private var lastResult = emptyList<User>()
     override suspend fun build(params: String): Resource<List<User>> {
         return if (lastQuery != null && params.contains(lastQuery!!))
-            Resource.Success(lastResult.filter { it.email.contains(params) || it.username.contains(params) })
+            Resource.Success(lastResult.filter {
+                it.email.contains(params) || it.username.contains(
+                    params
+                )
+            })
         else {
             val result = repository.searchMembers(params)
             lastQuery = params

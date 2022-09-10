@@ -7,7 +7,7 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.BaseUseCaseBuilder
 
 class UpdateCommentUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<Comment, Resource<Comment>> {
+    BaseUseCaseBuilder<Comment, Comment>() {
     override suspend fun build(params: Comment): Resource<Comment> {
         return repository.updateComment(params)
     }

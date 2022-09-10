@@ -20,11 +20,9 @@ import com.example.taskmanagement.domain.useCases.shared.RemoveMembersUseCase
 import com.example.taskmanagement.domain.useCases.tag.AssignTagUseCase
 import com.example.taskmanagement.domain.useCases.tag.CreateTagUseCase
 import com.example.taskmanagement.domain.useCases.tag.GetCurrentUserTag
-import com.example.taskmanagement.domain.useCases.tasks.CreateTaskUseCase
-import com.example.taskmanagement.domain.useCases.tasks.GetCurrentUserTasksUseCase
-import com.example.taskmanagement.domain.useCases.tasks.GetTaskUseCase
-import com.example.taskmanagement.domain.useCases.tasks.UpdateTaskUseCase
+import com.example.taskmanagement.domain.useCases.tasks.*
 import com.example.taskmanagement.domain.useCases.tasks.comments.CreateCommentUseCase
+import com.example.taskmanagement.domain.useCases.tasks.comments.DeleteCommentUseCase
 import com.example.taskmanagement.domain.useCases.tasks.comments.UpdateCommentUseCase
 import com.example.taskmanagement.domain.useCases.tasks.taskItems.CreateTaskItemsUseCase
 import com.example.taskmanagement.domain.useCases.tasks.taskItems.DeleteTaskItemsUseCase
@@ -87,42 +85,44 @@ val repository = module {
 }
 
 val teamUserCasesModule = module {
-    single { CreateTeamUseCase(get()) }
-    single { UpdateTeamUseCase(get()) }
-    single { GetCurrentUserTeamsUseCase(get()) }
-    single { GetTeamUseCase(get()) }
-    single { SendInvitationUseCase(get()) }
-    single { AssignTagUseCase(get()) }
-    single { CreateTagUseCase(get()) }
-    single { GetCurrentUserTag(get()) }
-    single { RemoveMembersUseCase(get()) }
+    factory { CreateTeamUseCase(get()) }
+    factory { UpdateTeamUseCase(get()) }
+    factory { GetCurrentUserTeamsUseCase(get()) }
+    factory { GetTeamUseCase(get()) }
+    factory { SendInvitationUseCase(get()) }
+    factory { AssignTagUseCase(get()) }
+    factory { CreateTagUseCase(get()) }
+    factory { GetCurrentUserTag(get()) }
+    factory { RemoveMembersUseCase(get()) }
 
 }
 
 val projectUseCasesModule = module {
-    single { GetCurrentUserProjectUseCase(get()) }
-    single { CreateProjectUseCase(get()) }
-    single { UpdateProjectUseCase(get()) }
-    single { GetProjectUseCase(get()) }
+    factory { GetCurrentUserProjectUseCase(get()) }
+    factory { CreateProjectUseCase(get()) }
+    factory { UpdateProjectUseCase(get()) }
+    factory { GetProjectUseCase(get()) }
 }
 
 val taskUseCasesModule = module {
-    single { CreateTaskUseCase(get()) }
-    single { UpdateTaskUseCase(get()) }
-    single { GetTaskUseCase(get()) }
-    single { CreateCommentUseCase(get()) }
-    single { UpdateCommentUseCase(get()) }
-    single { UpdateTaskItemsUseCase(get()) }
-    single { CreateTaskItemsUseCase(get()) }
-    single { DeleteTaskItemsUseCase(get()) }
-    single { GetCurrentUserTasksUseCase(get()) }
+    factory { CreateTaskUseCase(get()) }
+    factory { UpdateTaskUseCase(get()) }
+    factory { UpdateTaskStatusUseCase(get()) }
+    factory { GetTaskUseCase(get()) }
+    factory { CreateCommentUseCase(get()) }
+    factory { UpdateCommentUseCase(get()) }
+    factory { DeleteCommentUseCase(get()) }
+    factory { UpdateTaskItemsUseCase(get()) }
+    factory { CreateTaskItemsUseCase(get()) }
+    factory { DeleteTaskItemsUseCase(get()) }
+    factory { GetCurrentUserTasksUseCase(get()) }
 }
 
 val userUseCasesModule = module {
-    single { LoginUserUseCase(get(), androidContext()) }
-    single { SignUpUseCase(get(), androidContext()) }
-    single { GetCurrentUserProfileUseCase(get()) }
-    single { SearchMembersUseCase(get()) }
+    factory { LoginUserUseCase(get(), androidContext()) }
+    factory { SignUpUseCase(get(), androidContext()) }
+    factory { GetCurrentUserProfileUseCase(get()) }
+    factory { SearchMembersUseCase(get()) }
 }
 
 fun provideRepository(remoteDataSource: RemoteDataSource): MainRepository =
@@ -139,7 +139,8 @@ val viewModelModule = module {
         TaskViewModel(
             getTaskUseCase = get(),
             getCurrentUserProfileUseCase = get(),
-            updateTaskUseCase = get(),
+            deleteCommentUseCase = get(),
+            updateTaskStatusUseCase = get(),
             updateCommentUseCase = get(),
             updateTaskItemsUseCase = get(),
             removeMembersUseCase = get(),

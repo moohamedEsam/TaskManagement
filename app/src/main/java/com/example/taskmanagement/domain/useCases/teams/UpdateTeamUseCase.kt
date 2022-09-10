@@ -6,7 +6,7 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.BaseUseCaseBuilder
 
 class UpdateTeamUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<CreateTeamUseCase.Params, Resource<TeamDto>> {
+    BaseUseCaseBuilder<CreateTeamUseCase.Params, TeamDto>() {
     override suspend fun build(params: CreateTeamUseCase.Params): Resource<TeamDto> {
         val team = params.team
         return repository.updateTeam(team)

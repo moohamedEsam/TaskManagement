@@ -1,6 +1,7 @@
 package com.example.taskmanagement.presentation.screens.task
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -8,8 +9,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.presentation.customComponents.fillMaxHeight
 import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
-import com.example.taskmanagement.presentation.screens.forms.project.ProjectMembersList
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -47,31 +45,25 @@ private fun TaskScreenContent(
     navHostController: NavHostController,
     viewModel: TaskViewModel
 ) {
-    Box(
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
             .fillMaxSize()
+            .animateContentSize()
             .verticalScroll(rememberScrollState())
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            TaskMainInfo(viewModel, navHostController)
-            TaskInfoPager(viewModel = viewModel)
-        }
-        SaveButton(
-            viewModel,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(8.dp)
-        )
+        TaskMainInfo(viewModel, navHostController)
+        ActionRow(viewModel = viewModel, modifier = Modifier.align(Alignment.End))
+        TaskInfoPager(viewModel = viewModel)
     }
 }
 
 @Composable
-private fun SaveButton(
+private fun ActionRow(
     viewModel: TaskViewModel,
     modifier: Modifier = Modifier
 ) {
     val updateMade by viewModel.updateMade.collectAsState()
-    if (!updateMade) return
     val show = remember {
         MutableTransitionState(updateMade)
     }
@@ -80,15 +72,20 @@ private fun SaveButton(
     }
     AnimatedVisibility(
         visibleState = show,
-        enter = fadeIn(tween(2000)),
-        exit = fadeOut(tween(1000)),
         modifier = modifier
     ) {
-        ExtendedFloatingActionButton(
-            onClick = viewModel::saveChanges,
-            text = { Text(text = "Save Changes") },
-            icon = { Icon(imageVector = Icons.Default.Check, contentDescription = null) }
-        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(
+                onClick = viewModel::discardChanges,
+                content = { Text(text = "Discard") }
+            )
+
+            Button(
+                onClick = viewModel::saveChanges,
+                content = { Text(text = "Save Changes") },
+            )
+
+        }
 
     }
 }
@@ -140,5 +137,9 @@ private fun TaskDescriptionPage(viewModel: TaskViewModel) {
             task.data?.description ?: ""
         }
     }
-    Text(text = taskDescription, modifier = Modifier.fillMaxSize().padding(8.dp))
+    Text(
+        text = taskDescription, modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+    )
 }

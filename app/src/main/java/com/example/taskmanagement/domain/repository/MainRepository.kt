@@ -26,11 +26,13 @@ interface MainRepository {
     suspend fun getTask(taskId: String): Resource<TaskView>
     suspend fun createTask(task: Task): Resource<Task>
     suspend fun updateTask(task: Task): Resource<Task>
-    suspend fun updateTaskItems(taskItems: List<TaskItem>, taskId: String): Resource<List<TaskItem>>
+    suspend fun updateTaskStatus(taskId: String): Resource<Boolean>
+    suspend fun updateTaskItems(taskItems: List<String>, taskId: String): Resource<List<TaskItem>>
     suspend fun createTaskItems(taskItems: List<TaskItem>, taskId: String): Resource<List<TaskItem>>
-    suspend fun deleteTaskItems(taskItems: List<String>, taskId: String): Resource<Boolean>
+    suspend fun deleteTaskItem(taskItem: String, taskId: String): Resource<Boolean>
     suspend fun createComments(comments: List<Comment>): Resource<List<Comment>>
     suspend fun updateComment(comment: Comment): Resource<Comment>
+    suspend fun deleteComment(commentId: String): Resource<Boolean>
 
     //suspend fun getUser(context: Context): Resource<User>
     suspend fun getCurrentUserProfile(): Resource<User>

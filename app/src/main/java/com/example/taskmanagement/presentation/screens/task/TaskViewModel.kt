@@ -3,13 +3,17 @@ package com.example.taskmanagement.presentation.screens.task
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.task.*
+import com.example.taskmanagement.domain.dataModels.user.User
+import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.domain.useCases.shared.RemoveMembersUseCase
 import com.example.taskmanagement.domain.useCases.tasks.GetTaskUseCase
+import com.example.taskmanagement.domain.useCases.tasks.UpdateTaskStatusUseCase
 import com.example.taskmanagement.domain.useCases.tasks.UpdateTaskUseCase
 import com.example.taskmanagement.domain.useCases.tasks.comments.CreateCommentUseCase
+import com.example.taskmanagement.domain.useCases.tasks.comments.DeleteCommentUseCase
 import com.example.taskmanagement.domain.useCases.tasks.comments.UpdateCommentUseCase
 import com.example.taskmanagement.domain.useCases.tasks.taskItems.CreateTaskItemsUseCase
 import com.example.taskmanagement.domain.useCases.tasks.taskItems.DeleteTaskItemsUseCase
@@ -30,7 +34,8 @@ class TaskViewModel(
     private val removeMembersUseCase: RemoveMembersUseCase,
     private val createCommentUseCase: CreateCommentUseCase,
     private val updateCommentUseCase: UpdateCommentUseCase,
-    private val updateTaskUseCase: UpdateTaskUseCase,
+    private val deleteCommentUseCase: DeleteCommentUseCase,
+    private val updateTaskStatusUseCase: UpdateTaskStatusUseCase,
     private val validator: BaseValidator,
     private val taskId: String
 ) : ViewModel() {
@@ -38,7 +43,7 @@ class TaskViewModel(
     val task = _task.asStateFlow()
     private val _taskItems = MutableStateFlow(emptySet<TaskItem>())
     val taskItems = _taskItems.asStateFlow()
-    private val _comments = MutableStateFlow(emptySet<Comment>())
+    private val _comments = MutableStateFlow(emptySet<CommentView>())
     val comments = _comments.asStateFlow()
     private val snackBarChannel = Channel<SnackBarEvent>()
     val receiveChannel = snackBarChannel.receiveAsFlow()
@@ -50,7 +55,7 @@ class TaskViewModel(
     val updateMade = _updateMade.asStateFlow()
     private val _taskItemTitleValidationResult = MutableStateFlow(ValidationResult(true))
     val taskItemTitleValidationResult = _taskItemTitleValidationResult.asStateFlow()
-    private var userId = ""
+    private var currentUser = User("")
 
     init {
         getTask()
@@ -81,7 +86,7 @@ class TaskViewModel(
     fun setUserId(): Job = viewModelScope.launch {
         val result = getCurrentUserProfileUseCase(Unit)
         result.onSuccess {
-            userId = it.id
+            currentUser = it
         }
         result.onError {
             val snackBarEvent = SnackBarEvent(it ?: "") { setUserId() }
@@ -92,7 +97,8 @@ class TaskViewModel(
 
     fun onTaskStatusClick(showSnackBarOnError: Boolean = true): Job = viewModelScope.launch {
         task.value.onSuccess {
-            val exist = it.assigned.find { activeUser -> activeUser.user.id == userId } != null
+            val exist =
+                it.assigned.find { activeUser -> activeUser.user.id == currentUser.id } != null
             if (!exist) {
                 if (!showSnackBarOnError) return@launch
                 val event =
@@ -108,7 +114,7 @@ class TaskViewModel(
         }
     }
 
-    fun validateTaskItemTitle(value:String){
+    fun validateTaskItemTitle(value: String) {
         _taskItemTitleValidationResult.update { validator.nameValidator.validate(value) }
     }
 
@@ -132,6 +138,7 @@ class TaskViewModel(
                     toggleTaskStatus()
                 }
                 is TaskScreenUIEvent.Comments.Add -> {
+                    uiEvent.comment.issuer = currentUser
                     _comments.update { it + uiEvent.comment }
                 }
                 is TaskScreenUIEvent.Comments.Edit -> {
@@ -185,7 +192,12 @@ class TaskViewModel(
                     _task.update { Resource.Success(taskView) }
                 }
                 is TaskScreenUIEvent.StatusChanged -> {
-                    toggleTaskStatus()
+                    _task.update {
+                        if (taskView.status == TaskStatus.InProgress)
+                            it.copy(taskView.copy(status = TaskStatus.Pending))
+                        else
+                            it.copy(taskView.copy(status = TaskStatus.InProgress))
+                    }
                 }
                 is TaskScreenUIEvent.Comments.Add -> {
                     _comments.update { it - uiEvent.comment }
@@ -203,7 +215,7 @@ class TaskViewModel(
 
     fun discardChanges() = viewModelScope.launch {
         while (uiEvents.value.isNotEmpty())
-            undoLastEvent()
+            undoLastEvent().join()
     }
 
     fun optimizeEvents() = viewModelScope.launch {
@@ -240,12 +252,43 @@ class TaskViewModel(
 
     fun saveChanges(): Job = viewModelScope.launch {
         optimizeEvents()
+        val createdComments = mutableListOf<Comment>()
+        val createdTaskItems = mutableListOf<TaskItem>()
+        val deletedMembers = mutableListOf<String>()
+        val updatedTaskItems = mutableListOf<String>()
+        for (event in uiEvents.value) {
+            when (event) {
+                is TaskScreenUIEvent.Comments.Add -> createdComments.add(event.comment.toComment())
+                is TaskScreenUIEvent.Comments.Edit -> updateCommentUseCase(event.comment.toComment())
+                is TaskScreenUIEvent.Comments.Remove -> deleteCommentUseCase(event.comment.id)
+                is TaskScreenUIEvent.MembersRemove -> deletedMembers.add(event.activeUserDto.user.id)
+                TaskScreenUIEvent.StatusChanged -> updateTaskStatusUseCase(taskId)
+                is TaskScreenUIEvent.TaskItems.Add -> createdTaskItems.add(event.taskItem)
+                is TaskScreenUIEvent.TaskItems.Edit -> updatedTaskItems.add(event.taskItem.id)
+                is TaskScreenUIEvent.TaskItems.Remove -> deleteTaskItemsUseCase(
+                    DeleteTaskItemsUseCase.Params(taskId, event.taskItem.id)
+                )
+            }
+        }
+        if (createdTaskItems.isNotEmpty())
+            createTaskItemsUseCase(CreateTaskItemsUseCase.Params(taskId, createdTaskItems))
+        if (createdComments.isNotEmpty())
+            createCommentUseCase(createdComments)
+        if (deletedMembers.isNotEmpty())
+            removeMembersUseCase(
+                RemoveMembersUseCase.Params(
+                    taskId,
+                    ParentRoute.Tasks,
+                    deletedMembers
+                )
+            )
+        if (updatedTaskItems.isNotEmpty())
+            updateTaskItemsUseCase(UpdateTaskItemsUseCase.Params(taskId, updatedTaskItems))
+        uiEvents.update { emptySet() }
     }
 
 
     fun setShowTaskStatusDialog(value: Boolean) {
         _showTaskStatusDialog.update { value }
     }
-
-    fun showEditButton() = true
 }

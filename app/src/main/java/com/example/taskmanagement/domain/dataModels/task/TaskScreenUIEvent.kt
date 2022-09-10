@@ -12,10 +12,10 @@ sealed class TaskScreenUIEvent {
 
     class MembersRemove(val activeUserDto: ActiveUserDto) : TaskScreenUIEvent()
 
-    sealed class Comments(val comment: Comment) : TaskScreenUIEvent() {
-        class Edit(comment: Comment, val oldComment: Comment) : Comments(comment)
-        class Add(comment: Comment) : Comments(comment)
-        class Remove(comment: Comment) : Comments(comment)
+    sealed class Comments(val comment: CommentView) : TaskScreenUIEvent() {
+        class Edit(comment: CommentView, val oldComment: CommentView) : Comments(comment)
+        class Add(comment: CommentView) : Comments(comment)
+        class Remove(comment: CommentView) : Comments(comment)
     }
 
 }

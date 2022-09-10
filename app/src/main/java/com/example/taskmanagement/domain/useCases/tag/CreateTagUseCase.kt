@@ -7,7 +7,7 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.BaseUseCaseBuilder
 
 class CreateTagUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<CreateTagUseCase.Params, Resource<Tag>> {
+    BaseUseCaseBuilder<CreateTagUseCase.Params, Tag>() {
     override suspend fun build(params: Params): Resource<Tag> {
         return repository.createTag(params.tag, params.parent)
     }

@@ -9,9 +9,8 @@ import com.example.taskmanagement.domain.useCases.BaseUseCaseBuilder
 import com.example.taskmanagement.presentation.koin.repository
 
 class CreateProjectUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<Project, Resource<Project>> {
+    BaseUseCaseBuilder<Project, Project>() {
     override suspend fun build(params: Project): Resource<Project> {
         return repository.createProject(params)
     }
-
 }

@@ -91,7 +91,7 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
 
     override suspend fun updateTaskItems(
         taskId: String,
-        taskItems: List<TaskItem>
+        taskItems: List<String>
     ): List<TaskItem> {
         val response = client.put(Urls.getTaskItemRoute(taskId)) {
             setBody(taskItems)
@@ -99,10 +99,8 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
         return getResponseResult(response)
     }
 
-    override suspend fun deleteTaskItems(taskId: String, taskItems: List<String>): Boolean {
-        val response = client.delete(Urls.getTaskItemRoute(taskId)){
-            setBody(taskItems)
-        }
+    override suspend fun deleteTaskItem(taskId: String, taskItem: String): Boolean {
+        val response = client.delete(Urls.getDeleteTaskItemRoute(taskId, taskItem))
         return getResponseResult(response)
     }
 
@@ -114,8 +112,13 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     }
 
 
-    override suspend fun deleteTask(taskId: String): ConfirmationResponse {
+    override suspend fun deleteTask(taskId: String): Boolean {
         val response = client.delete(Urls.getTaskUrl(taskId))
+        return getResponseResult(response)
+    }
+
+    override suspend fun updateTaskStatus(taskId: String): Boolean {
+        val response = client.put(Urls.getTaskUrlStatus(taskId))
         return getResponseResult(response)
     }
 
@@ -144,7 +147,7 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
 
     override suspend fun deleteTaskComment(
         commentId: String
-    ): ConfirmationResponse {
+    ): Boolean {
 
         val response = client.delete(Urls.COMMENTS)
         return getResponseResult(response)
@@ -186,7 +189,7 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
 
     override suspend fun deleteProject(
         projectId: String
-    ): ConfirmationResponse {
+    ): Boolean {
         val response = client.delete(Urls.getProjectUrl(projectId))
         return getResponseResult(response)
     }
@@ -252,7 +255,7 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
         return getResponseResult(response)
     }
 
-    override suspend fun deleteTeam(teamId: String): ConfirmationResponse {
+    override suspend fun deleteTeam(teamId: String): Boolean {
 
         val response = client.delete(Urls.getTaskUrl(teamId))
         return getResponseResult(response)

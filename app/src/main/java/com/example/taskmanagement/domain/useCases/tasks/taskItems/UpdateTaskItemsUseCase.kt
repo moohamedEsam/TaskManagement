@@ -7,13 +7,13 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.BaseUseCaseBuilder
 
 class UpdateTaskItemsUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<UpdateTaskItemsUseCase.Params, Resource<List<TaskItem>>> {
+    BaseUseCaseBuilder<UpdateTaskItemsUseCase.Params, List<TaskItem>>() {
     override suspend fun build(params: Params): Resource<List<TaskItem>> {
         return repository.updateTaskItems(params.taskItems, params.taskId)
     }
 
     data class Params(
         val taskId: String,
-        val taskItems: List<TaskItem>
+        val taskItems: List<String>
     )
 }

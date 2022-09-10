@@ -7,13 +7,13 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.BaseUseCaseBuilder
 
 class DeleteTaskItemsUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<DeleteTaskItemsUseCase.Params, Resource<Boolean>> {
+    BaseUseCaseBuilder<DeleteTaskItemsUseCase.Params, Boolean>() {
     override suspend fun build(params: Params): Resource<Boolean> {
-        return repository.deleteTaskItems(params.taskItems, params.taskId)
+        return repository.deleteTaskItem(params.taskItem, params.taskId)
     }
 
     data class Params(
         val taskId: String,
-        val taskItems: List<String>
+        val taskItem: String
     )
 }

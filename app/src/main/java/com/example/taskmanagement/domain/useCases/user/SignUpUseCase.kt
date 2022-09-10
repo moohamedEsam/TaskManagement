@@ -3,6 +3,7 @@ package com.example.taskmanagement.domain.useCases.user
 import android.content.Context
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SignUpUserBody
+import com.example.taskmanagement.domain.dataModels.utils.Token
 import com.example.taskmanagement.domain.dataModels.utils.UserStatus
 import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.BaseUseCaseBuilder
@@ -11,14 +12,13 @@ import com.example.taskmanagement.presentation.koin.saveToken
 class SignUpUseCase(
     private val repository: MainRepository,
     private val context: Context
-) : BaseUseCaseBuilder<SignUpUseCase.Params, UserStatus> {
-    override suspend fun build(params: Params): UserStatus {
+) : BaseUseCaseBuilder<SignUpUseCase.Params, Token>() {
+    override suspend fun build(params: Params): Resource<Token> {
         val result = repository.registerUser(params.signUpUserBody)
-        return if (result is Resource.Success && result.data != null) {
-            saveToken(context, result.data)
-            UserStatus.Authorized(result.data)
-        } else
-            UserStatus.Forbidden(result.message)
+        result.onSuccess {
+            saveToken(context, it)
+        }
+        return result
 
     }
 

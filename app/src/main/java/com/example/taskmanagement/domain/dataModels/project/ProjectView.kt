@@ -2,7 +2,6 @@ package com.example.taskmanagement.domain.dataModels.project
 
 import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
-import com.example.taskmanagement.domain.dataModels.task.AbstractTask
 import com.example.taskmanagement.domain.dataModels.task.Task
 import com.example.taskmanagement.domain.dataModels.user.User
 import kotlinx.serialization.Serializable

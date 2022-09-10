@@ -43,7 +43,8 @@ class LoginViewModel(
     private fun loginUser() {
         viewModelScope.launch {
             _userStatus.update {
-                loginUserUseCase(LoginUserUseCase.Params(userCredentials.value))
+                loginUserUseCase(LoginUserUseCase.Params(userCredentials.value)).data
+                    ?: return@launch
             }
             if (userStatus.value !is UserStatus.Forbidden) return@launch
             val event = SnackBarEvent(userStatus.value.message ?: "", "Retry") { loginUser() }

@@ -27,10 +27,10 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
         }
     }
 
-    override suspend fun deleteTaskItems(
-        taskItems: List<String>,
+    override suspend fun deleteTaskItem(
+        taskItem: String,
         taskId: String
-    ): Resource<Boolean> = baseMapApiToResource { remote.deleteTaskItems(taskId, taskItems) }
+    ): Resource<Boolean> = baseMapApiToResource { remote.deleteTaskItem(taskId, taskItem) }
 
     override suspend fun createTaskItems(
         taskItems: List<TaskItem>,
@@ -59,11 +59,17 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
     override suspend fun updateTask(task: Task): Resource<Task> =
         baseMapApiToResource { remote.updateTask(task) }
 
+    override suspend fun updateTaskStatus(taskId: String): Resource<Boolean> =
+        baseMapApiToResource { remote.updateTaskStatus(taskId) }
+
     override suspend fun getCurrentUserTag(parentRoute: ParentRoute, id: String): Resource<Tag> =
         baseMapApiToResource { remote.getCurrentUserTag(parentRoute, id) }
 
     override suspend fun updateComment(comment: Comment): Resource<Comment> =
         baseMapApiToResource { remote.updateTaskComment(comment) }
+
+    override suspend fun deleteComment(commentId: String): Resource<Boolean> =
+        baseMapApiToResource { remote.deleteTaskComment(commentId) }
 
     override suspend fun updateProject(project: Project): Resource<Project> =
         baseMapApiToResource { remote.updateProject(project) }
@@ -103,10 +109,10 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
     }
 
     override suspend fun updateTaskItems(
-        taskItems: List<TaskItem>,
+        taskItems: List<String>,
         taskId: String
     ): Resource<List<TaskItem>> =
-        baseMapApiToResource { remote.createTaskItems(taskId, taskItems) }
+        baseMapApiToResource { remote.updateTaskItems(taskId, taskItems) }
 
     override suspend fun removeMembers(
         parentRoute: ParentRoute,

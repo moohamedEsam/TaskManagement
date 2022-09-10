@@ -1,12 +1,7 @@
 package com.example.taskmanagement.presentation.screens.forms.project
 
 import app.cash.turbine.test
-import com.example.taskmanagement.domain.dataModels.Tag
-import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
-import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.dataModels.user.User
-import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
-import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.projects.CreateProjectUseCase
 import com.example.taskmanagement.domain.useCases.projects.GetProjectUseCase
@@ -29,7 +24,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mockito
-import java.util.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(JUnit4::class)

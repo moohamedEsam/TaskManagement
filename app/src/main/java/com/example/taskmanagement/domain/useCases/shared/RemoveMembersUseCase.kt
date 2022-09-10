@@ -6,7 +6,7 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.BaseUseCaseBuilder
 
 class RemoveMembersUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<RemoveMembersUseCase.Params, Resource<Boolean>> {
+    BaseUseCaseBuilder<RemoveMembersUseCase.Params, Boolean>() {
     override suspend fun build(params: Params): Resource<Boolean> {
         return repository.removeMembers(params.parentRoute, params.parentId, params.members)
     }

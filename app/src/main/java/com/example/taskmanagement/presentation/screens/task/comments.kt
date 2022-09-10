@@ -1,5 +1,6 @@
 package com.example.taskmanagement.presentation.screens.task
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,9 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
-import com.example.taskmanagement.domain.dataModels.task.Comment
+import com.example.taskmanagement.domain.dataModels.task.CommentView
 import com.example.taskmanagement.domain.dataModels.task.TaskScreenUIEvent
+import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.presentation.composables.MemberComposable
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -27,9 +28,9 @@ import com.example.taskmanagement.presentation.composables.MemberComposable
 fun TaskCommentsPage(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
     val comments by viewModel.comments.collectAsState()
     val task by viewModel.task.collectAsState()
-    val assigned by remember {
+    val users by remember {
         derivedStateOf {
-            task.data?.assigned ?: emptyList()
+            task.data?.assigned?.map { it.user }?.plus(task.data!!.owner)?.toSet() ?: emptySet()
         }
     }
     LazyColumn(
@@ -39,7 +40,7 @@ fun TaskCommentsPage(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
         item {
             NewCommentCardItem(
                 viewModel = viewModel,
-                assigned = assigned,
+                users = users,
                 modifier = Modifier.animateItemPlacement()
             )
         }
@@ -47,7 +48,7 @@ fun TaskCommentsPage(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
         items(comments.toList(), key = { it.id }) {
             CommentCardItem(
                 comment = it,
-                assigned = assigned,
+                users = users,
                 viewModel = viewModel,
                 modifier = Modifier.animateItemPlacement()
             )
@@ -58,15 +59,22 @@ fun TaskCommentsPage(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CommentCardItem(
-    comment: Comment,
-    assigned: List<ActiveUserDto>,
+    comment: CommentView,
+    users: Set<User>,
     viewModel: TaskViewModel,
     modifier: Modifier = Modifier
 ) {
-    OutlinedCard(modifier = modifier) {
-        Column(modifier = Modifier.padding(8.dp)) {
+    var showOwner by remember {
+        mutableStateOf(false)
+    }
+    OutlinedCard(modifier = modifier, onClick = { showOwner = !showOwner }) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .animateContentSize()
+        ) {
             Text(
-                text = getCommentAnnotatedString(assigned = assigned, text = comment.description),
+                text = getCommentAnnotatedString(users = users, text = comment.description),
                 modifier = Modifier.fillMaxWidth()
             )
             Row(
@@ -76,16 +84,21 @@ private fun CommentCardItem(
                 IconButton(onClick = { }) {
                     Icon(imageVector = Icons.Default.Edit, contentDescription = null)
                 }
-                IconButton(onClick = {
-                    viewModel.addEventUI(
-                        TaskScreenUIEvent.Comments.Remove(
-                            comment
-                        )
-                    )
-                }) {
+                IconButton(
+                    onClick = { viewModel.addEventUI(TaskScreenUIEvent.Comments.Remove(comment)) }
+                ) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = null)
                 }
             }
+            if (showOwner)
+                Text(
+                    text = buildAnnotatedString {
+                        append("By ")
+                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSecondaryContainer)) {
+                            append(comment.issuer.username)
+                        }
+                    }
+                )
         }
     }
 }
@@ -93,7 +106,7 @@ private fun CommentCardItem(
 @Composable
 private fun NewCommentCardItem(
     viewModel: TaskViewModel,
-    assigned: List<ActiveUserDto>,
+    users: Set<User>,
     modifier: Modifier = Modifier
 ) {
     var showSuggestions by remember {
@@ -103,7 +116,7 @@ private fun NewCommentCardItem(
         mutableStateOf(TextFieldValue())
     }
     val onSave = {
-        val comment = Comment(description = value.text)
+        val comment = CommentView(description = value.text)
         viewModel.addEventUI(TaskScreenUIEvent.Comments.Add(comment))
         value = TextFieldValue()
     }
@@ -128,19 +141,19 @@ private fun NewCommentCardItem(
                 }
             }
         )
-        Box(modifier = Modifier.fillMaxWidth()){
+        Box(modifier = Modifier.fillMaxWidth()) {
             DropdownMenu(
                 expanded = showSuggestions,
                 onDismissRequest = { showSuggestions = false },
                 modifier = Modifier.height(200.dp)
             ) {
-                assigned.forEach {
+                users.forEach {
                     DropdownMenuItem(
                         text = {
-                            MemberComposable(user = it.user) {}
+                            MemberComposable(user = it) {}
                         },
                         onClick = {
-                            val text = "${value.text}${it.user.username} "
+                            val text = "${value.text}${it.username} "
                             value = TextFieldValue(text, TextRange(text.length))
                             showSuggestions = false
                         },
@@ -154,14 +167,14 @@ private fun NewCommentCardItem(
 
 @Composable
 private fun getCommentAnnotatedString(
-    assigned: List<ActiveUserDto>,
+    users: Set<User>,
     text: String
 ): AnnotatedString {
     val tokens = text.split(" ").filter { it.isNotBlank() }
-    val users = assigned.map { it.user.username }
+    val usernames = users.map { it.username }
     return buildAnnotatedString {
         for (word in tokens) {
-            if (word[0] == '@' && users.contains(word.drop(1))) {
+            if (word[0] == '@' && usernames.contains(word.drop(1))) {
                 withStyle(SpanStyle(color = Color.Green)) {
                     append("$word ")
                 }

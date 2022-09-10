@@ -12,15 +12,12 @@ import com.example.taskmanagement.domain.dataModels.task.Task
 import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
-import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.projects.GetProjectUseCase
 import com.example.taskmanagement.domain.useCases.tag.AssignTagUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.*
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 class ProjectViewModel(
     private val getProjectUseCase: GetProjectUseCase,

@@ -79,7 +79,13 @@ class SignUpViewModel(
             )
             if (!formValid)
                 return@launch
-            _userStatus.update { signUpUseCase(SignUpUseCase.Params(_user.value)) }
+            val result = signUpUseCase(SignUpUseCase.Params(_user.value))
+            result.onSuccess {
+                _userStatus.update { _ -> UserStatus.Authorized(it) }
+            }
+            result.onError {
+                _userStatus.update { _ -> UserStatus.Forbidden(it) }
+            }
             if (userStatus.value !is UserStatus.Forbidden) return@launch
             val event = SnackBarEvent(userStatus.value.message ?: "", "Retry") { submit() }
             snackBarChannel.send(event)
