@@ -223,8 +223,7 @@ class TaskFormViewModel(
     }
 
     private fun getAssignedMembers() =
-        project.value.data?.members?.filter { assigned.value.contains(it.user.id) }
-            ?.map { it.toActiveUser() } ?: emptyList()
+        project.value.data?.members?.filter { assigned.value.contains(it.user.id) }?.map { it.user.id } ?: emptyList()
 
     private fun getInitializedTaskView() = TaskView(
         id = "",

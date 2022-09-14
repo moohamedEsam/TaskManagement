@@ -30,7 +30,7 @@ fun TaskCommentsPage(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
     val task by viewModel.task.collectAsState()
     val users by remember {
         derivedStateOf {
-            task.data?.assigned?.map { it.user }?.plus(task.data!!.owner)?.toSet() ?: emptySet()
+            task.data?.assigned?.map { it }?.plus(task.data!!.owner)?.toSet() ?: emptySet()
         }
     }
     LazyColumn(

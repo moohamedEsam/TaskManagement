@@ -10,7 +10,7 @@ data class Task(
     val title: String,
     val owner: String = UUID.randomUUID().toString(),
     val description: String? = null,
-    val assigned: List<ActiveUser> = emptyList(),
+    val assigned: List<String> = emptyList(),
     val project: String = UUID.randomUUID().toString(),
     val status: TaskStatus = TaskStatus.Pending,
     val taskItems: List<TaskItem> = emptyList(),

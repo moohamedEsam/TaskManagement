@@ -6,6 +6,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,7 +28,6 @@ import com.example.taskmanagement.presentation.customComponents.fillMaxWidth
 fun GroupedMembersList(
     members: List<ActiveUserDto>,
     tags: List<Tag>,
-    ratio: Int,
     showUpdateButton: Boolean,
     modifier: Modifier = Modifier,
     onItemClick: (Tag) -> Unit,
@@ -39,26 +42,11 @@ fun GroupedMembersList(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier.fillMaxSize()
     ) {
-        item {
-            LazyRow(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                item { Text(text = "Name") }
-                item { Text(text = "Assigned") }
-                item { Text(text = "View") }
-                item { Text(text = "Create") }
-                item { Text(text = "Edit") }
-                item { Text(text = "Delete") }
-            }
-        }
         groups.forEach { (tag, tagMembers) ->
             item {
                 GroupedMemberCard(
                     tag = tag!!,
-                    members = tagMembers.map { it.user },
-                    ratio
+                    members = tagMembers.map { it.user }
                 ) { onItemClick(tag) }
 
             }
@@ -67,7 +55,7 @@ fun GroupedMembersList(
             if (showUpdateButton)
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                     Button(onClick = onUpdateButtonClick) {
-                        Text(text = "Save changes")
+                        Text(text = "Save changes", color = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
 
@@ -105,7 +93,6 @@ fun MembersIcons(members: List<User>, ratio: Int) {
 fun GroupedMemberCard(
     tag: Tag,
     members: List<User>,
-    ratio: Int,
     onClick: () -> Unit
 ) {
     ElevatedCard(modifier = Modifier.padding(8.dp), onClick = onClick) {
@@ -113,43 +100,94 @@ fun GroupedMemberCard(
             modifier = Modifier
                 .padding(horizontal = 8.dp, vertical = 16.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            item { Text(text = tag.title, modifier = Modifier.fillMaxWidth { it / ratio }) }
-            item { MembersIcons(members = members, ratio) }
             item {
-                RadioButton(
-                    selected = tag.isUserAuthorized(Permission.View),
-                    onClick = { },
-                    enabled = false
-                )
+                GroupedMemberCardValueItem(label = "Name", modifier = Modifier.fillMaxHeight()) {
+                    Text(
+                        text = tag.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
             }
             item {
-                RadioButton(
-                    selected = tag.isUserAuthorized(Permission.Create),
-                    onClick = { },
-                    enabled = false
-                )
+                GroupedMemberCardValueItem(label = "Members") {
+                    MembersIcons(members = members, ratio = 5)
+                }
+            }
+            item {
+                GroupedMemberCardValueItem(label = "View") {
+                    if (tag.isUserAuthorized(Permission.View))
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "View",
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    else
+                        Icon(imageVector = Icons.Default.Remove, contentDescription = null)
+                }
+            }
+            item {
+                GroupedMemberCardValueItem(label = "Create") {
+                    if (tag.isUserAuthorized(Permission.Create))
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Create",
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    else
+                        Icon(imageVector = Icons.Default.Remove, contentDescription = null)
+
+                }
             }
 
             item {
-                RadioButton(
-                    selected = tag.isUserAuthorized(Permission.EditName),
-                    onClick = { },
-                    enabled = false
-                )
+                GroupedMemberCardValueItem(label = "Edit") {
+                    if (tag.isUserAuthorized(Permission.EditName))
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Edit",
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    else
+                        Icon(imageVector = Icons.Default.Remove, contentDescription = null)
+
+                }
             }
 
             item {
-                RadioButton(
-                    selected = tag.isUserAuthorized(Permission.Delete),
-                    onClick = { },
-                    enabled = false
-                )
+                GroupedMemberCardValueItem(label = "Delete") {
+                    if (tag.isUserAuthorized(Permission.Delete))
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Delete",
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    else
+                        Icon(imageVector = Icons.Default.Remove, contentDescription = null)
+
+                }
             }
 
         }
+    }
+}
+
+@Composable
+private fun GroupedMemberCardValueItem(
+    label: String,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxSize()
+    ) {
+        Text(text = label)
+        Spacer(modifier = Modifier.weight(0.8f))
+        content()
     }
 }
 
@@ -171,7 +209,7 @@ fun MembersDialog(
             }
             items(members) {
                 MemberComposable(user = it) {
-                    Spacer(modifier = Modifier.weight(0.8f))
+                    Spacer(modifier = Modifier.weight(1f))
                     Checkbox(
                         checked = selectedMembers.contains(it),
                         onCheckedChange = { _ ->

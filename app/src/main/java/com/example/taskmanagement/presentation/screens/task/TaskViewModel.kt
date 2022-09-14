@@ -11,7 +11,6 @@ import com.example.taskmanagement.domain.dataModels.utils.ValidationResult
 import com.example.taskmanagement.domain.useCases.shared.RemoveMembersUseCase
 import com.example.taskmanagement.domain.useCases.tasks.GetTaskUseCase
 import com.example.taskmanagement.domain.useCases.tasks.UpdateTaskStatusUseCase
-import com.example.taskmanagement.domain.useCases.tasks.UpdateTaskUseCase
 import com.example.taskmanagement.domain.useCases.tasks.comments.CreateCommentUseCase
 import com.example.taskmanagement.domain.useCases.tasks.comments.DeleteCommentUseCase
 import com.example.taskmanagement.domain.useCases.tasks.comments.UpdateCommentUseCase
@@ -98,7 +97,7 @@ class TaskViewModel(
     fun onTaskStatusClick(showSnackBarOnError: Boolean = true): Job = viewModelScope.launch {
         task.value.onSuccess {
             val exist =
-                it.assigned.find { activeUser -> activeUser.user.id == currentUser.id } != null
+                it.assigned.find { activeUser -> activeUser.id == currentUser.id } != null
             if (!exist) {
                 if (!showSnackBarOnError) return@launch
                 val event =
@@ -131,7 +130,7 @@ class TaskViewModel(
                     _taskItems.update { it - uiEvent.taskItem }
                 }
                 is TaskScreenUIEvent.MembersRemove -> {
-                    taskView.assigned.remove(uiEvent.activeUserDto)
+                    taskView.assigned.remove(uiEvent.user)
                     _task.update { Resource.Success(taskView) }
                 }
                 is TaskScreenUIEvent.StatusChanged -> {
@@ -188,7 +187,7 @@ class TaskViewModel(
                     _taskItems.update { it + uiEvent.taskItem }
                 }
                 is TaskScreenUIEvent.MembersRemove -> {
-                    taskView.assigned.add(uiEvent.activeUserDto)
+                    taskView.assigned.add(uiEvent.user)
                     _task.update { Resource.Success(taskView) }
                 }
                 is TaskScreenUIEvent.StatusChanged -> {
@@ -261,7 +260,7 @@ class TaskViewModel(
                 is TaskScreenUIEvent.Comments.Add -> createdComments.add(event.comment.toComment())
                 is TaskScreenUIEvent.Comments.Edit -> updateCommentUseCase(event.comment.toComment())
                 is TaskScreenUIEvent.Comments.Remove -> deleteCommentUseCase(event.comment.id)
-                is TaskScreenUIEvent.MembersRemove -> deletedMembers.add(event.activeUserDto.user.id)
+                is TaskScreenUIEvent.MembersRemove -> deletedMembers.add(event.user.id)
                 TaskScreenUIEvent.StatusChanged -> updateTaskStatusUseCase(taskId)
                 is TaskScreenUIEvent.TaskItems.Add -> createdTaskItems.add(event.taskItem)
                 is TaskScreenUIEvent.TaskItems.Edit -> updatedTaskItems.add(event.taskItem.id)

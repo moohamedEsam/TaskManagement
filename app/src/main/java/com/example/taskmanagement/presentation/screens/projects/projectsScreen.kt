@@ -19,10 +19,10 @@ import com.example.taskmanagement.R
 import com.example.taskmanagement.domain.dataModels.project.Project
 import com.example.taskmanagement.presentation.customComponents.*
 import com.example.taskmanagement.presentation.navigation.Screens
+import com.example.taskmanagement.presentation.screens.team.NewProjectCard
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.inject
 
-private const val ratio = 4
 
 @Composable
 fun ProjectsScreen(
@@ -72,29 +72,20 @@ fun ProjectsScreenContent(
     Column {
         FilterProjectTextField(viewModel = viewModel)
         LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
+            columns = GridCells.Fixed(2),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
-                OutlinedCenteredCard(
-                    modifier = Modifier.fillMaxHeight { it / ratio },
-                    onClick = { navHostController.navigate(Screens.ProjectForm.withArgs(" ", " ")) }
-                ) {
-                    Column {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
-                        Text(text = "New Project")
-                    }
+                NewProjectCard(modifier = Modifier.fillMaxHeight { it / 3 }) {
+                    navHostController.navigate(Screens.ProjectForm.withArgs(" ", " "))
                 }
             }
             items(projects) { project ->
                 ProjectItem(
                     project = project,
-                    navHostController = navHostController
+                    navHostController = navHostController,
+                    modifier = Modifier.fillMaxHeight { it / 3 }
                 )
             }
         }
@@ -102,14 +93,21 @@ fun ProjectsScreenContent(
 }
 
 @Composable
-fun ProjectItem(project: Project, navHostController: NavHostController) {
-    ElevatedCenteredCard(
-        modifier = Modifier.fillMaxHeight { it / ratio },
+fun ProjectItem(
+    project: Project,
+    navHostController: NavHostController,
+    modifier: Modifier = Modifier
+) {
+    OutlinedCenteredCard(
         onClick = {
             navHostController.navigate(Screens.Project.withArgs(project.id))
-        }
+        },
+        modifier = modifier
     ) {
-        Column(modifier = Modifier.padding(8.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+        ) {
             Text(
                 text = project.name,
                 style = MaterialTheme.typography.headlineMedium,
@@ -120,7 +118,8 @@ fun ProjectItem(project: Project, navHostController: NavHostController) {
             Text(
                 text = project.description,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                maxLines = 2
             )
         }
     }

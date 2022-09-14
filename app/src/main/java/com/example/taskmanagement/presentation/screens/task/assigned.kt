@@ -30,8 +30,8 @@ fun TaskAssignedPage(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(taskView.assigned, key = { it.user.id }) {
-            MemberComposable(user = it.user, modifier = Modifier.animateItemPlacement()) {
+        items(taskView.assigned, key = { it.id }) {
+            MemberComposable(user = it, modifier = Modifier.animateItemPlacement()) {
                 Spacer(modifier = Modifier.weight(0.8f))
                 IconButton(onClick = { viewModel.addEventUI(TaskScreenUIEvent.MembersRemove(it)) }) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = null)

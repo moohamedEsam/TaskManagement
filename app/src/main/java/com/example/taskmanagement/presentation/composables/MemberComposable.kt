@@ -23,7 +23,7 @@ fun MemberComposable(
     ) {
         UserIcon(photoPath = user.photoPath)
         Spacer(modifier = Modifier.width(8.dp))
-        Column {
+        Column(modifier = Modifier.fillMaxWidth(0.8f)) {
             Text(text = user.username, style = MaterialTheme.typography.headlineMedium)
             Text(
                 text = user.email,

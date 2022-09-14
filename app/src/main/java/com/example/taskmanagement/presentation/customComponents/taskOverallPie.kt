@@ -1,6 +1,9 @@
 package com.example.taskmanagement.presentation.customComponents
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -46,9 +49,27 @@ fun TaskPie(
             Text(text = "$createdTasks")
         }
         if (createdTasks != 0) {
-            Text(text = "Completed ${completedTasks * 100 / createdTasks}%", color = Color.Green)
-            Text(text = "InProgress ${inProgressTasks * 100 / createdTasks}%", color = Color.Yellow)
-            Text(text = "OverDue ${lateTasks * 100 / createdTasks}%", color = Color.Red)
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(8.dp)
+            ) {
+                Text(
+                    text = "Completed ${completedTasks * 100 / createdTasks}%",
+                    color = Color.Green,
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = "InProgress ${inProgressTasks * 100 / createdTasks}%",
+                    color = Color.Yellow,
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = "OverDue ${lateTasks * 100 / createdTasks}%",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
 }

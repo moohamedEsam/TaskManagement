@@ -17,8 +17,6 @@ import com.example.taskmanagement.domain.dataModels.Tag
 import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
 import com.example.taskmanagement.domain.dataModels.user.User
 
-private const val ratio = 6
-
 @Composable
 fun GroupedMembers(
     tags: List<Tag>,
@@ -51,7 +49,6 @@ fun GroupedMembers(
             members = taggedMembers,
             tags = tags,
             showUpdateButton = update,
-            ratio = ratio,
             modifier = Modifier.nestedScroll(nestedScrollConnection),
             onItemClick = {
                 currentTag = it

@@ -34,7 +34,6 @@ import com.example.taskmanagement.presentation.navigation.Screens
 
 @Composable
 fun DashBoardPage(navHostController: NavHostController, team: TeamView, viewModel: TeamViewModel) {
-    val ratio = 3
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier
@@ -55,14 +54,14 @@ fun DashBoardPage(navHostController: NavHostController, team: TeamView, viewMode
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight { it / ratio },
+                .fillMaxHeight { it / 4 },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = team.description ?: "",
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier
-                    .fillMaxWidth(0.7f)
+                    .fillMaxWidth(0.5f)
                     .verticalScroll(rememberScrollState())
             )
             TaskPie(
@@ -84,14 +83,12 @@ fun DashBoardPage(navHostController: NavHostController, team: TeamView, viewMode
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight { it / ratio }
+                .weight(1f)
         ) {
             item {
-                NewProjectCard(
-                    team = team,
-                    navHostController = navHostController,
-                    modifier = Modifier.fillMaxHeight { it / ratio }
-                )
+                NewProjectCard(modifier = Modifier.fillMaxHeight { it / 3 }) {
+                    navHostController.navigate(Screens.ProjectForm.withArgs(team.id, " "))
+                }
             }
 
             items(team.projects) {
@@ -99,7 +96,7 @@ fun DashBoardPage(navHostController: NavHostController, team: TeamView, viewMode
                     team = team,
                     projectSummery = it,
                     navHostController = navHostController,
-                    modifier = Modifier.fillMaxHeight { it / ratio }
+                    modifier = Modifier.fillMaxHeight { h -> h / 3 }
                 )
             }
         }
@@ -244,13 +241,14 @@ fun ProjectCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
+                .verticalScroll(rememberScrollState())
                 .align(Alignment.Center)
         ) {
             Text(
                 text = projectSummery.name,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.headlineMedium
             )
             ProjectTaskOverall(projectSummery)
         }
@@ -284,13 +282,12 @@ private fun ColumnScope.ProjectTaskOverall(projectSummery: ProjectSummery) {
 
 @Composable
 fun NewProjectCard(
-    team: TeamView,
-    navHostController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     OutlinedCenteredCard(
         modifier = modifier,
-        onClick = { navHostController.navigate(Screens.ProjectForm.withArgs(team.id, " ")) }
+        onClick = onClick
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally

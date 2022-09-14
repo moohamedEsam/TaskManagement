@@ -19,7 +19,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.domain.dataModels.team.Team
-import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.presentation.customComponents.ElevatedCenteredCard
 import com.example.taskmanagement.presentation.customComponents.OutlinedCenteredCard
 import com.example.taskmanagement.presentation.customComponents.fillMaxHeight
@@ -45,7 +44,6 @@ fun TeamsScreenContent(navHostController: NavHostController, viewModel: TeamsVie
     val teams by viewModel.teams.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val filteredTeams by viewModel.filteredTeams.collectAsState()
-    val ratio = 4
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -60,11 +58,12 @@ fun TeamsScreenContent(navHostController: NavHostController, viewModel: TeamsVie
         )
         Text(text = "Teams", style = MaterialTheme.typography.headlineLarge)
         LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
+            columns = GridCells.Fixed(2),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxSize()
         ) {
+            val ratio = 3
             item {
                 NewTeamCard(
                     navHostController = navHostController,
@@ -74,8 +73,8 @@ fun TeamsScreenContent(navHostController: NavHostController, viewModel: TeamsVie
             items(if (searchQuery.isBlank()) teams else filteredTeams) {
                 TeamCard(
                     navHostController = navHostController,
-                    modifier = Modifier.fillMaxHeight {width-> width / ratio },
-                    team = it
+                    team = it,
+                    modifier = Modifier.fillMaxHeight { h -> h / ratio }
                 )
             }
         }
@@ -95,11 +94,12 @@ private fun NewTeamCard(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(16.dp)
         ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = null)
             Text(
                 text = "New Team",
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.bodyLarge
             )
         }
     }
@@ -111,22 +111,24 @@ private fun TeamCard(
     modifier: Modifier = Modifier,
     team: Team
 ) {
-    ElevatedCenteredCard(
+    OutlinedCenteredCard(
         modifier = modifier,
         onClick = { navHostController.navigate(Screens.Team.withArgs(team.id)) }
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = team.name,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.padding(8.dp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = team.description ?: "",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(8.dp)
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(8.dp),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                maxLines = 2
             )
         }
         Icon(

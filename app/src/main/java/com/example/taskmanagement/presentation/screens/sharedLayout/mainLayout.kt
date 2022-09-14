@@ -44,7 +44,16 @@ fun MainLayout(startDestination: Screens, user: User?) {
             }
         },
         snackbarHost = {
-            SnackbarHost(hostState = snackBarHostState)
+            SnackbarHost(
+                hostState = snackBarHostState,
+                snackbar = {
+                    Snackbar(
+                        it,
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            )
         },
         topBar = {
             user?.let {
@@ -65,7 +74,12 @@ private fun TopAppBarSetup(user: User, navHostController: NavHostController) {
             UserIcon(
                 photoPath = user.photoPath
             )
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            titleContentColor = MaterialTheme.colorScheme.onBackground,
+            actionIconContentColor = MaterialTheme.colorScheme.onBackground
+        )
     )
 }
 

@@ -53,8 +53,9 @@ fun TeamScreenContent(
     val pagerState = rememberPagerState()
     val coroutine = rememberCoroutineScope()
     Column {
-        TabRow(
+        ScrollableTabRow(
             selectedTabIndex = pagerState.currentPage,
+            containerColor = MaterialTheme.colorScheme.background,
         ) {
             pages.forEachIndexed { index, page ->
                 Tab(

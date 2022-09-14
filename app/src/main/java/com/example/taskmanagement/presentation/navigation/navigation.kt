@@ -4,14 +4,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 import com.example.taskmanagement.presentation.screens.forms.project.ProjectFormScreen
 import com.example.taskmanagement.presentation.screens.forms.tags.TagScreen
