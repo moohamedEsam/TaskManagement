@@ -1,0 +1,86 @@
+{
+  ConstraintSets: {
+    start: {
+      header: {
+        start: [
+          'parent',
+          'start'
+        ],
+        end: [
+          'parent',
+          'end'
+        ],
+        top: [
+          'parent',
+          'top'
+        ],
+        bottom: [
+          'parent',
+          'bottom'
+        ],
+      },
+      searchTextField: {
+        start: [
+          'parent',
+          'end'
+        ],
+        top: [
+          'parent',
+          'top'
+        ],
+        bottom: [
+          'parent',
+          'bottom'
+        ],
+        alpha: 0
+      }
+    },
+    end: {
+      header: {
+        start: [
+          'parent',
+          'end'
+        ],
+        end: [
+          'parent',
+          'end'
+        ],
+        top: [
+          'parent',
+          'top'
+        ],
+        bottom: [
+          'parent',
+          'bottom'
+        ],
+        alpha: 0
+      },
+      searchTextField: {
+        start: [
+          'parent',
+          'start'
+        ],
+        end: [
+          'parent',
+          'end'
+        ],
+        top: [
+          'parent',
+          'top'
+        ],
+        bottom: [
+          'parent',
+          'bottom'
+        ],
+        alpha: 1
+      }
+    }
+  },
+  Transitions: {
+    default: {
+      from: 'start',
+      to: 'end',
+      pathMotionArc: 'startHorizontal',
+    }
+  }
+}

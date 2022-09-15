@@ -119,6 +119,7 @@ class TeamFormViewModel(
 
     fun saveTeam(onSuccess: (String) -> Unit) {
         viewModelScope.launch {
+            _teamNameValidationResult.update { validator.nameValidator.validate(teamView.value.name) }
             if (!teamNameValidationResult.value.isValid)
                 return@launch
             val team = teamView.value.toTeam()

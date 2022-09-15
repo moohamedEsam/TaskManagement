@@ -1,28 +1,39 @@
 package com.example.taskmanagement.presentation.screens.forms.team
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ExperimentalMotionApi
+import androidx.constraintlayout.compose.MotionLayout
+import androidx.constraintlayout.compose.MotionScene
 import androidx.navigation.NavHostController
+import com.example.taskmanagement.R
 import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.domain.dataModels.team.TeamView
+import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.presentation.composables.MemberComposable
-import com.example.taskmanagement.presentation.customComponents.MembersSuggestionsDialog
-import com.example.taskmanagement.presentation.customComponents.OwnerTextField
-import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
-import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
+import com.example.taskmanagement.presentation.customComponents.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.inject
 import org.koin.core.parameter.parametersOf
 
@@ -64,7 +75,10 @@ fun TeamFormScreenContent(
             },
             modifier = Modifier.align(Alignment.End)
         ) {
-            Text(text = if (isUpdating) "Update Team" else "Create Team")
+            Text(
+                text = if (isUpdating) "Update Team" else "Create Team",
+                color = MaterialTheme.colorScheme.onPrimary
+            )
         }
     }
 }
@@ -111,15 +125,12 @@ private fun MembersList(
         modifier = Modifier.height((LocalConfiguration.current.screenHeightDp / 3).dp)
     ) {
         item {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Members", style = MaterialTheme.typography.headlineMedium)
-                IconButton(onClick = { showDialog = true }) {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = null)
+            Column {
+                MembersListHeader(onFilter = {}) {
+                    viewModel.searchMembers(it)
+                    showDialog = true
                 }
+                SuggestionsDropDownMenu(showDialog, suggestions, viewModel) { showDialog = false }
             }
         }
 
@@ -139,18 +150,142 @@ private fun MembersList(
         }
     }
 
-    if (showDialog)
-        MembersSuggestionsDialog(
-            suggestions = suggestions,
-            onDismiss = { showDialog = false },
-            onSearchChanged = {
-                if (it.isNotBlank() && it.length > 2)
-                    viewModel.searchMembers(it)
-            }
+}
+
+@Composable
+private fun SuggestionsDropDownMenu(
+    showDialog: Boolean,
+    suggestions: Set<User>,
+    viewModel: TeamFormViewModel,
+    onDismiss: () -> Unit
+) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        DropdownMenu(
+            expanded = showDialog,
+            onDismissRequest = onDismiss,
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(240.dp)
         ) {
-            viewModel.addMember(it)
+            if (suggestions.isEmpty()) {
+                Text(text = "No Users match your search")
+                return@DropdownMenu
+            }
+            suggestions.forEach { user ->
+                DropdownMenuItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = {
+                        Column {
+                            Text(
+                                text = user.username,
+                                color = MaterialTheme.colorScheme.primary,
+                                textDecoration = TextDecoration.None
+                            )
+                            Text(
+                                text = user.email,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                textDecoration = TextDecoration.None,
+                                maxLines = 1
+                            )
+                        }
+                    },
+                    leadingIcon = { UserIcon(photoPath = user.photoPath) },
+                    onClick = {
+                        viewModel.addMember(user)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMotionApi::class)
+@Composable
+private fun MembersListHeader(onFilter: (String) -> Unit, onSearch: (String) -> Unit) {
+    var progress by remember {
+        mutableStateOf(0f)
+    }
+    val composable = rememberCoroutineScope()
+    val context = LocalContext.current
+    val scene =
+        context.resources.openRawResource(R.raw.members_list_header_motion_layout).readBytes()
+            .decodeToString()
+    MotionLayout(motionScene = MotionScene(scene), progress = progress) {
+        SearchMembersTextField(
+            onFilter = onFilter,
+            onSearch = onSearch,
+            onClose = {
+                composable.launch {
+                    while (progress > 0.1f) {
+                        progress -= 0.1f
+                        delay(10)
+                    }
+                }
+            },
+            modifier = Modifier.layoutId("searchTextField")
+        )
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .layoutId("header")
+        ) {
+            Text(text = "Members", style = MaterialTheme.typography.headlineMedium)
+            IconButton(onClick = {
+                composable.launch {
+                    while (progress < 1f) {
+                        progress += 0.1f
+                        delay(10)
+                    }
+                }
+            }) {
+                Icon(imageVector = Icons.Default.Search, contentDescription = null)
+            }
         }
 
+    }
+}
+
+@Composable
+private fun SearchMembersTextField(
+    modifier: Modifier = Modifier,
+    initialQuery: String = "",
+    onClose: () -> Unit,
+    onFilter: (String) -> Unit,
+    onSearch: (String) -> Unit
+) {
+    var query by remember {
+        mutableStateOf(initialQuery)
+    }
+    OutlinedTextField(
+        value = query,
+        onValueChange = {
+            query = it
+            onFilter(query)
+        },
+        label = { Text("Search Members") },
+        trailingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null,
+                modifier = Modifier.clickable {
+                    onSearch(query)
+                }
+            )
+        },
+        leadingIcon = {
+            IconButton(
+                onClick = {
+                    query = ""
+                    onClose()
+                }
+            ) {
+                Icon(imageVector = Icons.Default.Close, contentDescription = null)
+            }
+        },
+        modifier = modifier.fillMaxWidth()
+    )
 }
 
 @Composable
