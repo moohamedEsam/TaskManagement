@@ -43,9 +43,11 @@ fun ProjectScreenContent(viewModel: ProjectViewModel, navHostController: NavHost
     val pages = listOf("Dashboard", "Tags", "Members", "Timeline", "Options")
     val pagerState = rememberPagerState()
     val coroutine = rememberCoroutineScope()
-    Column {
+    Column(modifier = Modifier.padding(8.dp)) {
         ScrollableTabRow(
-            selectedTabIndex = pagerState.currentPage
+            selectedTabIndex = pagerState.currentPage,
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground,
         ) {
             pages.forEachIndexed { index, page ->
                 Tab(

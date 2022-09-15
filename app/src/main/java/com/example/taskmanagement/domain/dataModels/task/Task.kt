@@ -18,6 +18,7 @@ data class Task(
     val milestoneTitle: String = title,
     val estimatedTime: Int? = null,
     val priority: Priority = Priority.Medium,
+    val isCompleted: Boolean = false,
     @Serializable(with = DateSerializer::class)
     val completeDate: Date? = null,
     @Serializable(with = DateSerializer::class)

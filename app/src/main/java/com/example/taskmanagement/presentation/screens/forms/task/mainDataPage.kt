@@ -44,7 +44,7 @@ fun MainTaskFromPage(
             onClick = { viewModel.saveTask() },
             modifier = Modifier.align(Alignment.End)
         ) {
-            Text(text = "Save")
+            Text(text = "Save", color = MaterialTheme.colorScheme.onPrimary)
         }
     }
 }
@@ -116,14 +116,15 @@ fun TaskOwnerTextField(viewModel: TaskFormViewModel, task: TaskView) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.N)
 @Composable
 private fun TaskFormFooter(
     viewModel: TaskFormViewModel
 ) {
     val task by viewModel.taskView.collectAsState()
     val estimatedTime by viewModel.taskEstimatedTimeText.collectAsState()
-    TaskDatePicker(task, viewModel)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        TaskDatePicker(task, viewModel)
+    }
     TextFieldSetup(
         value = estimatedTime,
         label = "Estimated Time",

@@ -91,7 +91,8 @@ private fun ProjectOwnerTextField(project: ProjectView, viewModel: ProjectFormVi
     val team by viewModel.team.collectAsState()
     OwnerTextField(textFieldValue = project.owner.username) { onDismiss ->
         MembersSuggestionsDialog(
-            suggestions = (team.data?.members?.map { it.user }?.toSet() ?: emptySet()) - project.owner,
+            suggestions = (team.data?.members?.map { it.user }?.toSet()
+                ?: emptySet()) - project.owner,
             onDismiss = onDismiss,
             onSearchChanged = {}
         ) { viewModel.setProjectOwner(it) }
@@ -176,7 +177,10 @@ private fun ColumnScope.ProjectFooter(
         },
         modifier = Modifier.align(Alignment.End)
     ) {
-        Text(text = if (viewModel.isUpdating) "Update" else "Save")
+        Text(
+            text = if (viewModel.isUpdating) "Update" else "Save",
+            color = MaterialTheme.colorScheme.onPrimary
+        )
     }
 
 }

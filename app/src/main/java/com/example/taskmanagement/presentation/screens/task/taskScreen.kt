@@ -82,11 +82,15 @@ private fun ActionRow(
 
             Button(
                 onClick = viewModel::saveChanges,
-                content = { Text(text = "Save Changes") },
+                content = {
+                    Text(
+                        text = "Save Changes",
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
             )
 
         }
-
     }
 }
 
@@ -102,14 +106,19 @@ private fun TaskInfoPager(viewModel: TaskViewModel) {
         val pages = listOf("Task Items", "Description", "Assigned", "Comments", "History")
         val pager = rememberPagerState()
         val coroutine = rememberCoroutineScope()
-        ScrollableTabRow(selectedTabIndex = pager.currentPage, divider = {}) {
+        ScrollableTabRow(
+            selectedTabIndex = pager.currentPage,
+            divider = {},
+            contentColor = MaterialTheme.colorScheme.onBackground,
+            containerColor = MaterialTheme.colorScheme.background,
+        ) {
             pages.forEachIndexed { index, value ->
                 Tab(
                     selected = pager.currentPage == index,
                     onClick = { coroutine.launch { pager.animateScrollToPage(index) } },
                     modifier = Modifier.padding(8.dp)
                 ) {
-                    Text(text = value, modifier = Modifier.padding(bottom = 16.dp, end = 8.dp))
+                    Text(text = value, modifier = Modifier.padding(8.dp))
                 }
             }
         }

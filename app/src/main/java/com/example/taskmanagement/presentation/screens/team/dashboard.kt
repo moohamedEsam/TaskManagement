@@ -261,21 +261,25 @@ private fun ColumnScope.ProjectTaskOverall(projectSummery: ProjectSummery) {
         return
     Text(
         text = "Completed Tasks (${projectSummery.completedTasks * 100 / projectSummery.createdTasks})%",
-        color = Color.Green
+        color = Color.Green,
+        style = MaterialTheme.typography.bodySmall
     )
     Text(
         text = "InProgress Tasks (${projectSummery.inProgressTasks * 100 / projectSummery.createdTasks})%",
-        color = Color.Yellow
+        color = Color.Yellow,
+        style = MaterialTheme.typography.bodySmall
     )
     Text(
         text = "Late Tasks (${(projectSummery.createdTasks - projectSummery.completedTasks - projectSummery.inProgressTasks) * 100 / projectSummery.createdTasks})%",
-        color = Color.Red
+        color = Color.Red,
+        style = MaterialTheme.typography.bodySmall
     )
     Text(
         text = "Members: ${projectSummery.members.size}",
         modifier = Modifier.Companion
             .align(Alignment.End)
-            .padding(vertical = 16.dp)
+            .padding(vertical = 16.dp),
+        style = MaterialTheme.typography.bodySmall
     )
 
 }

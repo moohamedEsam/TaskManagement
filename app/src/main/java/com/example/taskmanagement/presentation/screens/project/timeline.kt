@@ -6,6 +6,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,24 +55,24 @@ fun ProjectTimeLineContent(viewModel: ProjectViewModel, navHostController: NavHo
                 )
             }
             items(tasks, key = { it.id }) { task ->
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .animateItemPlacement()
                         .clickable { navHostController.navigate(Screens.Task.withArgs(task.id)) },
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        CircleCheckbox(
-                            selected = task.status == TaskStatus.Completed,
-                            enabled = false
-                        ) {}
+                        if (task.isCompleted)
+                            Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null)
+                        else
+                            Icon(imageVector = Icons.Outlined.Circle, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(text = task.title)
                     }
                     Text(text = task.description ?: "")
                     Text(text = "Members: ${task.assigned.size}")
+                    Divider()
                 }
             }
         }

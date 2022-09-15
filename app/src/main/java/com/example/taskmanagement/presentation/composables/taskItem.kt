@@ -34,7 +34,7 @@ fun TaskItem(
         mutableStateOf(task.status == TaskStatus.Completed)
     }
     Card(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         onClick = onclick
     ) {
         Column(
@@ -60,7 +60,7 @@ fun TaskItem(
                     }
                 }
                 Text(
-                    text = task.description ?: "",
+                    text = "Description: ${task.description ?: ""}",
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -93,6 +93,8 @@ private fun TaskDate(
     task: Task,
     finishDate: Date?
 ) {
+
+    val date = remember { SimpleDateFormat.getDateInstance().format(task.finishDate) }
     Row(verticalAlignment = Alignment.CenterVertically) {
         if (task.finishDate != null) {
             SubcomposeAsyncImage(
@@ -103,7 +105,7 @@ private fun TaskDate(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = SimpleDateFormat.getDateInstance().format(task.finishDate),
+                text = "Finish Date: $date",
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (task.status == TaskStatus.Completed && finishDate?.before(Date()) == true)
                     Color.Red

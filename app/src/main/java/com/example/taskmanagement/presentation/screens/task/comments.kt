@@ -145,7 +145,7 @@ private fun NewCommentCardItem(
             DropdownMenu(
                 expanded = showSuggestions,
                 onDismissRequest = { showSuggestions = false },
-                modifier = Modifier.height(200.dp)
+                modifier = Modifier.height(200.dp).fillMaxWidth(0.8f)
             ) {
                 users.forEach {
                     DropdownMenuItem(
