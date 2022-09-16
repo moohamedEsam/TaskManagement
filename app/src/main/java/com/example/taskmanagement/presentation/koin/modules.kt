@@ -30,12 +30,9 @@ import com.example.taskmanagement.domain.useCases.tasks.taskItems.UpdateTaskItem
 import com.example.taskmanagement.domain.useCases.teams.CreateTeamUseCase
 import com.example.taskmanagement.domain.useCases.teams.GetCurrentUserTeamsUseCase
 import com.example.taskmanagement.domain.useCases.teams.GetTeamUseCase
-import com.example.taskmanagement.domain.useCases.user.LoginUserUseCase
-import com.example.taskmanagement.domain.useCases.user.SignUpUseCase
 import com.example.taskmanagement.domain.useCases.teams.UpdateTeamUseCase
 import com.example.taskmanagement.domain.useCases.teams.invitation.SendInvitationUseCase
-import com.example.taskmanagement.domain.useCases.user.GetCurrentUserProfileUseCase
-import com.example.taskmanagement.domain.useCases.user.SearchMembersUseCase
+import com.example.taskmanagement.domain.useCases.user.*
 import com.example.taskmanagement.domain.utils.Urls
 import com.example.taskmanagement.domain.validatorsImpl.BaseValidator
 import com.example.taskmanagement.domain.validatorsImpl.ProfileValidator
@@ -62,6 +59,7 @@ import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
@@ -122,6 +120,7 @@ val userUseCasesModule = module {
     factory { LoginUserUseCase(get(), androidContext()) }
     factory { SignUpUseCase(get(), androidContext()) }
     factory { GetCurrentUserProfileUseCase(get()) }
+    factory { GetCurrentUserDashboardUseCase(get()) }
     factory { SearchMembersUseCase(get()) }
 }
 
@@ -214,7 +213,6 @@ fun Scope.provideHttpClient() = HttpClient(CIO) {
             ignoreUnknownKeys = true
         })
     }
-
     install(Auth) {
         bearer {
             loadTokens {
@@ -230,9 +228,6 @@ fun Scope.provideHttpClient() = HttpClient(CIO) {
                 if (refreshToken.token != token)
                     saveToken(androidContext(), refreshToken)
                 BearerTokens(refreshToken.token, refreshToken.token)
-            }
-            sendWithoutRequest {
-                it.url.host in listOf(Urls.REFRESH_TOKEN, Urls.SIGN_IN, Urls.SIGN_UP)
             }
         }
     }
@@ -254,7 +249,6 @@ private fun Scope.provideCoilImageLoader() = ImageLoader
     .build()
 
 fun saveToken(context: Context, token: Token) {
-    Log.i("modules", "saveToken: ${token.token}")
     context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
         .edit()
         .putString("token", token.token)
@@ -265,6 +259,5 @@ fun saveToken(context: Context, token: Token) {
 fun loadToken(context: Context): Token {
     val preferences = context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
     val token = preferences.getString("token", null)
-    Log.i("MainRemoteDataSource", "getToken: $token")
     return Token(token ?: "")
 }
