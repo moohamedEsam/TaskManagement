@@ -264,13 +264,11 @@ class TaskViewModel(
                 TaskScreenUIEvent.StatusChanged -> updateTaskStatusUseCase(taskId)
                 is TaskScreenUIEvent.TaskItems.Add -> createdTaskItems.add(event.taskItem)
                 is TaskScreenUIEvent.TaskItems.Edit -> updatedTaskItems.add(event.taskItem.id)
-                is TaskScreenUIEvent.TaskItems.Remove -> deleteTaskItemsUseCase(
-                    DeleteTaskItemsUseCase.Params(taskId, event.taskItem.id)
-                )
+                is TaskScreenUIEvent.TaskItems.Remove -> deleteTaskItemsUseCase(event.taskItem.id)
             }
         }
         if (createdTaskItems.isNotEmpty())
-            createTaskItemsUseCase(CreateTaskItemsUseCase.Params(taskId, createdTaskItems))
+            createTaskItemsUseCase(createdTaskItems)
         if (createdComments.isNotEmpty())
             createCommentUseCase(createdComments)
         if (deletedMembers.isNotEmpty())
@@ -282,7 +280,7 @@ class TaskViewModel(
                 )
             )
         if (updatedTaskItems.isNotEmpty())
-            updateTaskItemsUseCase(UpdateTaskItemsUseCase.Params(taskId, updatedTaskItems))
+            updateTaskItemsUseCase(updatedTaskItems)
         uiEvents.update { emptySet() }
     }
 

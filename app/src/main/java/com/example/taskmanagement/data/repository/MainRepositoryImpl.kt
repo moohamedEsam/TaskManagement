@@ -14,6 +14,7 @@ import com.example.taskmanagement.domain.dataModels.task.TaskItem
 import com.example.taskmanagement.domain.dataModels.task.TaskView
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
+import com.example.taskmanagement.domain.dataModels.user.Dashboard
 import com.example.taskmanagement.domain.repository.MainRepository
 
 class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository {
@@ -28,14 +29,12 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
     }
 
     override suspend fun deleteTaskItem(
-        taskItem: String,
-        taskId: String
-    ): Resource<Boolean> = baseMapApiToResource { remote.deleteTaskItem(taskId, taskItem) }
+        taskItem: String
+    ): Resource<Boolean> = baseMapApiToResource { remote.deleteTaskItem(taskItem) }
 
     override suspend fun createTaskItems(
-        taskItems: List<TaskItem>,
-        taskId: String
-    ): Resource<List<TaskItem>> = baseMapApiToResource { remote.createTaskItems(taskId, taskItems) }
+        taskItems: List<TaskItem>
+    ): Resource<List<TaskItem>> = baseMapApiToResource { remote.createTaskItems(taskItems) }
 
     override suspend fun registerUser(userProfile: SignUpUserBody): Resource<Token> =
         baseMapApiToResource { remote.registerUser(userProfile) }
@@ -85,6 +84,9 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
     override suspend fun searchMembers(query: String): Resource<List<User>> =
         baseMapApiToResource { remote.searchMembers(query) }
 
+    override suspend fun getCurrentUserDashboard(): Resource<Dashboard> =
+        baseMapApiToResource(remote::getCurrentUserDashboard)
+
     override suspend fun getCurrentUserTeams(): Resource<List<Team>> =
         baseMapApiToResource(remote::getCurrentUserTeams)
 
@@ -109,10 +111,9 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
     }
 
     override suspend fun updateTaskItems(
-        taskItems: List<String>,
-        taskId: String
+        taskItems: List<String>
     ): Resource<List<TaskItem>> =
-        baseMapApiToResource { remote.updateTaskItems(taskId, taskItems) }
+        baseMapApiToResource { remote.updateTaskItems(taskItems) }
 
     override suspend fun removeMembers(
         parentRoute: ParentRoute,

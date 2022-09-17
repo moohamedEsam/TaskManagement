@@ -107,7 +107,7 @@ private fun TaskDate(
             Text(
                 text = "Finish Date: $date",
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (task.status == TaskStatus.Completed && finishDate?.before(Date()) == true)
+                color = if (task.status != TaskStatus.Completed && finishDate?.before(Date()) == true)
                     Color.Red
                 else
                     MaterialTheme.colorScheme.onSurface

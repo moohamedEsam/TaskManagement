@@ -12,6 +12,7 @@ import com.example.taskmanagement.domain.dataModels.task.TaskView
 import com.example.taskmanagement.domain.dataModels.team.Invitation
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
+import com.example.taskmanagement.domain.dataModels.user.Dashboard
 
 interface RemoteDataSource {
     suspend fun loginUser(credentials: Credentials): Token
@@ -23,6 +24,7 @@ interface RemoteDataSource {
     suspend fun getCurrentUserTag(parentRoute: ParentRoute, id: String): Tag
     suspend fun createTag(tag: Tag, parentRoute: ParentRoute): Tag
 
+    suspend fun getCurrentUserDashboard(): Dashboard
     suspend fun getCurrentUserTasks(): List<Task>
     suspend fun getTask(taskId: String): TaskView
     suspend fun createTask(task: Task): Task
@@ -34,13 +36,10 @@ interface RemoteDataSource {
     suspend fun createComments(comments: List<Comment>): List<Comment>
     suspend fun deleteTaskComment(commentId: String): Boolean
     suspend fun updateTaskComment(comment: Comment): Comment
-    suspend fun createTaskItems(
-        taskId: String,
-        taskItems: List<TaskItem>
-    ): List<TaskItem>
+    suspend fun createTaskItems(taskItems: List<TaskItem>): List<TaskItem>
 
-    suspend fun updateTaskItems(taskId: String, taskItems: List<String>): List<TaskItem>
-    suspend fun deleteTaskItem(taskId: String, taskItem: String): Boolean
+    suspend fun updateTaskItems(taskItems: List<String>): List<TaskItem>
+    suspend fun deleteTaskItem(taskItem: String): Boolean
 
 
     suspend fun getCurrentUserProjects(): List<Project>

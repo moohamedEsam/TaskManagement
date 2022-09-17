@@ -1,5 +1,6 @@
 package com.example.taskmanagement.presentation.screens.forms.task
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.Tag
@@ -24,6 +25,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.util.*
 
 class TaskFormViewModel(
@@ -223,7 +226,8 @@ class TaskFormViewModel(
     }
 
     private fun getAssignedMembers() =
-        project.value.data?.members?.filter { assigned.value.contains(it.user.id) }?.map { it.user.id } ?: emptyList()
+        project.value.data?.members?.filter { assigned.value.contains(it.user.id) }
+            ?.map { it.user.id } ?: emptyList()
 
     private fun getInitializedTaskView() = TaskView(
         id = "",

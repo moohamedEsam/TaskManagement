@@ -9,11 +9,13 @@ object Urls {
     private const val BASE_URL = "http://192.168.1.6:8080"
     const val REFRESH_TOKEN = "$BASE_URL/auth/refresh"
     const val PROFILE = "$BASE_URL/user"
+    const val DASHBOARD = "$PROFILE/dashboard"
     const val SEARCH = "$BASE_URL/user/search"
     const val INVITATION = "$BASE_URL/user/invitations"
     const val SIGN_IN = "$BASE_URL/user/signIn"
     const val SIGN_UP = "$BASE_URL/user/signUp"
     const val TASKS = "$BASE_URL/tasks"
+    const val TASK_ITEMS = "$BASE_URL/taskItems"
     const val COMMENTS = "$BASE_URL/comments"
     const val TEAMS = "$BASE_URL/teams"
     const val PROJECTS = "$BASE_URL/projects"
@@ -24,8 +26,7 @@ object Urls {
     fun getRejectInvitationUrl(invitationId: String) =
         "$INVITATION/$invitationId/reject"
 
-    fun getTaskItemRoute(id: String) = "${getTaskUrl(id)}/taskItems"
-    fun getDeleteTaskItemRoute(id: String, taskItemId:String) = "${getTaskUrl(id)}/taskItems/$taskItemId"
+    fun getTaskItemRoute(taskItemId:String) = "$TASK_ITEMS/$taskItemId"
 
     fun getTagsUrl(parentRoute: ParentRoute) = "$BASE_URL/tags/$parentRoute"
 

@@ -14,22 +14,23 @@ import com.example.taskmanagement.domain.dataModels.task.TaskView
 import com.example.taskmanagement.domain.dataModels.team.Invitation
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
+import com.example.taskmanagement.domain.dataModels.user.Dashboard
 
 interface MainRepository {
     suspend fun registerUser(userProfile: SignUpUserBody): Resource<Token>
     suspend fun loginUser(credentials: Credentials): UserStatus
     suspend fun logoutUser(): UserStatus
     suspend fun searchMembers(query: String): Resource<List<User>>
-
+    suspend fun getCurrentUserDashboard(): Resource<Dashboard>
     //suspend fun updateUser(user: User): Resource<User>
     suspend fun getCurrentUserTasks(): Resource<List<Task>>
     suspend fun getTask(taskId: String): Resource<TaskView>
     suspend fun createTask(task: Task): Resource<Task>
     suspend fun updateTask(task: Task): Resource<Task>
     suspend fun updateTaskStatus(taskId: String): Resource<Boolean>
-    suspend fun updateTaskItems(taskItems: List<String>, taskId: String): Resource<List<TaskItem>>
-    suspend fun createTaskItems(taskItems: List<TaskItem>, taskId: String): Resource<List<TaskItem>>
-    suspend fun deleteTaskItem(taskItem: String, taskId: String): Resource<Boolean>
+    suspend fun updateTaskItems(taskItems: List<String>): Resource<List<TaskItem>>
+    suspend fun createTaskItems(taskItems: List<TaskItem>): Resource<List<TaskItem>>
+    suspend fun deleteTaskItem(taskItem: String): Resource<Boolean>
     suspend fun createComments(comments: List<Comment>): Resource<List<Comment>>
     suspend fun updateComment(comment: Comment): Resource<Comment>
     suspend fun deleteComment(commentId: String): Resource<Boolean>

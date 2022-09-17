@@ -1,73 +1,52 @@
 package com.example.taskmanagement.presentation.screens.home
 
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.taskmanagement.domain.dataModels.task.Priority
 import com.example.taskmanagement.domain.dataModels.task.Task
 import com.example.taskmanagement.domain.dataModels.task.TaskStatus
 import com.example.taskmanagement.domain.dataModels.utils.Resource
-import com.example.taskmanagement.domain.repository.MainRepository
+import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
+import com.example.taskmanagement.domain.useCases.tasks.GetCurrentUserTasksUseCase
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val repository: MainRepository
+    private val getCurrentUserTasksUseCase: GetCurrentUserTasksUseCase
 ) : ViewModel() {
-    val tasks = mutableStateOf<Resource<List<Task>>>(Resource.Initialized())
-    val filteredTasks = mutableStateOf<List<Task>>(emptyList())
-    val searchMode = mutableStateOf(false)
-    val priorityFilterStates = mutableStateMapOf<Priority, Boolean>()
-    val statusFilterStates = mutableStateMapOf<TaskStatus, Boolean>()
-    val searchQuery = mutableStateOf("")
+    private val _tasks = MutableStateFlow<Resource<List<Task>>>(Resource.Initialized())
+    val tasks: StateFlow<Resource<List<Task>>> = _tasks
+    private val _currentTaskStatus = MutableStateFlow(TaskStatus.InProgress)
+    val currentTaskStatus = _currentTaskStatus.asStateFlow()
+    private val _snackBarChannel = Channel<SnackBarEvent>()
+    val snackBarChannel = _snackBarChannel.receiveAsFlow()
 
     init {
-        getUserTasks()
-        priorityFilterStates.putAll(Priority.values().associateWith { false })
-        statusFilterStates.putAll(TaskStatus.values().associateWith { false })
+        viewModelScope.launch {
+            getDashboard()
+        }
     }
 
-    fun setFilterState(priority: Priority, state: Boolean) = viewModelScope.launch {
-        searchMode.value = true
-        priorityFilterStates[priority] = state
-        filterTasks()
-    }
-
-    fun setFilterState(status: TaskStatus, state: Boolean) = viewModelScope.launch {
-        searchMode.value = true
-        statusFilterStates[status] = state
-        filterTasks()
-    }
-
-    fun setSearchQuery(query: String) = viewModelScope.launch {
-        searchMode.value = true
-        searchQuery.value = query
-        filterTasks()
-    }
-
-    private fun filterTasks() = viewModelScope.launch {
-        filteredTasks.value = tasks.value.data?.filter {
-            priorityFilterStates[it.priority] ?: false || statusFilterStates[it.status] ?: false
-        } ?: emptyList()
-        if (searchQuery.value.isNotBlank()) {
-            filteredTasks.value = filteredTasks.value.filter {
-                it.title.contains(searchQuery.value, true)
+    fun observeTasks(): Flow<Map<TaskStatus, List<Task>>> {
+        return channelFlow {
+            _tasks.collectLatest { resource ->
+                resource.onSuccess { tasks ->
+                    val taskGroups = tasks.groupBy { it.status }
+                    send(taskGroups)
+                }
             }
         }
     }
 
-    fun clearFilters() {
-        searchMode.value = false
-        searchQuery.value = ""
-        priorityFilterStates.putAll(Priority.values().associateWith { false })
-        statusFilterStates.putAll(TaskStatus.values().associateWith { false })
-    }
-
-    fun getUserTasks() {
-        viewModelScope.launch {
-            tasks.value = repository.getCurrentUserTasks()
+    private suspend fun getDashboard() {
+        _tasks.update { getCurrentUserTasksUseCase(Unit) }
+        _tasks.value.onError {
+            _snackBarChannel.send(SnackBarEvent(it ?: "") { getDashboard() })
         }
     }
 
+    fun onTaskStatusChanged(taskStatus: TaskStatus) {
+        _currentTaskStatus.update { taskStatus }
+    }
 
 }

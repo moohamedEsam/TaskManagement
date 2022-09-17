@@ -10,6 +10,7 @@ import com.example.taskmanagement.domain.dataModels.team.Invitation
 import com.example.taskmanagement.domain.dataModels.team.Team
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
+import com.example.taskmanagement.domain.dataModels.user.Dashboard
 import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.*
 import com.example.taskmanagement.domain.utils.Urls
@@ -18,6 +19,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
+import io.ktor.events.*
 import io.ktor.http.*
 import java.io.File
 
@@ -80,27 +82,30 @@ class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
     }
 
     override suspend fun createTaskItems(
-        taskId: String,
         taskItems: List<TaskItem>
     ): List<TaskItem> {
-        val response = client.post(Urls.getTaskItemRoute(taskId)) {
+        val response = client.post(Urls.TASK_ITEMS) {
             setBody(taskItems)
         }
         return getResponseResult(response)
     }
 
     override suspend fun updateTaskItems(
-        taskId: String,
         taskItems: List<String>
     ): List<TaskItem> {
-        val response = client.put(Urls.getTaskItemRoute(taskId)) {
+        val response = client.put(Urls.TASK_ITEMS) {
             setBody(taskItems)
         }
         return getResponseResult(response)
     }
 
-    override suspend fun deleteTaskItem(taskId: String, taskItem: String): Boolean {
-        val response = client.delete(Urls.getDeleteTaskItemRoute(taskId, taskItem))
+    override suspend fun deleteTaskItem(taskItem: String): Boolean {
+        val response = client.delete(Urls.getTaskItemRoute(taskItem))
+        return getResponseResult(response)
+    }
+
+    override suspend fun getCurrentUserDashboard(): Dashboard {
+        val response = client.get(Urls.DASHBOARD)
         return getResponseResult(response)
     }
 

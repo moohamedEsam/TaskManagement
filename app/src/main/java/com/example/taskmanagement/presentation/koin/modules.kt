@@ -130,7 +130,7 @@ fun provideRepository(remoteDataSource: RemoteDataSource): MainRepository =
 fun provideRemoteSource(client: HttpClient): RemoteDataSource = RemoteDataSourceImpl(client)
 
 val viewModelModule = module {
-    viewModel { MainActivityViewModel(get()) }
+    viewModel { MainActivityViewModel(get(), get()) }
     viewModel { HomeViewModel(get()) }
     viewModel { LoginViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get()) }
