@@ -1,4 +1,4 @@
-package com.example.taskmanagement.presentation.screens.sharedLayout
+package com.example.taskmanagement.presentation.screens.login
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*

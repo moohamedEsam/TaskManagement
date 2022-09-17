@@ -16,6 +16,8 @@ import com.example.taskmanagement.domain.useCases.projects.CreateProjectUseCase
 import com.example.taskmanagement.domain.useCases.projects.GetCurrentUserProjectUseCase
 import com.example.taskmanagement.domain.useCases.projects.GetProjectUseCase
 import com.example.taskmanagement.domain.useCases.projects.UpdateProjectUseCase
+import com.example.taskmanagement.domain.useCases.shared.GetCurrentUserStatusUseCase
+import com.example.taskmanagement.domain.useCases.shared.ObserveUserStatusUseCase
 import com.example.taskmanagement.domain.useCases.shared.RemoveMembersUseCase
 import com.example.taskmanagement.domain.useCases.tag.AssignTagUseCase
 import com.example.taskmanagement.domain.useCases.tag.CreateTagUseCase
@@ -43,6 +45,7 @@ import com.example.taskmanagement.presentation.screens.forms.task.TaskFormViewMo
 import com.example.taskmanagement.presentation.screens.forms.team.TeamFormViewModel
 import com.example.taskmanagement.presentation.screens.home.HomeViewModel
 import com.example.taskmanagement.presentation.screens.login.LoginViewModel
+import com.example.taskmanagement.presentation.screens.login.MainLayoutViewModel
 import com.example.taskmanagement.presentation.screens.profile.ProfileViewModel
 import com.example.taskmanagement.presentation.screens.project.ProjectViewModel
 import com.example.taskmanagement.presentation.screens.projects.ProjectsViewModel
@@ -75,6 +78,9 @@ val utils = module {
     single { ProfileValidator() }
     single { BaseValidator() }
     single { TaskFormValidator() }
+    single { GetCurrentUserStatusUseCase(androidContext(), get()) }
+    single { ObserveUserStatusUseCase(get()) }
+    single { LogoutUseCase(get(), androidContext()) }
 }
 
 val repository = module {
@@ -130,7 +136,8 @@ fun provideRepository(remoteDataSource: RemoteDataSource): MainRepository =
 fun provideRemoteSource(client: HttpClient): RemoteDataSource = RemoteDataSourceImpl(client)
 
 val viewModelModule = module {
-    viewModel { MainActivityViewModel(get(), get()) }
+    viewModel { MainActivityViewModel(get()) }
+    viewModel { MainLayoutViewModel(get(), get(), get()) }
     viewModel { HomeViewModel(get()) }
     viewModel { LoginViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get()) }
@@ -150,7 +157,7 @@ val viewModelModule = module {
             taskId = params[0]
         )
     }
-    viewModel { ProfileViewModel(get()) }
+    viewModel { ProfileViewModel(get(), get()) }
     viewModel { ProjectsViewModel(get()) }
     viewModel { TeamsViewModel(get()) }
     viewModel { params -> ProjectViewModel(get(), get(), params[0]) }
@@ -220,12 +227,12 @@ fun Scope.provideHttpClient() = HttpClient(CIO) {
                 BearerTokens(token.token, token.token)
             }
             refreshTokens {
-                val token = oldTokens?.accessToken ?: ""
+                val token = loadToken(androidContext())
                 val refreshToken = client.post(Urls.REFRESH_TOKEN) {
-                    setBody(token)
+                    setBody(token.token)
                     markAsRefreshTokenRequest()
                 }.body<Token>()
-                if (refreshToken.token != token)
+                if (refreshToken.token != token.token)
                     saveToken(androidContext(), refreshToken)
                 BearerTokens(refreshToken.token, refreshToken.token)
             }
@@ -252,12 +259,14 @@ fun saveToken(context: Context, token: Token) {
     context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
         .edit()
         .putString("token", token.token)
+        .putLong("expiresAt", token.expiresAt)
         .apply()
 
 }
 
 fun loadToken(context: Context): Token {
     val preferences = context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
-    val token = preferences.getString("token", null)
-    return Token(token ?: "")
+    val token = preferences.getString("token", "") ?: ""
+    val expiresAt = preferences.getLong("expiresAt", 0)
+    return Token(token, expiresAt)
 }

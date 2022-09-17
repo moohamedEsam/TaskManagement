@@ -15,11 +15,15 @@ import com.example.taskmanagement.domain.dataModels.team.Invitation
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.dataModels.user.Dashboard
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 
 interface MainRepository {
     suspend fun registerUser(userProfile: SignUpUserBody): Resource<Token>
     suspend fun loginUser(credentials: Credentials): UserStatus
     suspend fun logoutUser(): UserStatus
+    suspend fun setUserStatus(status: UserStatus)
+    suspend fun observeUser(): SharedFlow<UserStatus>
     suspend fun searchMembers(query: String): Resource<List<User>>
     suspend fun getCurrentUserDashboard(): Resource<Dashboard>
     //suspend fun updateUser(user: User): Resource<User>

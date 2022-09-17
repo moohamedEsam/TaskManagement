@@ -1,4 +1,4 @@
-package com.example.taskmanagement.domain.useCases
+package com.example.taskmanagement.domain.useCases.base
 
 import com.example.taskmanagement.domain.dataModels.utils.Resource
 

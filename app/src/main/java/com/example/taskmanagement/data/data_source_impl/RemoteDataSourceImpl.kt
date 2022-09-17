@@ -16,14 +16,23 @@ import com.example.taskmanagement.domain.dataModels.utils.*
 import com.example.taskmanagement.domain.utils.Urls
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.events.*
 import io.ktor.http.*
+import kotlinx.coroutines.future.future
 import java.io.File
 
 class RemoteDataSourceImpl(private val client: HttpClient) : RemoteDataSource {
+    override suspend fun logoutUser() {
+        val provider= client.plugin(Auth).providers.first() as BearerAuthProvider
+        provider.clearToken()
+    }
+
     override suspend fun loginUser(credentials: Credentials): Token {
         val response = client.post(Urls.SIGN_IN) {
             setBody(credentials)

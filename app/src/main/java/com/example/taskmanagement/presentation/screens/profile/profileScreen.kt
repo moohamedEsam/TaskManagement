@@ -53,7 +53,6 @@ fun ProfileScreenContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreenBody(
     navHostController: NavHostController,
@@ -71,6 +70,7 @@ fun ProfileScreenBody(
 
 @Composable
 fun ProfileScreenHeader(user: User, navHostController: NavHostController) {
+    val viewModel: ProfileViewModel by inject()
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
         Icon(
             imageVector = Icons.Default.Logout,
@@ -78,6 +78,7 @@ fun ProfileScreenHeader(user: User, navHostController: NavHostController) {
             modifier = Modifier
                 .align(Alignment.End)
                 .clickable {
+                    viewModel.signOut()
                     navHostController.navigate(Screens.SignIn.route) {
                         popUpTo(
                             navHostController.backQueue[1].destination.route ?: Screens.SignIn.route

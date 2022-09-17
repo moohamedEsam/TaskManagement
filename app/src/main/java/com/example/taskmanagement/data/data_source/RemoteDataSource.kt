@@ -17,6 +17,7 @@ import com.example.taskmanagement.domain.dataModels.user.Dashboard
 interface RemoteDataSource {
     suspend fun loginUser(credentials: Credentials): Token
     suspend fun registerUser(user: SignUpUserBody): Token
+    suspend fun logoutUser()
     suspend fun searchMembers(query: String): List<User>
     suspend fun acceptInvitation(invitationId: String): Boolean
     suspend fun rejectInvitation(invitationId: String): Boolean

@@ -10,12 +10,14 @@ import com.example.taskmanagement.domain.dataModels.utils.Token
 import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.projects.GetCurrentUserProjectUseCase
 import com.example.taskmanagement.domain.useCases.user.GetCurrentUserProfileUseCase
+import com.example.taskmanagement.domain.useCases.user.LogoutUseCase
 import com.example.taskmanagement.domain.vallidators.Validator
 import com.example.taskmanagement.presentation.koin.saveToken
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
-    private val getCurrentUserProfileUseCase: GetCurrentUserProfileUseCase
+    private val getCurrentUserProfileUseCase: GetCurrentUserProfileUseCase,
+    private val logoutUseCase: LogoutUseCase
 ) : ViewModel() {
     val user = mutableStateOf<Resource<User>>(Resource.Initialized())
 
@@ -39,8 +41,8 @@ class ProfileViewModel(
         user.value = user.value.copy(data = user.value.data?.copy(photoPath = photoPath))
     }
 
-    fun signOut(context: Context) {
-        saveToken(context, Token(""))
+    fun signOut() = viewModelScope.launch {
+        logoutUseCase(Unit)
     }
 
 }

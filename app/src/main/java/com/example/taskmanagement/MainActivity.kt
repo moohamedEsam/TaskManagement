@@ -6,7 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.taskmanagement.domain.dataModels.utils.Resource
@@ -18,10 +21,9 @@ import org.koin.android.ext.android.inject
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val viewModel by inject<MainActivityViewModel>()
-        viewModel.getCurrentUserProfile()
         installSplashScreen().apply {
             setKeepOnScreenCondition {
-                viewModel.user.value is Resource.Loading || viewModel.user.value is Resource.Initialized
+                viewModel.isUserAuthorized.value is Resource.Initialized
             }
         }
         super.onCreate(savedInstanceState)
@@ -32,14 +34,14 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
-                    val user by viewModel.user
-                    if (user is Resource.Initialized)
-                        return@Surface
-                    MainLayout(
-                        startDestination = if (user is Resource.Success) Screens.Home else Screens.SignIn,
-                        user = user.data
-                    )
+                    val isUserAuthorized by viewModel.isUserAuthorized.collectAsState()
+                    val startDestination by remember {
+                        derivedStateOf {
+                            if (isUserAuthorized is Resource.Success && isUserAuthorized.data == true) Screens.Home
+                            else Screens.SignIn
+                        }
+                    }
+                    MainLayout(startDestination)
                 }
             }
         }

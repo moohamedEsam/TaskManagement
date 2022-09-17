@@ -16,9 +16,18 @@ import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.dataModels.user.Dashboard
 import com.example.taskmanagement.domain.repository.MainRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository {
-    private lateinit var userStatus: UserStatus
+    private val userStatusFlow = MutableSharedFlow<UserStatus>(replay = 1)
+
+    override suspend fun setUserStatus(status: UserStatus) {
+        userStatusFlow.emit(status)
+    }
+
     private suspend fun <T> baseMapApiToResource(delegate: suspend () -> T): Resource<T> {
         return try {
             val result = delegate()
@@ -97,17 +106,21 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
     override suspend fun loginUser(credentials: Credentials): UserStatus {
         return try {
             val token = remote.loginUser(credentials)
-            userStatus = UserStatus.Authorized(token)
-            userStatus
+            userStatusFlow.emit(UserStatus.Authorized(token))
+            UserStatus.Authorized(token)
         } catch (exception: Exception) {
-            userStatus = UserStatus.Forbidden(exception.message)
-            userStatus
+            UserStatus.Forbidden(exception.message)
         }
     }
 
     override suspend fun logoutUser(): UserStatus {
-        userStatus = UserStatus.LoggedOut
-        return userStatus
+        remote.logoutUser()
+        userStatusFlow.emit(UserStatus.LoggedOut)
+        return UserStatus.LoggedOut
+    }
+
+    override suspend fun observeUser(): SharedFlow<UserStatus> {
+        return userStatusFlow.asSharedFlow()
     }
 
     override suspend fun updateTaskItems(
