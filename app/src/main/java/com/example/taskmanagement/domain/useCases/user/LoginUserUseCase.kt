@@ -12,12 +12,12 @@ class LoginUserUseCase(
     private val repository: MainRepository,
     private val context: Context
 ) :
-    BaseUseCaseBuilder<LoginUserUseCase.Params, UserStatus>() {
-    override suspend fun build(params: Params): Resource<UserStatus> {
+    BaseUseCaseBuilder<LoginUserUseCase.Params, UserStatus> {
+    override suspend fun build(params: Params): UserStatus {
         val result = repository.loginUser(params.credentials)
         if (result is UserStatus.Authorized)
-            saveToken(context, result.token ?: return Resource.Error("invlaid token"))
-        return Resource.Success(result)
+            saveToken(context, result.token!!)
+        return result
     }
 
     data class Params(

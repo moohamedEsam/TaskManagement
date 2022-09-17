@@ -6,7 +6,7 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.base.BaseUseCaseBuilder
 
 class GetCurrentUserDashboardUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<Unit, Dashboard>() {
+    BaseUseCaseBuilder<Unit, Resource<Dashboard>> {
     override suspend fun build(params: Unit): Resource<Dashboard> {
         return repository.getCurrentUserDashboard()
     }

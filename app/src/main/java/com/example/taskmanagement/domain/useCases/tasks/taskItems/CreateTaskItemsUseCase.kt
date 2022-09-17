@@ -6,7 +6,7 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.base.BaseUseCaseBuilder
 
 class CreateTaskItemsUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<List<TaskItem>, List<TaskItem>>() {
+    BaseUseCaseBuilder<List<TaskItem>, Resource<List<TaskItem>>> {
     override suspend fun build(params: List<TaskItem>): Resource<List<TaskItem>> {
         return repository.createTaskItems(params)
     }

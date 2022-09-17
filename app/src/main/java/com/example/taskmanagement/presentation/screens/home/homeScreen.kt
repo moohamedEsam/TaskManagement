@@ -116,8 +116,10 @@ private fun OverviewCardItem(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Text(text = tasks.first.name, style = MaterialTheme.typography.bodyLarge)
-            Text(text = tasks.second.size.toString(), style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Tasks Count", style = MaterialTheme.typography.bodySmall)
+            Column {
+                Text(text = tasks.second.size.toString(), style = MaterialTheme.typography.bodyMedium)
+                Text(text = "Tasks Count", style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 }

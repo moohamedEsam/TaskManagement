@@ -7,8 +7,8 @@ import com.example.taskmanagement.domain.useCases.base.BaseUseCaseBuilder
 import kotlinx.coroutines.flow.SharedFlow
 
 class ObserveUserStatusUseCase(private val repository: MainRepository):
-    BaseUseCaseBuilder<Unit, SharedFlow<UserStatus>>() {
-    override suspend fun build(params: Unit): Resource<SharedFlow<UserStatus>> {
-        return Resource.Success(repository.observeUser())
+    BaseUseCaseBuilder<Unit, SharedFlow<UserStatus>> {
+    override suspend fun build(params: Unit): SharedFlow<UserStatus> {
+        return repository.observeUser()
     }
 }

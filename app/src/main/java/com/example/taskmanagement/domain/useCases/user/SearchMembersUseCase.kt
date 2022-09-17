@@ -6,7 +6,7 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.base.BaseUseCaseBuilder
 
 class SearchMembersUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<String, List<User>>() {
+    BaseUseCaseBuilder<String, Resource<List<User>>> {
     private var lastQuery: String? = null
     private var lastResult = emptyList<User>()
     override suspend fun build(params: String): Resource<List<User>> {

@@ -6,7 +6,7 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.base.BaseUseCaseBuilder
 
 class GetCurrentUserTeamsUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<Unit, List<Team>>() {
+    BaseUseCaseBuilder<Unit, Resource<List<Team>>> {
     override suspend fun build(params: Unit): Resource<List<Team>> {
         return repository.getCurrentUserTeams()
     }

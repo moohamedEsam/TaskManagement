@@ -1,17 +1,19 @@
 package com.example.taskmanagement.domain.useCases.base
 
-import com.example.taskmanagement.domain.dataModels.utils.Resource
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-abstract class BaseUseCaseBuilder<ParamType, ReturnType> {
-    private var isLoading: Boolean = false
-    abstract suspend fun build(params: ParamType): Resource<ReturnType>
+interface BaseUseCaseBuilder<ParamType, ReturnType> {
+    suspend fun build(params: ParamType): ReturnType
 
-    suspend operator fun invoke(params: ParamType): Resource<ReturnType> {
-        if (isLoading) return Resource.Error("operation already started")
-        isLoading = true
-        val result = build(params)
-        isLoading = false
-        return result
-    }
+    suspend operator fun invoke(
+        params: ParamType,
+        dispatcher: CoroutineDispatcher = Dispatchers.IO
+    ) =
+        withContext(dispatcher) {
+            build(params)
+        }
+    suspend operator fun invoke(params: ParamType) = build(params)
 
 }

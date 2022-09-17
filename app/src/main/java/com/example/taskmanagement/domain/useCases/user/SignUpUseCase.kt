@@ -11,7 +11,7 @@ import com.example.taskmanagement.presentation.koin.saveToken
 class SignUpUseCase(
     private val repository: MainRepository,
     private val context: Context
-) : BaseUseCaseBuilder<SignUpUseCase.Params, Token>() {
+) : BaseUseCaseBuilder<SignUpUseCase.Params, Resource<Token>> {
     override suspend fun build(params: Params): Resource<Token> {
         val result = repository.registerUser(params.signUpUserBody)
         result.onSuccess {

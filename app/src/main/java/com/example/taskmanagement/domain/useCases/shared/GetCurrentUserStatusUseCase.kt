@@ -7,14 +7,17 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.base.BaseUseCaseBuilder
 import com.example.taskmanagement.presentation.koin.loadToken
 
-class GetCurrentUserStatusUseCase(private val context:Context, private val repository: MainRepository): BaseUseCaseBuilder<Unit, Boolean>() {
-    override suspend fun build(params: Unit): Resource<Boolean> {
+class GetCurrentUserStatusUseCase(
+    private val context: Context,
+    private val repository: MainRepository
+) : BaseUseCaseBuilder<Unit, UserStatus> {
+    override suspend fun build(params: Unit): UserStatus {
         val token = loadToken(context)
-        if (token.token.isEmpty()){
+        if (token.token.isEmpty()) {
             repository.setUserStatus(UserStatus.LoggedOut)
-            return Resource.Success(false)
+            return UserStatus.LoggedOut
         }
         repository.setUserStatus(UserStatus.Authorized(token))
-        return Resource.Success(true)
+        return UserStatus.Authorized(token)
     }
 }

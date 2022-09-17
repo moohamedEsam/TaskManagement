@@ -5,7 +5,7 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.base.BaseUseCaseBuilder
 
 class DeleteCommentUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<String, Boolean>() {
+    BaseUseCaseBuilder<String, Resource<Boolean>> {
     override suspend fun build(params: String): Resource<Boolean> {
         return repository.deleteComment(params)
     }

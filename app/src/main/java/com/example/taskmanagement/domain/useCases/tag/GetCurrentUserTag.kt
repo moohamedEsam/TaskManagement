@@ -7,7 +7,7 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.base.BaseUseCaseBuilder
 
 class GetCurrentUserTag(private val repository: MainRepository) :
-    BaseUseCaseBuilder<GetCurrentUserTag.Params, Tag>() {
+    BaseUseCaseBuilder<GetCurrentUserTag.Params, Resource<Tag>> {
     override suspend fun build(params: Params): Resource<Tag> {
         return repository.getCurrentUserTag(params.parentRoute, params.id)
     }

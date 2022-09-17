@@ -5,7 +5,7 @@ import com.example.taskmanagement.domain.repository.MainRepository
 import com.example.taskmanagement.domain.useCases.base.BaseUseCaseBuilder
 
 class SendInvitationUseCase(private val repository: MainRepository) :
-    BaseUseCaseBuilder<SendInvitationUseCase.Param, Boolean>() {
+    BaseUseCaseBuilder<SendInvitationUseCase.Param, Resource<Boolean>> {
     override suspend fun build(params: Param): Resource<Boolean> {
         return repository.sendInvitations(params.teamId, params.invitation)
     }
