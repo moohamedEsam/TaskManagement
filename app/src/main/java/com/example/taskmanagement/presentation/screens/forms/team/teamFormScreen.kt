@@ -1,14 +1,16 @@
 package com.example.taskmanagement.presentation.screens.forms.team
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
@@ -16,10 +18,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ExperimentalMotionApi
 import androidx.constraintlayout.compose.MotionLayout
@@ -66,7 +68,7 @@ fun TeamFormScreenContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         TeamFormScreenHeader(team, viewModel)
-        MembersList(viewModel)
+        MembersList(viewModel, modifier = Modifier.weight(1f))
         Button(
             onClick = {
                 viewModel.saveTeam {
@@ -111,7 +113,8 @@ private fun TeamFormScreenHeader(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MembersList(
-    viewModel: TeamFormViewModel
+    viewModel: TeamFormViewModel,
+    modifier: Modifier = Modifier
 ) {
     val isUpdating = viewModel.isUpdating
     val team by viewModel.teamView.collectAsState()
@@ -122,15 +125,21 @@ private fun MembersList(
     }
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.height((LocalConfiguration.current.screenHeightDp / 3).dp)
+        modifier = modifier.pointerInput(Unit) {
+            detectTapGestures {
+                showDialog = false
+            }
+        }
     ) {
         item {
             Column {
-                MembersListHeader(onFilter = {}) {
+                MembersListHeader(onFilter = {
                     viewModel.searchMembers(it)
                     showDialog = true
+                }) {
+                    showDialog = true
                 }
-                SuggestionsDropDownMenu(showDialog, suggestions, viewModel) { showDialog = false }
+                SuggestionsDropDownMenu(showDialog, suggestions, viewModel)
             }
         }
 
@@ -156,47 +165,31 @@ private fun MembersList(
 private fun SuggestionsDropDownMenu(
     showDialog: Boolean,
     suggestions: Set<User>,
-    viewModel: TeamFormViewModel,
-    onDismiss: () -> Unit
+    viewModel: TeamFormViewModel
 ) {
-    Box(modifier = Modifier.fillMaxWidth()) {
-        DropdownMenu(
-            expanded = showDialog,
-            onDismissRequest = onDismiss,
-            modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .height(240.dp)
-        ) {
-            if (suggestions.isEmpty()) {
-                Text(text = "No Users match your search")
-                return@DropdownMenu
+    if (!showDialog) return
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        if (suggestions.isEmpty()) {
+            item {
+                Text(text = "No suggestions")
             }
-            suggestions.forEach { user ->
-                DropdownMenuItem(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = {
-                        Column {
-                            Text(
-                                text = user.username,
-                                color = MaterialTheme.colorScheme.primary,
-                                textDecoration = TextDecoration.None
-                            )
-                            Text(
-                                text = user.email,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                textDecoration = TextDecoration.None,
-                                maxLines = 1
-                            )
-                        }
-                    },
-                    leadingIcon = { UserIcon(photoPath = user.photoPath) },
-                    onClick = {
-                        viewModel.addMember(user)
-                    }
-                )
+            return@LazyColumn
+        }
+        items(suggestions.toList()) { user ->
+            MemberComposable(user = user) {
+                Spacer(modifier = Modifier.weight(0.8f))
+                IconButton(onClick = { viewModel.addMember(user) }) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                }
             }
         }
     }
+
 }
 
 @OptIn(ExperimentalMotionApi::class)
@@ -277,7 +270,6 @@ private fun SearchMembersTextField(
         leadingIcon = {
             IconButton(
                 onClick = {
-                    query = ""
                     onClose()
                 }
             ) {

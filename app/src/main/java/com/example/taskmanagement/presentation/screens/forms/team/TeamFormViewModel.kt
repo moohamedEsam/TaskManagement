@@ -124,6 +124,10 @@ class TeamFormViewModel(
                 return@launch
             val team = teamView.value.toTeam()
             if (isUpdating)
+                team.members = teamView.value.members
+                    .filter { _members.value.contains(it.user) }
+                    .map { it.toActiveUser() }
+            else
                 team.members = _members.value.map { ActiveUser(it.id) }
 
             val result = if (isUpdating)

@@ -54,7 +54,12 @@ private fun TaskScreenContent(
     ) {
         TaskMainInfo(viewModel, navHostController)
         ActionRow(viewModel = viewModel, modifier = Modifier.align(Alignment.End))
-        TaskInfoPager(viewModel = viewModel)
+        TaskInfoPager(
+            viewModel = viewModel,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        )
     }
 }
 
@@ -96,11 +101,9 @@ private fun ActionRow(
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-private fun TaskInfoPager(viewModel: TaskViewModel) {
+private fun TaskInfoPager(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight { it / 2 },
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         val pages = listOf("Task Items", "Description", "Assigned", "Comments", "History")
@@ -132,7 +135,7 @@ private fun TaskInfoPager(viewModel: TaskViewModel) {
                 1 -> TaskDescriptionPage(viewModel = viewModel)
                 2 -> TaskAssignedPage(viewModel = viewModel, modifier = Modifier.fillMaxSize())
                 3 -> TaskCommentsPage(viewModel = viewModel, modifier = Modifier.fillMaxSize())
-                else -> Unit
+                else -> TaskHistoryPage(viewModel = viewModel)
             }
         }
     }

@@ -16,26 +16,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.taskmanagement.domain.dataModels.task.TaskItem
 import com.example.taskmanagement.domain.dataModels.task.TaskScreenUIEvent
+import com.example.taskmanagement.domain.dataModels.task.TaskStatus
 import com.example.taskmanagement.presentation.customComponents.CircleCheckbox
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TaskItemsPage(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
     val taskItems by viewModel.taskItems.collectAsState()
+    val updateAllowed by viewModel.isUpdateAllowed.collectAsState()
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        item {
-            NewTaskItemCardItem(viewModel = viewModel) {
-                viewModel.addEventUI(TaskScreenUIEvent.TaskItems.Add(it))
+        if (updateAllowed)
+            item {
+                NewTaskItemCardItem(viewModel = viewModel) {
+                    viewModel.addEventUI(TaskScreenUIEvent.TaskItems.Add(it))
+                }
             }
-        }
         items(taskItems.toList(), key = { it.id }) {
             TaskItemCardItem(
                 taskItem = it,
                 viewModel = viewModel,
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItemPlacement(),
+                enabled = updateAllowed && (it.completedBy
+                    ?: viewModel.currentUser.id) == viewModel.currentUser.id
             )
         }
     }
@@ -46,6 +51,7 @@ fun TaskItemsPage(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
 private fun TaskItemCardItem(
     taskItem: TaskItem,
     viewModel: TaskViewModel,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     OutlinedCard(modifier = modifier) {
@@ -56,7 +62,7 @@ private fun TaskItemCardItem(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CircleCheckbox(selected = taskItem.isCompleted) {
+            CircleCheckbox(selected = taskItem.isCompleted, enabled = enabled) {
                 viewModel.addEventUI(
                     TaskScreenUIEvent.TaskItems.Edit(
                         taskItem.copy(isCompleted = !taskItem.isCompleted),

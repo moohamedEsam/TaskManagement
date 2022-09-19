@@ -5,7 +5,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
@@ -20,6 +22,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.taskmanagement.domain.dataModels.task.CommentView
 import com.example.taskmanagement.domain.dataModels.task.TaskScreenUIEvent
+import com.example.taskmanagement.domain.dataModels.task.TaskStatus
 import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.presentation.composables.MemberComposable
 
@@ -33,24 +36,27 @@ fun TaskCommentsPage(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
             task.data?.assigned?.map { it }?.plus(task.data!!.owner)?.toSet() ?: emptySet()
         }
     }
+    val updateAllowed by viewModel.isUpdateAllowed.collectAsState()
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        item {
-            NewCommentCardItem(
-                viewModel = viewModel,
-                users = users,
-                modifier = Modifier.animateItemPlacement()
-            )
-        }
+        if (updateAllowed)
+            item {
+                NewCommentCardItem(
+                    viewModel = viewModel,
+                    users = users,
+                    modifier = Modifier.animateItemPlacement()
+                )
+            }
 
         items(comments.toList(), key = { it.id }) {
             CommentCardItem(
                 comment = it,
                 users = users,
                 viewModel = viewModel,
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItemPlacement(),
+                showActions = updateAllowed && viewModel.currentUser.id == it.issuer.id
             )
         }
     }
@@ -62,8 +68,10 @@ private fun CommentCardItem(
     comment: CommentView,
     users: Set<User>,
     viewModel: TaskViewModel,
-    modifier: Modifier = Modifier
-) {
+    modifier: Modifier = Modifier,
+    showActions: Boolean = false,
+
+    ) {
     var showOwner by remember {
         mutableStateOf(false)
     }
@@ -75,21 +83,25 @@ private fun CommentCardItem(
         ) {
             Text(
                 text = getCommentAnnotatedString(users = users, text = comment.description),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .verticalScroll(rememberScrollState())
             )
-            Row(
-                modifier = Modifier.align(Alignment.End),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                IconButton(onClick = { }) {
-                    Icon(imageVector = Icons.Default.Edit, contentDescription = null)
-                }
-                IconButton(
-                    onClick = { viewModel.addEventUI(TaskScreenUIEvent.Comments.Remove(comment)) }
+            if (showActions)
+                Row(
+                    modifier = Modifier.align(Alignment.End),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+                    IconButton(onClick = { }) {
+                        Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+                    }
+                    IconButton(
+                        onClick = { viewModel.addEventUI(TaskScreenUIEvent.Comments.Remove(comment)) }
+                    ) {
+                        Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+                    }
                 }
-            }
             if (showOwner)
                 Text(
                     text = buildAnnotatedString {
@@ -115,12 +127,13 @@ private fun NewCommentCardItem(
     var value by remember {
         mutableStateOf(TextFieldValue())
     }
-    val onSave = {
+    val onSave = onSave@{
+        if (value.text.isBlank() || value.text.length < 3) return@onSave
         val comment = CommentView(description = value.text)
         viewModel.addEventUI(TaskScreenUIEvent.Comments.Add(comment))
         value = TextFieldValue()
     }
-    Column(modifier = modifier) {
+    Column(modifier = modifier.animateContentSize()) {
         OutlinedTextField(
             value = value,
             onValueChange = {
@@ -129,7 +142,6 @@ private fun NewCommentCardItem(
             },
             label = { Text(text = "New Comment") },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
             keyboardActions = KeyboardActions(
                 onDone = {
                     onSave()
@@ -139,13 +151,16 @@ private fun NewCommentCardItem(
                 IconButton(onClick = onSave) {
                     Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null)
                 }
-            }
+            },
+
         )
         Box(modifier = Modifier.fillMaxWidth()) {
             DropdownMenu(
                 expanded = showSuggestions,
                 onDismissRequest = { showSuggestions = false },
-                modifier = Modifier.height(200.dp).fillMaxWidth(0.8f)
+                modifier = Modifier
+                    .height(200.dp)
+                    .fillMaxWidth(0.8f)
             ) {
                 users.forEach {
                     DropdownMenuItem(

@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.taskmanagement.domain.dataModels.task.TaskScreenUIEvent
+import com.example.taskmanagement.domain.dataModels.task.TaskStatus
 import com.example.taskmanagement.presentation.composables.MemberComposable
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -26,12 +27,15 @@ import com.example.taskmanagement.presentation.composables.MemberComposable
 fun TaskAssignedPage(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
     val task by viewModel.task.collectAsState()
     val taskView = task.data ?: return
+    val updateAllowed by viewModel.isUpdateAllowed.collectAsState()
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(taskView.assigned, key = { it.id }) {
             MemberComposable(user = it, modifier = Modifier.animateItemPlacement()) {
+                if (!updateAllowed || taskView.owner.id != viewModel.currentUser.id)
+                    return@MemberComposable
                 Spacer(modifier = Modifier.weight(0.8f))
                 IconButton(onClick = { viewModel.addEventUI(TaskScreenUIEvent.MembersRemove(it)) }) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = null)

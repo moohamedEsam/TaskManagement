@@ -71,10 +71,13 @@ private fun DashboardBody(viewModel: HomeViewModel, navHostController: NavHostCo
             )
         }
         items(tasksToShow, key = { it.id }) { task ->
-            TaskItem(task = task, modifier = Modifier
+            TaskItem(task = task,
+                modifier = Modifier
                 .fillMaxWidth()
                 .animateItemPlacement()
-                .height(200.dp), {}) {
+                .height(200.dp),
+                onCompleteClick = {}
+            ) {
                 navHostController.navigate(Screens.Task.withArgs(task.id))
             }
         }

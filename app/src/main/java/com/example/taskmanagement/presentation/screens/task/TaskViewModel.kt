@@ -54,17 +54,30 @@ class TaskViewModel(
     val updateMade = _updateMade.asStateFlow()
     private val _taskItemTitleValidationResult = MutableStateFlow(ValidationResult(true))
     val taskItemTitleValidationResult = _taskItemTitleValidationResult.asStateFlow()
-    private var currentUser = User("")
+    private val _isUpdateAllowed = MutableStateFlow(false)
+    val isUpdateAllowed = _isUpdateAllowed.asStateFlow()
+    var currentUser = User("")
 
     init {
         getTask()
         setUserId()
         setUpdateMade()
+        setIsUpdateAllowed()
     }
 
     private fun setUpdateMade() = viewModelScope.launch {
         uiEvents.collectLatest {
             _updateMade.update { _ -> it.isNotEmpty() }
+        }
+    }
+
+    private fun setIsUpdateAllowed() = viewModelScope.launch {
+        task.collectLatest { taskRes ->
+            _isUpdateAllowed.update {
+                taskRes.data?.status != TaskStatus.Completed &&
+                        taskRes.data?.status != TaskStatus.Pending &&
+                        taskRes.data?.status != TaskStatus.Canceled
+            }
         }
     }
 
@@ -107,7 +120,7 @@ class TaskViewModel(
             }
             if (it.status == TaskStatus.Pending)
                 setShowTaskStatusDialog(true)
-            else if (it.status == TaskStatus.InProgress && it.taskItems.all { item -> item.isCompleted })
+            else if (it.status != TaskStatus.Completed && _taskItems.value.all { item -> item.isCompleted })
                 setShowTaskStatusDialog(true)
 
         }
@@ -160,14 +173,15 @@ class TaskViewModel(
     }
 
 
-    private fun toggleTaskStatus() {
+    private fun toggleTaskStatus() = viewModelScope.launch {
         _task.update {
-            val taskView = it.data ?: return
-            when (taskView.status) {
-                TaskStatus.Pending -> it.copy(taskView.copy(status = TaskStatus.InProgress))
-                TaskStatus.InProgress -> it.copy(taskView.copy(status = TaskStatus.Completed))
-                else -> it
-            }
+            var taskView = it.data ?: return@launch
+            if (taskView.status == TaskStatus.Pending)
+                taskView = taskView.copy(status = TaskStatus.InProgress)
+            else if (isUpdateAllowed.value && _taskItems.value.all { item -> item.isCompleted })
+                taskView = taskView.copy(status = TaskStatus.Completed)
+
+            Resource.Success(taskView)
         }
     }
 
@@ -255,13 +269,14 @@ class TaskViewModel(
         val createdTaskItems = mutableListOf<TaskItem>()
         val deletedMembers = mutableListOf<String>()
         val updatedTaskItems = mutableListOf<String>()
+        var statusChanged = false
         for (event in uiEvents.value) {
             when (event) {
                 is TaskScreenUIEvent.Comments.Add -> createdComments.add(event.comment.toComment())
                 is TaskScreenUIEvent.Comments.Edit -> updateCommentUseCase(event.comment.toComment())
                 is TaskScreenUIEvent.Comments.Remove -> deleteCommentUseCase(event.comment.id)
                 is TaskScreenUIEvent.MembersRemove -> deletedMembers.add(event.user.id)
-                TaskScreenUIEvent.StatusChanged -> updateTaskStatusUseCase(taskId)
+                TaskScreenUIEvent.StatusChanged -> statusChanged = true
                 is TaskScreenUIEvent.TaskItems.Add -> createdTaskItems.add(event.taskItem)
                 is TaskScreenUIEvent.TaskItems.Edit -> updatedTaskItems.add(event.taskItem.id)
                 is TaskScreenUIEvent.TaskItems.Remove -> deleteTaskItemsUseCase(event.taskItem.id)
@@ -281,6 +296,8 @@ class TaskViewModel(
             )
         if (updatedTaskItems.isNotEmpty())
             updateTaskItemsUseCase(updatedTaskItems)
+        if (statusChanged)
+            updateTaskStatusUseCase(task.value.data?.id ?: "")
         uiEvents.update { emptySet() }
     }
 
@@ -289,3 +306,4 @@ class TaskViewModel(
         _showTaskStatusDialog.update { value }
     }
 }
+
