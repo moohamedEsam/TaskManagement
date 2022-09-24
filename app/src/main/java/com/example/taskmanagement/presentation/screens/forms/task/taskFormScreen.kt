@@ -3,13 +3,14 @@ package com.example.taskmanagement.presentation.screens.forms.task
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -50,34 +51,59 @@ fun TaskFormScreenContent(
     }
     val pagerState = rememberPagerState()
     val coroutine = rememberCoroutineScope()
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        ScrollableTabRow(
-            selectedTabIndex = pagerState.currentPage,
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.onBackground,
-        ) {
-            pages.forEachIndexed { index, page ->
-                Tab(
-                    selected = pagerState.currentPage == index,
-                    onClick = {
-                        coroutine.launch {
-                            pagerState.animateScrollToPage(index)
+    Box {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            ScrollableTabRow(
+                selectedTabIndex = pagerState.currentPage,
+                containerColor = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onBackground,
+            ) {
+                pages.forEachIndexed { index, page ->
+                    Tab(
+                        selected = pagerState.currentPage == index,
+                        onClick = {
+                            coroutine.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
                         }
+                    ) {
+                        Text(
+                            text = page,
+                            modifier = Modifier.padding(start = 8.dp, bottom = 16.dp, end = 8.dp)
+                        )
                     }
-                ) {
-                    Text(
-                        text = page,
-                        modifier = Modifier.padding(start = 8.dp, bottom = 16.dp, end = 8.dp)
-                    )
+                }
+            }
+            HorizontalPager(count = pages.size, state = pagerState) { page ->
+                when (page) {
+                    0 -> MainTaskFromPage(viewModel = viewModel)
+                    1 -> AssignedList(viewModel = viewModel)
+                    else -> TaskItemsList(viewModel = viewModel)
                 }
             }
         }
-        HorizontalPager(count = pages.size, state = pagerState) { page ->
-            when (page) {
-                0 -> MainTaskFromPage(viewModel = viewModel)
-                1 -> AssignedList(viewModel = viewModel)
-                else -> TaskItemsList(viewModel = viewModel)
-            }
-        }
+        SaveButton(viewModel = viewModel, modifier = Modifier.align(Alignment.BottomEnd))
     }
+}
+
+@Composable
+private fun SaveButton(viewModel: TaskFormViewModel, modifier: Modifier = Modifier) {
+    var showButton by remember {
+        mutableStateOf(true)
+    }
+    val canSave by viewModel.canSave.collectAsState()
+    if (showButton)
+        Button(
+            onClick = {
+                viewModel.saveTask(onLoading = { showButton = false }) {
+                    showButton = true
+                }
+            },
+            modifier = modifier,
+            enabled = canSave
+        ) {
+            Text(text = "Save", color = MaterialTheme.colorScheme.onPrimary)
+        }
+    else
+        CircularProgressIndicator(modifier = modifier.scale(0.5f))
 }

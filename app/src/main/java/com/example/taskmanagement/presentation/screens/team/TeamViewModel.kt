@@ -1,5 +1,6 @@
 package com.example.taskmanagement.presentation.screens.team
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -94,6 +95,7 @@ class TeamViewModel(
                 suggestions.value =
                     it - (team.value.data?.members?.map { activeUser -> activeUser.user }
                         ?: emptyList()).toSet()
+                Log.i("TeamViewModel", "searchUsers: ${suggestions.value}")
             }
             result.onError {
                 val event = SnackBarEvent(it ?: "", null) {}

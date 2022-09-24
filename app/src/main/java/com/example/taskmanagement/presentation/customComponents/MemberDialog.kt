@@ -10,16 +10,6 @@ import androidx.compose.ui.unit.dp
 import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUser
 import com.example.taskmanagement.domain.dataModels.task.Permission
 
-@Composable
-fun MemberDialog(
-    initialUser: ActiveUser,
-    onDismiss: () -> Unit,
-    onSave: (ActiveUser) -> Unit
-) {
-
-
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PermissionItem(

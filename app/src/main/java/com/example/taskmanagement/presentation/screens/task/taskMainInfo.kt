@@ -109,26 +109,25 @@ private fun ActionRow(
     viewModel: TaskViewModel,
     modifier: Modifier = Modifier
 ) {
-    val updateAllowed by viewModel.isUpdateAllowed.collectAsState()
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         UndoIcon(viewModel = viewModel)
-        if (updateAllowed)
-            IconButton(
-                onClick = {
-                    navHostController.navigate(
-                        Screens.TaskForm.withArgs(
-                            taskView.project,
-                            taskView.id
-                        )
+
+        IconButton(
+            onClick = {
+                navHostController.navigate(
+                    Screens.TaskForm.withArgs(
+                        taskView.project,
+                        taskView.id
                     )
-                }
-            ) {
-                Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
+                )
             }
+        ) {
+            Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
+        }
         IconButton(onClick = { navHostController.popBackStack() }) {
             Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
         }

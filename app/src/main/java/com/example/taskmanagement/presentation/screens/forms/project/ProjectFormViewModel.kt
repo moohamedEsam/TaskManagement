@@ -22,10 +22,7 @@ import com.example.taskmanagement.domain.useCases.teams.GetCurrentUserTeamsUseCa
 import com.example.taskmanagement.domain.useCases.teams.GetTeamUseCase
 import com.example.taskmanagement.domain.validatorsImpl.BaseValidator
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class ProjectFormViewModel(
@@ -54,6 +51,10 @@ class ProjectFormViewModel(
     val showTeamDialog = mutableStateOf(false)
     private val _projectNameValidationResult = MutableStateFlow(ValidationResult(true))
     val projectNameValidationResult = _projectNameValidationResult.asStateFlow()
+    val canSave =
+        combine(_team, _projectNameValidationResult) { team, projectNameValidationResult ->
+            team is Resource.Success && projectNameValidationResult.isValid
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 
     init {
         viewModelScope.launch {
@@ -84,6 +85,8 @@ class ProjectFormViewModel(
 
     fun setTeams() {
         viewModelScope.launch {
+            if (_teams.value is Resource.Loading) return@launch
+            _teams.update { Resource.Loading() }
             _teams.update { getCurrentUserTeamsUseCase(Unit) }
             teams.value.onError {
                 val event = SnackBarEvent(it ?: "") { setTeams() }
@@ -117,6 +120,7 @@ class ProjectFormViewModel(
                     result.copy(teamView.copy(members = teamView.members + ActiveUserDto(teamView.owner)))
             }
             _members.update { emptySet() }
+            _projectView.update { it.copy(team = id) }
             result
         }
         team.value.onError {
@@ -152,10 +156,12 @@ class ProjectFormViewModel(
         _projectView.update { it.copy(owner = owner) }
     }
 
-    fun saveProject() {
+    fun saveProject(onLoading: () -> Unit, onDone: () -> Unit) {
         viewModelScope.launch {
-            if(_projectNameValidationResult.value.isValid)
+            _projectNameValidationResult.update { validator.nameValidator.validate(projectView.value.name) }
+            if (!_projectNameValidationResult.value.isValid)
                 return@launch
+            onLoading()
             val project =
                 projectView.value.toProject()
                     .copy(members = getSelectedMembers())
@@ -163,12 +169,13 @@ class ProjectFormViewModel(
                 updateProjectUseCase(project)
             else
                 createProjectUseCase(project)
+            onDone()
             result.onSuccess {
                 val event = SnackBarEvent("project has been saved", null) {}
                 snackbarChannel.send(event)
             }
             result.onError {
-                val event = SnackBarEvent(it ?: "") { saveProject() }
+                val event = SnackBarEvent(it ?: "") { saveProject(onLoading, onDone) }
                 snackbarChannel.send(event)
             }
         }

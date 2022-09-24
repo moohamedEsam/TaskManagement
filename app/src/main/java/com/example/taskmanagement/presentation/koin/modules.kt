@@ -45,7 +45,7 @@ import com.example.taskmanagement.presentation.screens.forms.task.TaskFormViewMo
 import com.example.taskmanagement.presentation.screens.forms.team.TeamFormViewModel
 import com.example.taskmanagement.presentation.screens.home.HomeViewModel
 import com.example.taskmanagement.presentation.screens.login.LoginViewModel
-import com.example.taskmanagement.presentation.screens.login.MainLayoutViewModel
+import com.example.taskmanagement.presentation.screens.sharedLayout.MainLayoutViewModel
 import com.example.taskmanagement.presentation.screens.profile.ProfileViewModel
 import com.example.taskmanagement.presentation.screens.project.ProjectViewModel
 import com.example.taskmanagement.presentation.screens.projects.ProjectsViewModel
@@ -62,7 +62,6 @@ import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json

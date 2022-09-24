@@ -1,4 +1,4 @@
-package com.example.taskmanagement.presentation.screens.login
+package com.example.taskmanagement.presentation.screens.sharedLayout
 
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api

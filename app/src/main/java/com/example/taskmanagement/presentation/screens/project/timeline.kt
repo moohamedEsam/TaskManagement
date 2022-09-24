@@ -1,6 +1,7 @@
 package com.example.taskmanagement.presentation.screens.project
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,18 +41,18 @@ fun ProjectTimeLineContent(viewModel: ProjectViewModel, navHostController: NavHo
     val groupedTasks = remember {
         viewModel.getGroupedTasks()
     }
-    val simpleDateFormat = SimpleDateFormat("dd, MMM, yyyy")
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
         groupedTasks.forEach { (date, tasks) ->
             stickyHeader {
-                if (date == null)
-                    return@stickyHeader
                 Divider()
                 Text(
-                    text = simpleDateFormat.format(date),
-                    style = MaterialTheme.typography.headlineMedium
+                    text = date,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
                 )
             }
             items(tasks, key = { it.id }) { task ->
@@ -60,17 +61,17 @@ fun ProjectTimeLineContent(viewModel: ProjectViewModel, navHostController: NavHo
                         .fillMaxWidth()
                         .animateItemPlacement()
                         .clickable { navHostController.navigate(Screens.Task.withArgs(task.id)) },
-                    verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (task.isCompleted)
+                        if (task.status == TaskStatus.Completed)
                             Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null)
                         else
                             Icon(imageVector = Icons.Outlined.Circle, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(text = task.title)
                     }
-                    Text(text = task.description ?: "")
+                    if (task.description != null)
+                        Text(text = task.description)
                     Text(text = "Members: ${task.assigned.size}")
                     Divider()
                 }

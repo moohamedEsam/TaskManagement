@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import com.example.taskmanagement.domain.dataModels.task.Permission
 import com.example.taskmanagement.domain.dataModels.project.ProjectView
@@ -88,14 +89,15 @@ private fun ProjectHeader(
 private fun ProjectOwnerTextField(project: ProjectView, viewModel: ProjectFormViewModel) {
     val showField = viewModel.isUpdating && viewModel.hasPermission(Permission.EditOwner)
     if (!showField) return
+    val ids by viewModel.members.collectAsState()
     val team by viewModel.team.collectAsState()
-    OwnerTextField(textFieldValue = project.owner.username) { onDismiss ->
-        MembersSuggestionsDialog(
-            suggestions = (team.data?.members?.map { it.user }?.toSet()
-                ?: emptySet()) - project.owner,
-            onDismiss = onDismiss,
-            onSearchChanged = {}
-        ) { viewModel.setProjectOwner(it) }
+    val members by remember {
+        derivedStateOf {
+            team.data?.members?.map { it.user }?.filter { ids.contains(it.id) } ?: emptyList()
+        }
+    }
+    OwnerTextField(textFieldValue = project.owner.username, members) {
+        viewModel.setProjectOwner(it)
     }
 }
 
@@ -170,18 +172,29 @@ fun ColumnScope.ProjectMembersList(viewModel: ProjectFormViewModel) {
 private fun ColumnScope.ProjectFooter(
     viewModel: ProjectFormViewModel
 ) {
-
-    Button(
-        onClick = {
-            viewModel.saveProject()
-        },
-        modifier = Modifier.align(Alignment.End)
-    ) {
-        Text(
-            text = if (viewModel.isUpdating) "Update" else "Save",
-            color = MaterialTheme.colorScheme.onPrimary
-        )
+    var showButton by remember {
+        mutableStateOf(true)
     }
+    val canSave by viewModel.canSave.collectAsState()
+    if (showButton)
+        Button(
+            onClick = {
+                viewModel.saveProject(onLoading = { showButton = false }) { showButton = true }
+            },
+            modifier = Modifier.align(Alignment.End),
+            enabled = canSave
+        ) {
+            Text(
+                text = if (viewModel.isUpdating) "Update" else "Save",
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+    else
+        CircularProgressIndicator(
+            modifier = Modifier
+                .align(Alignment.End)
+                .scale(0.5f)
+        )
 
 }
 

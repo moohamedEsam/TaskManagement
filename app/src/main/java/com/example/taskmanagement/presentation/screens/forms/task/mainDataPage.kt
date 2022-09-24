@@ -16,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -40,12 +41,6 @@ fun MainTaskFromPage(
     ) {
         TaskFormHeader(task, viewModel)
         TaskFormFooter(viewModel = viewModel)
-        Button(
-            onClick = { viewModel.saveTask() },
-            modifier = Modifier.align(Alignment.End)
-        ) {
-            Text(text = "Save", color = MaterialTheme.colorScheme.onPrimary)
-        }
     }
 }
 
@@ -70,7 +65,6 @@ private fun TaskFormHeader(
         onValueChange = { viewModel.setTaskDescription(it) },
         enabled = viewModel.hasPermission(Permission.EditName)
     )
-    TaskOwnerTextField(viewModel = viewModel, task = task)
     ProjectPicker(viewModel)
 
 }
@@ -100,20 +94,6 @@ fun MilestoneTextField(task: TaskView, viewModel: TaskFormViewModel) {
         Text(text = "set task as milestone")
     }
 
-}
-
-@Composable
-fun TaskOwnerTextField(viewModel: TaskFormViewModel, task: TaskView) {
-    val showField = viewModel.isUpdating && viewModel.hasPermission(Permission.EditOwner)
-    val project by viewModel.project.collectAsState()
-    if (!showField) return
-    OwnerTextField(textFieldValue = task.owner.username) { onDismiss ->
-        MembersSuggestionsDialog(
-            suggestions = project.data?.members?.map { it.user }?.toSet() ?: emptySet(),
-            onDismiss = onDismiss,
-            onSearchChanged = {}
-        ) { viewModel.setOwner(it) }
-    }
 }
 
 @Composable

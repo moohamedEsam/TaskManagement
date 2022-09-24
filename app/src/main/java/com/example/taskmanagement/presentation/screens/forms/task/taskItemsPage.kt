@@ -18,7 +18,6 @@ import com.example.taskmanagement.domain.dataModels.task.TaskItem
 import com.example.taskmanagement.presentation.customComponents.TextFieldSetup
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskItemsList(viewModel: TaskFormViewModel) {
     val taskItems by viewModel.taskItems.collectAsState()
@@ -28,12 +27,8 @@ fun TaskItemsList(viewModel: TaskFormViewModel) {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
-            OutlinedCard(
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                NewTaskItemTextField(viewModel) {
-                    viewModel.addTaskItem(it)
-                }
+            NewTaskItemTextField(viewModel) {
+                viewModel.addTaskItem(it)
             }
         }
         items(taskItems.toList()) {
@@ -47,23 +42,23 @@ fun TaskItemsList(viewModel: TaskFormViewModel) {
 @Composable
 private fun TaskItemCard(taskItem: TaskItem, viewModel: TaskFormViewModel) {
     Card {
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = taskItem.title, style = MaterialTheme.typography.headlineSmall)
-                Icon(
-                    imageVector = Icons.Default.Remove,
-                    contentDescription = null,
-                    modifier = Modifier.clickable { viewModel.removeTaskItem(taskItem) })
-            }
-
+            Text(
+                text = taskItem.title,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(0.8f),
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Icon(
+                imageVector = Icons.Default.Remove,
+                contentDescription = null,
+                modifier = Modifier.clickable { viewModel.removeTaskItem(taskItem) })
         }
     }
 }
@@ -74,10 +69,10 @@ fun NewTaskItemTextField(viewModel: TaskFormViewModel, onSave: (TaskItem) -> Uni
         mutableStateOf("")
     }
     val validationResult by viewModel.taskItemValidationResult.collectAsState()
-    Column(modifier = Modifier
-        .padding(8.dp)
-        .animateContentSize()) {
-        TextField(
+    Column(
+        modifier = Modifier.animateContentSize()
+    ) {
+        OutlinedTextField(
             value = value,
             onValueChange = {
                 viewModel.validateTaskItemTitle(it)

@@ -19,11 +19,9 @@ import com.example.taskmanagement.domain.useCases.tasks.CreateTaskUseCase
 import com.example.taskmanagement.domain.useCases.tasks.GetTaskUseCase
 import com.example.taskmanagement.domain.useCases.tasks.UpdateTaskUseCase
 import com.example.taskmanagement.domain.validatorsImpl.TaskFormValidator
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -72,6 +70,13 @@ class TaskFormViewModel(
 
     private val _taskItemValidationResult = MutableStateFlow(ValidationResult(true))
     val taskItemValidationResult = _taskItemValidationResult.asStateFlow()
+    val canSave = combine(
+        _taskTitleValidationResult,
+        _project,
+        _taskItems
+    ) { titleValidation, project, taskItems ->
+        titleValidation.isValid && project is Resource.Success && taskItems.isNotEmpty()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 
     init {
         viewModelScope.launch {
@@ -87,9 +92,7 @@ class TaskFormViewModel(
         val result = getTaskUseCase(taskId)
         result.onSuccess {
             _taskView.update { _ -> it }
-            _assigned.update { _ ->
-                emptySet()
-            }
+            _assigned.update { _ -> it.assigned.map { user -> user.id }.toSet() }
             _taskItems.update { _ -> it.taskItems.toSet() }
         }
 
@@ -102,6 +105,8 @@ class TaskFormViewModel(
 
     fun getProjects() {
         viewModelScope.launch {
+            if (_project.value is Resource.Loading) return@launch
+            _projects.update { Resource.Loading() }
             _projects.update {
                 getCurrentUserProjectUseCase(Unit)
             }
@@ -120,15 +125,13 @@ class TaskFormViewModel(
 
     private suspend fun assignProject(id: String) {
         _project.update {
-            var result = getProjectUseCase(id)
+            val result = getProjectUseCase(id)
+            var resultProjectView = result.data
             result.onSuccess { projectView ->
-                result = result.copy(
-                    projectView.copy(
-                        members = projectView.members + ActiveUserDto(projectView.owner)
-                    )
-                )
+                resultProjectView =
+                    projectView.copy(members = projectView.members + ActiveUserDto(projectView.owner))
             }
-            result
+            result.copy(resultProjectView)
         }
 
         project.value.onError {
@@ -191,6 +194,7 @@ class TaskFormViewModel(
     }
 
     fun addTaskItem(value: TaskItem) = viewModelScope.launch {
+        _taskItemValidationResult.update { validator.nameValidator.validate(value.title) }
         if (taskItemValidationResult.value.isValid)
             _taskItems.update { it + value }
     }
@@ -203,26 +207,34 @@ class TaskFormViewModel(
         _taskView.update { it.copy(isMilestone = value) }
     }
 
-    fun saveTask() {
-        viewModelScope.launch {
-            val task = taskView.value.toTask().copy(
-                taskItems = taskItems.value.toList(),
-                assigned = getAssignedMembers()
+    fun saveTask(onLoading: () -> Unit, onDone: () -> Unit): Job = viewModelScope.launch {
+        if (!validator.isFormValid(
+                taskTitleValidationResult.value,
+                taskEstimatedTimeValidationResult.value,
+                taskFinishDateValidationResult.value,
+                taskMilestoneTitleValidationResult.value
             )
-            val result = if (isUpdating)
-                updateTaskUseCase(task)
-            else
-                createTaskUseCase(task)
-            result.onSuccess {
-                val event = SnackBarEvent("task have been saved", null) {}
-                snackBarChannel.send(event)
-            }
-
-            result.onError {
-                val event = SnackBarEvent(it ?: "") { saveTask() }
-                snackBarChannel.send(event)
-            }
+        ) return@launch
+        onLoading()
+        val task = taskView.value.toTask().copy(
+            taskItems = taskItems.value.toList(),
+            assigned = getAssignedMembers()
+        )
+        val result = if (isUpdating)
+            updateTaskUseCase(task)
+        else
+            createTaskUseCase(task)
+        onDone()
+        result.onSuccess {
+            val event = SnackBarEvent("task have been saved", null) {}
+            snackBarChannel.send(event)
         }
+
+        result.onError {
+            val event = SnackBarEvent(it ?: "") { saveTask(onLoading, onDone) }
+            snackBarChannel.send(event)
+        }
+
     }
 
     private fun getAssignedMembers() =

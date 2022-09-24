@@ -19,10 +19,7 @@ import com.example.taskmanagement.domain.useCases.user.SearchMembersUseCase
 import com.example.taskmanagement.domain.validatorsImpl.BaseValidator
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class TeamFormViewModel(
@@ -41,13 +38,14 @@ class TeamFormViewModel(
 
     private var currentUserTag: Resource<Tag> = Resource.Initialized()
     val isUpdating = teamId.isNotBlank()
-
-    private val _membersSuggestions = MutableStateFlow(emptySet<User>())
+    private val _membersSuggestions = MutableStateFlow<Resource<List<User>>>(Resource.Initialized())
     val membersSuggestions = _membersSuggestions.asStateFlow()
     private val _teamNameValidationResult = MutableStateFlow(ValidationResult(true))
     val teamNameValidationResult = _teamNameValidationResult.asStateFlow()
     private val snackBarChannel = Channel<SnackBarEvent>()
     val receiveChannel = snackBarChannel.receiveAsFlow()
+    val canSave = _teamNameValidationResult.map { it.isValid }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), true)
 
     init {
         if (teamId.isNotBlank()) {
@@ -116,40 +114,38 @@ class TeamFormViewModel(
         _members.update { it + value }
     }
 
+    fun saveTeam(onLoading: () -> Unit, onDone: () -> Unit): Job = viewModelScope.launch {
+        _teamNameValidationResult.update { validator.nameValidator.validate(teamView.value.name) }
+        if (!teamNameValidationResult.value.isValid)
+            return@launch
+        onLoading()
+        val team = teamView.value.toTeam()
+        if (isUpdating)
+            team.members = teamView.value.members
+                .filter { _members.value.contains(it.user) }
+                .map { it.toActiveUser() }
+        else
+            team.members = _members.value.map { ActiveUser(it.id) }
 
-    fun saveTeam(onSuccess: (String) -> Unit) {
-        viewModelScope.launch {
-            _teamNameValidationResult.update { validator.nameValidator.validate(teamView.value.name) }
-            if (!teamNameValidationResult.value.isValid)
-                return@launch
-            val team = teamView.value.toTeam()
-            if (isUpdating)
-                team.members = teamView.value.members
-                    .filter { _members.value.contains(it.user) }
-                    .map { it.toActiveUser() }
-            else
-                team.members = _members.value.map { ActiveUser(it.id) }
+        val result = if (isUpdating)
+            updateTeamUseCase(CreateTeamUseCase.Params(team))
+        else
+            createTeamUseCase(CreateTeamUseCase.Params(team))
+        onDone()
+        val event = if (result is Resource.Success) {
+            SnackBarEvent("team has been saved", null) {}
+        } else
+            SnackBarEvent(result.message ?: "") { saveTeam(onLoading, onDone) }
+        snackBarChannel.send(event)
 
-            val result = if (isUpdating)
-                updateTeamUseCase(CreateTeamUseCase.Params(team))
-            else
-                createTeamUseCase(CreateTeamUseCase.Params(team))
-            val event = if (result is Resource.Success) {
-                onSuccess(result.data?.id ?: "")
-                SnackBarEvent("team has been saved", null) {}
-            } else
-                SnackBarEvent(result.message ?: "") { saveTeam(onSuccess) }
-            snackBarChannel.send(event)
-        }
     }
 
 
     fun searchMembers(query: String) = viewModelScope.launch {
         if (query.isBlank() || query.length < 3)
             return@launch
-        val response = searchMembersUseCase(query)
-        response.onSuccess {
-            _membersSuggestions.update { _ -> it.toSet() }
-        }
+        if (_membersSuggestions.value is Resource.Loading) return@launch
+        _membersSuggestions.update { Resource.Loading() }
+        _membersSuggestions.update { searchMembersUseCase(query) }
     }
 }

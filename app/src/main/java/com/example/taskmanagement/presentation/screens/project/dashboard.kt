@@ -81,7 +81,7 @@ private fun DashboardContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight { it / 4 },
+                .weight(0.4f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -99,29 +99,10 @@ private fun DashboardContent(
         }
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxHeight()
+            modifier = Modifier.fillMaxHeight().weight(1f)
         ) {
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Tasks",
-                        style = MaterialTheme.typography.headlineMedium,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                    IconButton(onClick = {
-                        navHostController.navigate(
-                            Screens.TaskForm.withArgs(
-                                project.id,
-                                " "
-                            )
-                        )
-                    }) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
-                    }
-                }
+                TasksHeader(navHostController, project)
 
             }
             items(project.tasks) { task ->
@@ -133,6 +114,33 @@ private fun DashboardContent(
                     navHostController.navigate(Screens.Task.withArgs(task.id))
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TasksHeader(
+    navHostController: NavHostController,
+    project: ProjectView
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = "Tasks",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(8.dp)
+        )
+        IconButton(onClick = {
+            navHostController.navigate(
+                Screens.TaskForm.withArgs(
+                    project.id,
+                    " "
+                )
+            )
+        }) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = null)
         }
     }
 }

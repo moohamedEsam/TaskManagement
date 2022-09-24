@@ -21,10 +21,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.taskmanagement.R
 import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.presentation.customComponents.UserIcon
-import com.example.taskmanagement.presentation.customComponents.fillMaxHeight
 import com.example.taskmanagement.presentation.navigation.Navigation
 import com.example.taskmanagement.presentation.navigation.Screens
-import com.example.taskmanagement.presentation.screens.login.MainLayoutViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.inject
 

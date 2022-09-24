@@ -17,6 +17,7 @@ import com.example.taskmanagement.domain.useCases.tag.AssignTagUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.*
 
 class ProjectViewModel(
@@ -56,27 +57,14 @@ class ProjectViewModel(
             taggedMembers[index] = ActiveUserDto(user, null)
     }
 
-    fun getGroupedTasks(): Map<Date?, List<Task>> {
+    fun getGroupedTasks(): Map<String, List<Task>> {
         if (project.value.data == null)
             return emptyMap()
-        val calendar = Calendar.getInstance()
-        val groupedTasks = project.value.data!!.tasks
-            .map {
-                setCalendarTime(calendar, it)
-                it.copy(finishDate = calendar.time)
-            }.groupBy { it.finishDate }.toSortedMap(compareBy { it?.time })
-        return groupedTasks
-    }
+        val simpleDateFormat = SimpleDateFormat("dd/MM/yyyy")
 
-    private fun setCalendarTime(
-        calendar: Calendar,
-        it: Task
-    ) {
-        calendar.time = it.finishDate ?: Date()
-        calendar.set(Calendar.HOUR, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
+        return project.value.data!!.tasks
+            .sortedBy { it.finishDate }
+            .groupBy { simpleDateFormat.format(it.finishDate ?: Date()) }
     }
 
     fun saveTaggedMembers() {

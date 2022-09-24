@@ -1,6 +1,7 @@
 package com.example.taskmanagement.presentation.screens.team
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -54,7 +55,7 @@ fun DashBoardPage(navHostController: NavHostController, team: TeamView, viewMode
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight { it / 4 },
+                .weight(0.4f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -149,7 +150,7 @@ fun InvitationsDialog(viewModel: TeamViewModel, onDismiss: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .padding(8.dp)
-                .verticalScroll(rememberScrollState())
+                .animateContentSize()
         ) {
             OutlinedTextField(
                 value = value,
@@ -161,10 +162,9 @@ fun InvitationsDialog(viewModel: TeamViewModel, onDismiss: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = "Search by username or email") }
             )
-
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.fillMaxHeight { it / 2 }
+                modifier = Modifier.height(200.dp)
             ) {
                 items(suggestions) {
                     MemberComposable(user = it) {
@@ -178,7 +178,7 @@ fun InvitationsDialog(viewModel: TeamViewModel, onDismiss: () -> Unit) {
             }
 
             LazyRow(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().height(50.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 items(invitation.toList()) {
