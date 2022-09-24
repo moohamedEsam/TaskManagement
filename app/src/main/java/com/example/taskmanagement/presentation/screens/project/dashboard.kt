@@ -11,7 +11,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -63,7 +65,7 @@ private fun DashboardContent(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -71,6 +73,19 @@ private fun DashboardContent(
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.padding(8.dp)
             )
+            Spacer(modifier = Modifier.weight(0.8f))
+            IconButton(
+                onClick = {
+                    navHostController.navigate(
+                        Screens.ProjectForm.withArgs(
+                            project.team,
+                            project.id
+                        )
+                    )
+                }
+            ) {
+                Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
+            }
 
             IconButton(onClick = { navHostController.popBackStack() }) {
                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
@@ -99,7 +114,9 @@ private fun DashboardContent(
         }
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxHeight().weight(1f)
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(1f)
         ) {
             item {
                 TasksHeader(navHostController, project)

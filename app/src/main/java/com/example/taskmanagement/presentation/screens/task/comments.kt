@@ -39,17 +39,9 @@ fun TaskCommentsPage(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
     val updateAllowed by viewModel.isUpdateAllowed.collectAsState()
     LazyColumn(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        reverseLayout = true
     ) {
-        if (updateAllowed)
-            item {
-                NewCommentCardItem(
-                    viewModel = viewModel,
-                    users = users,
-                    modifier = Modifier.animateItemPlacement()
-                )
-            }
-
         items(comments.toList(), key = { it.id }) {
             CommentCardItem(
                 comment = it,
@@ -59,6 +51,17 @@ fun TaskCommentsPage(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
                 showActions = updateAllowed && viewModel.currentUser.id == it.issuer.id
             )
         }
+
+        if (updateAllowed)
+            item {
+                NewCommentCardItem(
+                    viewModel = viewModel,
+                    users = users,
+                    modifier = Modifier.animateItemPlacement()
+                )
+            }
+
+
     }
 }
 
@@ -153,7 +156,7 @@ private fun NewCommentCardItem(
                 }
             },
 
-        )
+            )
         Box(modifier = Modifier.fillMaxWidth()) {
             DropdownMenu(
                 expanded = showSuggestions,

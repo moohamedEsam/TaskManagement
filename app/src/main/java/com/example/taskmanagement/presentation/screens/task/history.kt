@@ -25,7 +25,8 @@ fun TaskHistoryPage(viewModel: TaskViewModel) {
     }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        reverseLayout = true
     ) {
         items(historyItems) { item ->
             TaskHistoryItem(item)
