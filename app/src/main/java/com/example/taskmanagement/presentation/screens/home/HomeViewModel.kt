@@ -20,21 +20,16 @@ class HomeViewModel(
     val currentTaskStatus = _currentTaskStatus.asStateFlow()
     private val _snackBarChannel = Channel<SnackBarEvent>()
     val snackBarChannel = _snackBarChannel.receiveAsFlow()
+    val observeTasks = _tasks.map {
+        if (it is Resource.Success) {
+            it.data!!.groupBy { task -> task.status }
+        } else
+            emptyMap()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyMap())
 
     init {
         viewModelScope.launch {
             getDashboard()
-        }
-    }
-
-    fun observeTasks(): Flow<Map<TaskStatus, List<Task>>> {
-        return channelFlow {
-            _tasks.collectLatest { resource ->
-                resource.onSuccess { tasks ->
-                    val taskGroups = tasks.groupBy { it.status }
-                    send(taskGroups)
-                }
-            }
         }
     }
 

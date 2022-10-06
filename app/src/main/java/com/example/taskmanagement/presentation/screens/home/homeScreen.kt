@@ -6,10 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -35,6 +34,14 @@ fun HomeScreen(navHostController: NavHostController, snackbarHostState: Snackbar
 
 @Composable
 fun HomeScreenContent(viewModel: HomeViewModel, navHostController: NavHostController) {
+    val tasks by viewModel.tasks.collectAsState()
+    if (tasks.data?.isEmpty() != false)
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "No Tasks were assigned to you")
+        }
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -73,9 +80,9 @@ private fun DashboardBody(viewModel: HomeViewModel, navHostController: NavHostCo
         items(tasksToShow, key = { it.id }) { task ->
             TaskItem(task = task,
                 modifier = Modifier
-                .fillMaxWidth()
-                .animateItemPlacement()
-                .height(200.dp),
+                    .fillMaxWidth()
+                    .animateItemPlacement()
+                    .height(200.dp),
                 onCompleteClick = {}
             ) {
                 navHostController.navigate(Screens.Task.withArgs(task.id))
@@ -86,7 +93,7 @@ private fun DashboardBody(viewModel: HomeViewModel, navHostController: NavHostCo
 
 @Composable
 fun DashboardHeader(viewModel: HomeViewModel) {
-    val tasks by viewModel.observeTasks().collectAsState(initial = emptyMap())
+    val tasks by viewModel.observeTasks.collectAsState()
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         tasks.forEach {
             item {
@@ -120,7 +127,10 @@ private fun OverviewCardItem(
         ) {
             Text(text = tasks.first.name, style = MaterialTheme.typography.bodyLarge)
             Column {
-                Text(text = tasks.second.size.toString(), style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = tasks.second.size.toString(),
+                    style = MaterialTheme.typography.bodyMedium
+                )
                 Text(text = "Tasks Count", style = MaterialTheme.typography.bodyMedium)
             }
         }

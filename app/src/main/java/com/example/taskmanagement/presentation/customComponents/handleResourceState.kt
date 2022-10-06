@@ -8,28 +8,6 @@ import com.example.taskmanagement.domain.dataModels.utils.Resource
 import com.example.taskmanagement.domain.dataModels.utils.SnackBarEvent
 
 
-@Composable
-fun HandleResourceChange(
-    resource: Resource<*>,
-    onSuccess: () -> Unit,
-    snackbarHostState: SnackbarHostState,
-    onSnackbarClick: () -> Unit,
-    actionLabel: String? = "Retry"
-) {
-    LaunchedEffect(key1 = resource) {
-        when (resource) {
-            is Resource.Success -> onSuccess()
-            is Resource.Error -> {
-                val result = snackbarHostState.showSnackbar(resource.message ?: "", actionLabel)
-                if (result == SnackbarResult.ActionPerformed)
-                    onSnackbarClick()
-
-            }
-            else -> Unit
-        }
-    }
-}
-
 suspend fun handleSnackBarEvent(
     snackBarEvent: SnackBarEvent,
     snackbarHostState: SnackbarHostState

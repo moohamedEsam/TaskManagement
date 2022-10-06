@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,38 +54,42 @@ fun TaskFormScreenContent(
     }
     val pagerState = rememberPagerState()
     val coroutine = rememberCoroutineScope()
-    Box {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            ScrollableTabRow(
-                selectedTabIndex = pagerState.currentPage,
-                containerColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.onBackground,
-            ) {
-                pages.forEachIndexed { index, page ->
-                    Tab(
-                        selected = pagerState.currentPage == index,
-                        onClick = {
-                            coroutine.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        ScrollableTabRow(
+            selectedTabIndex = pagerState.currentPage,
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ) {
+            pages.forEachIndexed { index, page ->
+                Tab(
+                    selected = pagerState.currentPage == index,
+                    onClick = {
+                        coroutine.launch {
+                            pagerState.animateScrollToPage(index)
                         }
-                    ) {
-                        Text(
-                            text = page,
-                            modifier = Modifier.padding(start = 8.dp, bottom = 16.dp, end = 8.dp)
-                        )
                     }
-                }
-            }
-            HorizontalPager(count = pages.size, state = pagerState) { page ->
-                when (page) {
-                    0 -> MainTaskFromPage(viewModel = viewModel)
-                    1 -> AssignedList(viewModel = viewModel)
-                    else -> TaskItemsList(viewModel = viewModel)
+                ) {
+                    Text(
+                        text = page,
+                        modifier = Modifier.padding(start = 8.dp, bottom = 16.dp, end = 8.dp)
+                    )
                 }
             }
         }
-        SaveButton(viewModel = viewModel, modifier = Modifier.align(Alignment.BottomEnd))
+        HorizontalPager(
+            count = pages.size,
+            state = pagerState,
+            modifier = Modifier.weight(0.8f)
+        ) { page ->
+            when (page) {
+                0 -> MainTaskFromPage(viewModel = viewModel)
+                1 -> AssignedList(viewModel = viewModel)
+                else -> TaskItemsList(viewModel = viewModel)
+            }
+        }
+        SaveButton(viewModel = viewModel, modifier = Modifier.align(Alignment.End))
     }
 }
 
@@ -92,18 +99,18 @@ private fun SaveButton(viewModel: TaskFormViewModel, modifier: Modifier = Modifi
         mutableStateOf(true)
     }
     val canSave by viewModel.canSave.collectAsState()
-    if (showButton)
-        Button(
-            onClick = {
-                viewModel.saveTask(onLoading = { showButton = false }) {
-                    showButton = true
-                }
-            },
-            modifier = modifier,
-            enabled = canSave
-        ) {
-            Text(text = "Save", color = MaterialTheme.colorScheme.onPrimary)
-        }
-    else
+    if (showButton) {
+        if (canSave)
+            Button(
+                onClick = {
+                    viewModel.saveTask(onLoading = { showButton = false }) {
+                        showButton = true
+                    }
+                },
+                modifier = modifier
+            ) {
+                Text(text = "Save", color = MaterialTheme.colorScheme.onPrimary)
+            }
+    } else
         CircularProgressIndicator(modifier = modifier.scale(0.5f))
 }

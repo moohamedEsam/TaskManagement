@@ -10,11 +10,11 @@ sealed class Screens(val route: String) {
     object Project : Screens("project")
     object Profile : Screens("profile")
     object Task : Screens("task")
-    object TaskList : Screens("taskList")
     object TaskForm : Screens("taskForm")
     object ProjectForm : Screens("projectForm")
     object TeamForm : Screens("teamForm")
     object TagForm : Screens("tagForm")
+    object Invitation : Screens("invitation")
 
     fun withArgs(vararg path: Any) = buildString {
         append(route)

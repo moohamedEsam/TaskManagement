@@ -65,7 +65,7 @@ fun TaskPie(
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    text = "OverDue ${lateTasks * 100 / createdTasks}%",
+                    text = "OverDue or Pending ${lateTasks * 100 / createdTasks}%",
                     color = Color.Red,
                     style = MaterialTheme.typography.bodySmall
                 )

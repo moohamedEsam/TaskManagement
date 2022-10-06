@@ -182,7 +182,6 @@ private fun GroupedMemberCardValueItem(
 ) {
     Column(
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxSize()
     ) {
         Text(text = label)

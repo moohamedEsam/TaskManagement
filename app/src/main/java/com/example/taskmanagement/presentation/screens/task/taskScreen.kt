@@ -6,6 +6,9 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -42,62 +45,29 @@ private fun TaskScreenContent(
     viewModel: TaskViewModel
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
             .fillMaxSize()
             .animateContentSize()
             .verticalScroll(rememberScrollState())
     ) {
         TaskMainInfo(viewModel, navHostController)
-        ActionRow(viewModel = viewModel, modifier = Modifier.align(Alignment.End))
         TaskInfoPager(
             viewModel = viewModel,
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            navHostController = navHostController
         )
-    }
-}
-
-@Composable
-private fun ActionRow(
-    viewModel: TaskViewModel,
-    modifier: Modifier = Modifier
-) {
-    val updateMade by viewModel.updateMade.collectAsState()
-    val show = remember {
-        MutableTransitionState(updateMade)
-    }
-    LaunchedEffect(key1 = updateMade) {
-        show.targetState = updateMade
-    }
-    AnimatedVisibility(
-        visibleState = show,
-        modifier = modifier
-    ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(
-                onClick = viewModel::discardChanges,
-                content = { Text(text = "Discard") }
-            )
-
-            Button(
-                onClick = viewModel::saveChanges,
-                content = {
-                    Text(
-                        text = "Save Changes",
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                },
-            )
-
-        }
     }
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-private fun TaskInfoPager(viewModel: TaskViewModel, modifier: Modifier = Modifier) {
+private fun TaskInfoPager(
+    viewModel: TaskViewModel,
+    modifier: Modifier = Modifier,
+    navHostController: NavHostController
+) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -129,7 +99,11 @@ private fun TaskInfoPager(viewModel: TaskViewModel, modifier: Modifier = Modifie
                     modifier = Modifier.fillMaxSize()
                 )
                 1 -> TaskDescriptionPage(viewModel = viewModel)
-                2 -> TaskAssignedPage(viewModel = viewModel, modifier = Modifier.fillMaxSize())
+                2 -> TaskAssignedPage(
+                    viewModel = viewModel,
+                    modifier = Modifier.fillMaxSize(),
+                    navHostController = navHostController
+                )
                 3 -> TaskCommentsPage(viewModel = viewModel, modifier = Modifier.fillMaxSize())
                 else -> TaskHistoryPage(viewModel = viewModel)
             }

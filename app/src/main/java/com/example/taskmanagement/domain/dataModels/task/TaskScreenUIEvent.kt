@@ -4,7 +4,7 @@ import com.example.taskmanagement.domain.dataModels.activeUser.ActiveUserDto
 import com.example.taskmanagement.domain.dataModels.user.User
 
 sealed class TaskScreenUIEvent {
-    object StatusChanged : TaskScreenUIEvent()
+    class StatusChanged(val currentStatus: TaskStatus) : TaskScreenUIEvent()
     sealed class TaskItems(val taskItem: TaskItem) : TaskScreenUIEvent() {
         class Add(taskItem: TaskItem) : TaskItems(taskItem)
         class Edit(taskItem: TaskItem, val oldTaskItem: TaskItem) : TaskItems(taskItem)

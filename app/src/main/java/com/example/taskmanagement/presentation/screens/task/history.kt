@@ -20,7 +20,7 @@ fun TaskHistoryPage(viewModel: TaskViewModel) {
     val task by viewModel.task.collectAsState()
     val historyItems by remember {
         derivedStateOf {
-            task.data?.history ?: emptyList()
+            task.data?.history?.filter { it.title.isNotBlank() } ?: emptyList()
         }
     }
     LazyColumn(
@@ -43,7 +43,7 @@ private fun TaskHistoryItem(historyItem: HistoryItem) {
     }
     OutlinedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier.padding(8.dp).fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(

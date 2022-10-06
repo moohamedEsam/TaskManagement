@@ -8,10 +8,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Group
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.outlined.Mail
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +22,7 @@ import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.presentation.composables.MemberComposable
 import com.example.taskmanagement.presentation.navigation.Screens
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DrawerContent(
     viewModel: MainLayoutViewModel,
@@ -88,6 +87,16 @@ fun DrawerContent(
                 navHostController = navHostController
             )
         }
+        NavigationDrawerItem(
+            label = { Text(text = "Invitations") },
+            selected = false,
+            onClick = { navHostController.navigate(Screens.Invitation.route) },
+            icon = { Icon(imageVector = Icons.Outlined.Mail, contentDescription = null) },
+            badge = {
+                if (dashboard.invitations.isNotEmpty())
+                    Badge { Text(text = dashboard.invitations.size.toString()) }
+            }
+        )
     }
 }
 
@@ -107,28 +116,22 @@ private fun ExpandableNavigationDrawerItem(
             .clickable { expanded = !expanded }
     ) {
         NavigationDrawerItem(
-            label = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(title)
-                    if (!expanded)
-                        Icon(
-                            imageVector = Icons.Default.ExpandMore,
-                            contentDescription = "Expand"
-                        )
-                    else
-                        Icon(
-                            imageVector = Icons.Default.ExpandLess,
-                            contentDescription = "Expand"
-                        )
-                }
-            },
+            label = { Text(title) },
             selected = selected,
             onClick = onClick,
-            icon = icon
+            icon = icon,
+            badge = {
+                if (!expanded)
+                    Icon(
+                        imageVector = Icons.Default.ExpandMore,
+                        contentDescription = "Expand"
+                    )
+                else
+                    Icon(
+                        imageVector = Icons.Default.ExpandLess,
+                        contentDescription = "Expand"
+                    )
+            }
         )
 
         if (expanded)
@@ -152,7 +155,7 @@ private fun ExpandableNavigationItemContent(
             NavigationDrawerItem(
                 label = { Text(text = it.first) },
                 selected = false,
-                onClick = { navHostController.navigate(it.second) }
+                onClick = { navHostController.navigate(it.second) { launchSingleTop = true } }
             )
         }
     }

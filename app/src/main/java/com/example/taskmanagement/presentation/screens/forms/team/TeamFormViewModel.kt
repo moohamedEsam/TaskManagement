@@ -77,7 +77,7 @@ class TeamFormViewModel(
     }
 
     fun hasPermission(requiredPermission: Permission): Boolean {
-        return currentUserTag.data?.isUserAuthorized(requiredPermission) ?: true
+        return currentUserTag.data?.isUserAuthorized(requiredPermission) ?: !isUpdating
     }
 
     private fun getInitializedTeam() = TeamView("")

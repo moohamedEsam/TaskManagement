@@ -169,7 +169,9 @@ class TaskViewModel(
     fun onTaskStatusConfirmClick() = viewModelScope.launch {
         toggleTaskStatus()
         setShowTaskStatusDialog(false)
-        uiEvents.update { it + TaskScreenUIEvent.StatusChanged }
+        uiEvents.update {
+            it + TaskScreenUIEvent.StatusChanged(_task.value.data?.status ?: TaskStatus.InProgress)
+        }
     }
 
 
@@ -206,10 +208,7 @@ class TaskViewModel(
                 }
                 is TaskScreenUIEvent.StatusChanged -> {
                     _task.update {
-                        if (taskView.status == TaskStatus.InProgress)
-                            it.copy(taskView.copy(status = TaskStatus.Pending))
-                        else
-                            it.copy(taskView.copy(status = TaskStatus.InProgress))
+                        Resource.Success(taskView.copy(status = uiEvent.currentStatus))
                     }
                 }
                 is TaskScreenUIEvent.Comments.Add -> {
@@ -276,7 +275,7 @@ class TaskViewModel(
                 is TaskScreenUIEvent.Comments.Edit -> updateCommentUseCase(event.comment.toComment())
                 is TaskScreenUIEvent.Comments.Remove -> deleteCommentUseCase(event.comment.id)
                 is TaskScreenUIEvent.MembersRemove -> deletedMembers.add(event.user.id)
-                TaskScreenUIEvent.StatusChanged -> statusChanged = true
+                is TaskScreenUIEvent.StatusChanged -> statusChanged = true
                 is TaskScreenUIEvent.TaskItems.Add -> createdTaskItems.add(event.taskItem)
                 is TaskScreenUIEvent.TaskItems.Edit -> updatedTaskItems.add(event.taskItem.id)
                 is TaskScreenUIEvent.TaskItems.Remove -> deleteTaskItemsUseCase(event.taskItem.id)

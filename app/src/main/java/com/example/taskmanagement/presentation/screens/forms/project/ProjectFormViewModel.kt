@@ -20,6 +20,7 @@ import com.example.taskmanagement.domain.useCases.projects.UpdateProjectUseCase
 import com.example.taskmanagement.domain.useCases.tag.GetCurrentUserTag
 import com.example.taskmanagement.domain.useCases.teams.GetCurrentUserTeamsUseCase
 import com.example.taskmanagement.domain.useCases.teams.GetTeamUseCase
+import com.example.taskmanagement.domain.useCases.user.GetCurrentUserProfileUseCase
 import com.example.taskmanagement.domain.validatorsImpl.BaseValidator
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -32,6 +33,7 @@ class ProjectFormViewModel(
     private val getTeamUseCase: GetTeamUseCase,
     private val createProjectUseCase: CreateProjectUseCase,
     private val updateProjectUseCase: UpdateProjectUseCase,
+    private val getCurrentUserProfileUseCase: GetCurrentUserProfileUseCase,
     private val validator: BaseValidator,
     private val teamId: String,
     private val projectId: String
@@ -51,6 +53,7 @@ class ProjectFormViewModel(
     val showTeamDialog = mutableStateOf(false)
     private val _projectNameValidationResult = MutableStateFlow(ValidationResult(true))
     val projectNameValidationResult = _projectNameValidationResult.asStateFlow()
+    private var currentUser: User? = null
     val canSave =
         combine(_team, _projectNameValidationResult) { team, projectNameValidationResult ->
             team is Resource.Success && projectNameValidationResult.isValid
@@ -58,6 +61,7 @@ class ProjectFormViewModel(
 
     init {
         viewModelScope.launch {
+            getCurrentUser()
             if (teamId.isNotBlank())
                 assignTeam(teamId)
 
@@ -65,6 +69,12 @@ class ProjectFormViewModel(
                 getUserTag()
                 getProject()
             }
+        }
+    }
+
+    private suspend fun getCurrentUser() {
+        getCurrentUserProfileUseCase(Unit).onSuccess {
+            currentUser = it
         }
     }
 
@@ -116,8 +126,11 @@ class ProjectFormViewModel(
         _team.update {
             var result = getTeamUseCase(id)
             result.onSuccess { teamView ->
+                val teamMembers =
+                    teamView.members.plus(ActiveUserDto(teamView.owner)).toMutableList()
+                teamMembers.removeIf { it.user.id == currentUser?.id }
                 result =
-                    result.copy(teamView.copy(members = teamView.members + ActiveUserDto(teamView.owner)))
+                    result.copy(teamView.copy(members = teamMembers))
             }
             _members.update { emptySet() }
             _projectView.update { it.copy(team = id) }

@@ -23,7 +23,7 @@ fun SharedLogin(
         SubcomposeAsyncImage(
             model = R.drawable.logo,
             contentDescription = null,
-            contentScale = ContentScale.FillBounds,
+            contentScale = ContentScale.Fit,
             imageLoader = get(),
             modifier = Modifier
                 .fillMaxWidth()

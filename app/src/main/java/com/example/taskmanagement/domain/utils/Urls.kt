@@ -6,7 +6,7 @@ import com.example.taskmanagement.domain.dataModels.team.Invitation
 import com.example.taskmanagement.domain.dataModels.utils.ParentRoute
 
 object Urls {
-    private const val BASE_URL = "http://192.168.1.6:8080"
+    private const val BASE_URL = "http://192.168.1.7:8080"
     const val REFRESH_TOKEN = "$BASE_URL/auth/refresh"
     const val PROFILE = "$BASE_URL/user"
     const val DASHBOARD = "$PROFILE/dashboard"
@@ -26,10 +26,10 @@ object Urls {
     fun getRejectInvitationUrl(invitationId: String) =
         "$INVITATION/$invitationId/reject"
 
-    fun getTaskItemRoute(taskItemId:String) = "$TASK_ITEMS/$taskItemId"
+    fun getTaskItemRoute(taskItemId: String) = "$TASK_ITEMS/$taskItemId"
 
     fun getTagsUrl(parentRoute: ParentRoute) = "$BASE_URL/tags/$parentRoute"
-
+    fun getOtherUserProfile(userId: String) = "$PROFILE/$userId"
     fun getTaskUrl(id: String) = "$BASE_URL/tasks/$id"
     fun getTaskUrlStatus(id: String) = "$BASE_URL/tasks/$id/status"
     fun getTaskCommentsUrl(id: String) = "$BASE_URL/comments/$id"
@@ -40,7 +40,9 @@ object Urls {
 
     fun getTeamUrl(id: String) = "$BASE_URL/teams/$id"
     fun assignTag(id: String, parentRoute: ParentRoute) = "$BASE_URL/$parentRoute/$id/assignTag"
-    fun removeMembers(id: String, parentRoute: ParentRoute) = "$BASE_URL/$parentRoute/$id/removeMembers"
+    fun removeMembers(id: String, parentRoute: ParentRoute) =
+        "$BASE_URL/$parentRoute/$id/removeMembers"
+
     fun getProjectUrl(id: String) = "$BASE_URL/projects/$id"
 
     fun getUserImage(id: String?) = if (id != null) "$BASE_URL/user/Images/$id" else null

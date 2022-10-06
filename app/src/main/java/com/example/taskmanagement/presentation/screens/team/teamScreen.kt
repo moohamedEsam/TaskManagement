@@ -81,7 +81,7 @@ fun TeamScreenContent(
                     team = team
                 )
                 1 -> TeamGroupedMembersPage(viewModel = viewModel, navHostController=navHostController)
-                2 -> TeamMemberPage(team, viewModel)
+                2 -> TeamMemberPage(team, viewModel, navHostController)
                 else -> Box {}
             }
         }

@@ -15,6 +15,7 @@ import com.example.taskmanagement.presentation.screens.forms.tags.TagScreen
 import com.example.taskmanagement.presentation.screens.forms.task.TaskFormScreen
 import com.example.taskmanagement.presentation.screens.forms.team.TeamFormScreen
 import com.example.taskmanagement.presentation.screens.home.HomeScreen
+import com.example.taskmanagement.presentation.screens.invitations.InvitationsScreen
 import com.example.taskmanagement.presentation.screens.login.LoginScreenWrapper
 import com.example.taskmanagement.presentation.screens.profile.ProfileScreen
 import com.example.taskmanagement.presentation.screens.project.ProjectScreen
@@ -88,10 +89,12 @@ fun Navigation(
             )
         }
 
-        composable(Screens.Profile.route) {
+        composable("${Screens.Profile.route}/{userId}") {
+            val userId = it.arguments?.getString("userId", "  ") ?: "  "
             ProfileScreen(
                 navHostController = navHostController,
-                snackbarHostState = snackbarHostState
+                snackbarHostState = snackbarHostState,
+                userId = userId
             )
         }
 
@@ -133,6 +136,10 @@ fun Navigation(
                 navHostController = navHostController,
                 snackbarHostState = snackbarHostState
             )
+        }
+
+        composable(Screens.Invitation.route){
+            InvitationsScreen()
         }
 
     }

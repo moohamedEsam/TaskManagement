@@ -15,13 +15,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.taskmanagement.domain.dataModels.team.Team
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.presentation.composables.MemberComposable
+import com.example.taskmanagement.presentation.navigation.Screens
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TeamMemberPage(team: TeamView, viewModel: TeamViewModel) {
+fun TeamMemberPage(team: TeamView, viewModel: TeamViewModel, navHostController: NavHostController) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -37,7 +39,13 @@ fun TeamMemberPage(team: TeamView, viewModel: TeamViewModel) {
             )
         }
         items(items = team.members.map { it.user }, key = { it.id }) {
-            MemberComposable(user = it, modifier = Modifier.animateItemPlacement()) {
+            MemberComposable(user = it, modifier = Modifier
+                .animateItemPlacement()
+                .clickable {
+                    navHostController.navigate(
+                        Screens.Profile.withArgs(it.id)
+                    )
+                }) {
                 Spacer(modifier = Modifier.weight(0.8f))
                 Icon(
                     imageVector = Icons.Default.Delete,

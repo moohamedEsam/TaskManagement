@@ -171,7 +171,8 @@ private fun MembersList(
                     if (isUpdating)
                         Checkbox(
                             checked = members.contains(user),
-                            onCheckedChange = { viewModel.toggleMember(user) }
+                            onCheckedChange = { viewModel.toggleMember(user) },
+                            enabled = viewModel.hasPermission(Permission.EditMembers)
                         )
                     else
                         IconButton(onClick = { viewModel.toggleMember(user) }) {

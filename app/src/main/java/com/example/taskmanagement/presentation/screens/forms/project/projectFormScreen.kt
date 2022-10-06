@@ -137,6 +137,16 @@ fun TeamDialog(viewModel: ProjectFormViewModel, onDismiss: () -> Unit) {
             items(teams.data!!) {
                 TeamPickerDialogCard(viewModel = viewModel, team = it, onDismiss = onDismiss)
             }
+            if (teams.data?.isEmpty() == true) {
+                item {
+                    Text(
+                        text = "No Teams",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    )
+                }
+            }
         }
 
     }

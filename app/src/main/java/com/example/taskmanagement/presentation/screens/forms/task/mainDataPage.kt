@@ -16,7 +16,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -216,6 +215,11 @@ private fun ProjectDialog(
     val projects by viewModel.projects.collectAsState()
     CardDialog(onDismiss = onDismissDialog) {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            if (projects.data?.isEmpty() == true){
+                item {
+                    Text(text = "No projects found")
+                }
+            }
             items(projects.data ?: emptyList()) {
                 ProjectPickerDialogCard(
                     viewModel = viewModel,

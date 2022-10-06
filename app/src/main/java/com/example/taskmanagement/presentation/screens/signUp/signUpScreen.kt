@@ -51,6 +51,7 @@ fun SignUpScreen(navHostController: NavHostController, snackbarHostState: Snackb
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(8.dp)
     ) {
         SignUpForm(viewModel)
@@ -101,7 +102,7 @@ fun SignUpForm(viewModel: SignUpViewModel) {
         }
 
     }
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+    Column {
         SubcomposeAsyncImage(
             model = if (image == null) R.drawable.profile_person else image,
             contentDescription = "",

@@ -22,10 +22,15 @@ interface MainRepository {
     suspend fun registerUser(userProfile: SignUpUserBody): Resource<Token>
     suspend fun loginUser(credentials: Credentials): UserStatus
     suspend fun logoutUser(): UserStatus
+    suspend fun getUserProfile(userId: String): Resource<User>
     suspend fun setUserStatus(status: UserStatus)
     suspend fun observeUser(): SharedFlow<UserStatus>
     suspend fun searchMembers(query: String): Resource<List<User>>
+    suspend fun acceptInvitation(invitationId: String): Resource<Boolean>
+    suspend fun declineInvitation(invitationId: String): Resource<Boolean>
+    suspend fun getInvitations(): Resource<List<Invitation>>
     suspend fun getCurrentUserDashboard(): Resource<Dashboard>
+
     //suspend fun updateUser(user: User): Resource<User>
     suspend fun getCurrentUserTasks(): Resource<List<Task>>
     suspend fun getTask(taskId: String): Resource<TaskView>

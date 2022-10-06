@@ -44,6 +44,7 @@ import com.example.taskmanagement.presentation.screens.forms.tags.TagViewModel
 import com.example.taskmanagement.presentation.screens.forms.task.TaskFormViewModel
 import com.example.taskmanagement.presentation.screens.forms.team.TeamFormViewModel
 import com.example.taskmanagement.presentation.screens.home.HomeViewModel
+import com.example.taskmanagement.presentation.screens.invitations.InvitationViewModel
 import com.example.taskmanagement.presentation.screens.login.LoginViewModel
 import com.example.taskmanagement.presentation.screens.sharedLayout.MainLayoutViewModel
 import com.example.taskmanagement.presentation.screens.profile.ProfileViewModel
@@ -88,45 +89,49 @@ val repository = module {
 }
 
 val teamUserCasesModule = module {
-    factory { CreateTeamUseCase(get()) }
-    factory { UpdateTeamUseCase(get()) }
-    factory { GetCurrentUserTeamsUseCase(get()) }
-    factory { GetTeamUseCase(get()) }
-    factory { SendInvitationUseCase(get()) }
-    factory { AssignTagUseCase(get()) }
-    factory { CreateTagUseCase(get()) }
-    factory { GetCurrentUserTag(get()) }
-    factory { RemoveMembersUseCase(get()) }
+    single { CreateTeamUseCase(get()) }
+    single { UpdateTeamUseCase(get()) }
+    single { GetCurrentUserTeamsUseCase(get()) }
+    single { GetTeamUseCase(get()) }
+    single { SendInvitationUseCase(get()) }
+    single { AssignTagUseCase(get()) }
+    single { CreateTagUseCase(get()) }
+    single { GetCurrentUserTag(get()) }
+    single { RemoveMembersUseCase(get()) }
 
 }
 
 val projectUseCasesModule = module {
-    factory { GetCurrentUserProjectUseCase(get()) }
-    factory { CreateProjectUseCase(get()) }
-    factory { UpdateProjectUseCase(get()) }
-    factory { GetProjectUseCase(get()) }
+    single { GetCurrentUserProjectUseCase(get()) }
+    single { CreateProjectUseCase(get()) }
+    single { UpdateProjectUseCase(get()) }
+    single { GetProjectUseCase(get()) }
 }
 
 val taskUseCasesModule = module {
-    factory { CreateTaskUseCase(get()) }
-    factory { UpdateTaskUseCase(get()) }
-    factory { UpdateTaskStatusUseCase(get()) }
-    factory { GetTaskUseCase(get()) }
-    factory { CreateCommentUseCase(get()) }
-    factory { UpdateCommentUseCase(get()) }
-    factory { DeleteCommentUseCase(get()) }
-    factory { UpdateTaskItemsUseCase(get()) }
-    factory { CreateTaskItemsUseCase(get()) }
-    factory { DeleteTaskItemsUseCase(get()) }
-    factory { GetCurrentUserTasksUseCase(get()) }
+    single { CreateTaskUseCase(get()) }
+    single { UpdateTaskUseCase(get()) }
+    single { UpdateTaskStatusUseCase(get()) }
+    single { GetTaskUseCase(get()) }
+    single { CreateCommentUseCase(get()) }
+    single { UpdateCommentUseCase(get()) }
+    single { DeleteCommentUseCase(get()) }
+    single { UpdateTaskItemsUseCase(get()) }
+    single { CreateTaskItemsUseCase(get()) }
+    single { DeleteTaskItemsUseCase(get()) }
+    single { GetCurrentUserTasksUseCase(get()) }
 }
 
 val userUseCasesModule = module {
-    factory { LoginUserUseCase(get(), androidContext()) }
-    factory { SignUpUseCase(get(), androidContext()) }
-    factory { GetCurrentUserProfileUseCase(get()) }
-    factory { GetCurrentUserDashboardUseCase(get()) }
-    factory { SearchMembersUseCase(get()) }
+    single { LoginUserUseCase(get(), androidContext()) }
+    single { SignUpUseCase(get(), androidContext()) }
+    single { GetCurrentUserProfileUseCase(get()) }
+    single { GetUserProfileUseCase(get()) }
+    single { GetCurrentUserDashboardUseCase(get()) }
+    single { SearchMembersUseCase(get()) }
+    single { AcceptInvitationUseCase(get()) }
+    single { DeclineInvitationUseCase(get()) }
+    single { GetCurrentUserInvitationsUseCase(get()) }
 }
 
 fun provideRepository(remoteDataSource: RemoteDataSource): MainRepository =
@@ -156,7 +161,7 @@ val viewModelModule = module {
             taskId = params[0]
         )
     }
-    viewModel { ProfileViewModel(get(), get()) }
+    viewModel { params -> ProfileViewModel(get(), get(), get(), params[0]) }
     viewModel { ProjectsViewModel(get()) }
     viewModel { TeamsViewModel(get()) }
     viewModel { params -> ProjectViewModel(get(), get(), params[0]) }
@@ -185,7 +190,8 @@ val viewModelModule = module {
             updateProjectUseCase = get(),
             validator = get(),
             teamId = params[0],
-            projectId = params[1]
+            projectId = params[1],
+            getCurrentUserProfileUseCase = get()
         )
     }
     viewModel { params ->
@@ -199,6 +205,7 @@ val viewModelModule = module {
             teamId = params[0]
         )
     }
+    viewModel { InvitationViewModel(get(), get(), get()) }
 
 }
 
@@ -236,9 +243,6 @@ fun Scope.provideHttpClient() = HttpClient(CIO) {
                 BearerTokens(refreshToken.token, refreshToken.token)
             }
         }
-    }
-    defaultRequest {
-        contentType(ContentType.Application.Json)
     }
 }
 

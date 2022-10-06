@@ -1,44 +1,38 @@
 package com.example.taskmanagement.presentation.screens.profile
 
-import android.content.Context
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskmanagement.domain.dataModels.user.User
 import com.example.taskmanagement.domain.dataModels.utils.Resource
-import com.example.taskmanagement.domain.dataModels.utils.Token
-import com.example.taskmanagement.domain.repository.MainRepository
-import com.example.taskmanagement.domain.useCases.projects.GetCurrentUserProjectUseCase
 import com.example.taskmanagement.domain.useCases.user.GetCurrentUserProfileUseCase
+import com.example.taskmanagement.domain.useCases.user.GetUserProfileUseCase
 import com.example.taskmanagement.domain.useCases.user.LogoutUseCase
-import com.example.taskmanagement.domain.vallidators.Validator
-import com.example.taskmanagement.presentation.koin.saveToken
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val getCurrentUserProfileUseCase: GetCurrentUserProfileUseCase,
-    private val logoutUseCase: LogoutUseCase
+    private val getUserProfileUseCase: GetUserProfileUseCase,
+    private val logoutUseCase: LogoutUseCase,
+    private val userId: String
 ) : ViewModel() {
-    val user = mutableStateOf<Resource<User>>(Resource.Initialized())
-
+    private val _user = MutableStateFlow<Resource<User>>(Resource.Initialized())
+    val user = _user.asStateFlow()
+    val isCurrentUser = userId == "current"
     init {
         getUser()
     }
 
     fun getUser() = viewModelScope.launch {
-        user.value = getCurrentUserProfileUseCase(Unit)
-    }
-
-    fun setUsername(username: String) {
-        user.value = user.value.copy(data = user.value.data?.copy(username = username))
-    }
-
-    fun setPhone(phone: String) {
-        user.value = user.value.copy(data = user.value.data?.copy(phone = phone))
-    }
-
-    fun setPhotoPath(photoPath: String) {
-        user.value = user.value.copy(data = user.value.data?.copy(photoPath = photoPath))
+        _user.update {
+            if (userId == "current") {
+                getCurrentUserProfileUseCase(Unit)
+            } else {
+                getUserProfileUseCase(userId)
+            }
+        }
     }
 
     fun signOut() = viewModelScope.launch {

@@ -1,8 +1,7 @@
 package com.example.taskmanagement.presentation.screens.project
 
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -10,7 +9,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.taskmanagement.presentation.customComponents.fillMaxWidth
 import com.example.taskmanagement.presentation.customComponents.handleSnackBarEvent
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -69,7 +67,10 @@ fun ProjectScreenContent(viewModel: ProjectViewModel, navHostController: NavHost
             when (page) {
                 0 -> TasksPage(navHostController, viewModel)
                 1 -> ProjectGroupedMembers(viewModel, navHostController)
-                2 -> ProjectMembersPage(viewModel = viewModel)
+                2 -> ProjectMembersPage(
+                    viewModel = viewModel,
+                    navHostController = navHostController
+                )
                 3 -> ProjectTimeLine(viewModel = viewModel, navHostController = navHostController)
                 else -> OptionsPage()
             }

@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Edit
@@ -16,17 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.taskmanagement.domain.dataModels.task.TaskStatus
 import com.example.taskmanagement.domain.dataModels.task.TaskView
 import com.example.taskmanagement.domain.utils.fromStatus
 import com.example.taskmanagement.presentation.navigation.Screens
-import com.example.taskmanagement.presentation.screens.forms.task.TaskFormViewModel
-import com.example.taskmanagement.ui.theme.TaskManagementTheme
 import java.text.SimpleDateFormat
-import java.util.*
 
 @Composable
 fun TaskMainInfo(
@@ -65,7 +62,6 @@ private fun TaskMainInfoContent(
         SimpleDateFormat("yy MMM dd")
     }
     Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.padding(vertical = 16.dp),
     ) {
         TaskMainInfoValue(icon = Icons.Default.Tag, label = "Status: ") {
@@ -109,28 +105,68 @@ private fun ActionRow(
     viewModel: TaskViewModel,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    LazyRow(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        UndoIcon(viewModel = viewModel)
-
-        IconButton(
-            onClick = {
-                navHostController.navigate(
-                    Screens.TaskForm.withArgs(
-                        taskView.project,
-                        taskView.id
+        item { UpdateActionRow(viewModel = viewModel) }
+        item { UndoIcon(viewModel = viewModel) }
+        item {
+            IconButton(
+                onClick = {
+                    navHostController.navigate(
+                        Screens.TaskForm.withArgs(
+                            taskView.project,
+                            taskView.id
+                        )
                     )
+                }
+            ) {
+                Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
+            }
+        }
+        item {
+            IconButton(onClick = { navHostController.popBackStack() }) {
+                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+            }
+        }
+    }
+}
+
+@Composable
+private fun UpdateActionRow(
+    viewModel: TaskViewModel,
+    modifier: Modifier = Modifier
+) {
+    val updateMade by viewModel.updateMade.collectAsState()
+    val show = remember {
+        MutableTransitionState(updateMade)
+    }
+    LaunchedEffect(key1 = updateMade) {
+        show.targetState = updateMade
+    }
+    AnimatedVisibility(
+        visibleState = show,
+        modifier = modifier
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            IconButton(onClick = viewModel::saveChanges) {
+                Icon(
+                    imageVector = Icons.Default.Done,
+                    contentDescription = "Save changes"
                 )
             }
-        ) {
-            Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
+
+
+            IconButton(onClick = viewModel::discardChanges) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Discard changes"
+                )
+            }
         }
-        IconButton(onClick = { navHostController.popBackStack() }) {
-            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
-        }
+
     }
 }
 

@@ -12,6 +12,7 @@ import com.example.taskmanagement.domain.dataModels.project.ProjectView
 import com.example.taskmanagement.domain.dataModels.task.Comment
 import com.example.taskmanagement.domain.dataModels.task.TaskItem
 import com.example.taskmanagement.domain.dataModels.task.TaskView
+import com.example.taskmanagement.domain.dataModels.team.Invitation
 import com.example.taskmanagement.domain.dataModels.team.TeamDto
 import com.example.taskmanagement.domain.dataModels.team.TeamView
 import com.example.taskmanagement.domain.dataModels.user.Dashboard
@@ -46,7 +47,11 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
     ): Resource<List<TaskItem>> = baseMapApiToResource { remote.createTaskItems(taskItems) }
 
     override suspend fun registerUser(userProfile: SignUpUserBody): Resource<Token> =
-        baseMapApiToResource { remote.registerUser(userProfile) }
+        baseMapApiToResource {
+            val result = remote.registerUser(userProfile)
+            userStatusFlow.emit(UserStatus.Authorized(result))
+            result
+        }
 
     override suspend fun getCurrentUserTasks(): Resource<List<Task>> =
         baseMapApiToResource(remote::getCurrentUserTasks)
@@ -71,7 +76,9 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
         baseMapApiToResource { remote.updateTaskStatus(taskId) }
 
     override suspend fun getCurrentUserTag(parentRoute: ParentRoute, id: String): Resource<Tag> =
-        baseMapApiToResource { remote.getCurrentUserTag(parentRoute, id) }
+        baseMapApiToResource {
+            remote.getCurrentUserTag(parentRoute, id)
+        }
 
     override suspend fun updateComment(comment: Comment): Resource<Comment> =
         baseMapApiToResource { remote.updateTaskComment(comment) }
@@ -117,6 +124,23 @@ class MainRepositoryImpl(private val remote: RemoteDataSource) : MainRepository 
         remote.logoutUser()
         userStatusFlow.emit(UserStatus.LoggedOut)
         return UserStatus.LoggedOut
+    }
+
+    override suspend fun getUserProfile(userId: String): Resource<User> =
+        baseMapApiToResource { remote.getUserProfile(userId) }
+
+    override suspend fun acceptInvitation(invitationId: String): Resource<Boolean> =
+        baseMapApiToResource {
+            remote.acceptInvitation(invitationId)
+        }
+
+    override suspend fun declineInvitation(invitationId: String): Resource<Boolean> =
+        baseMapApiToResource {
+            remote.rejectInvitation(invitationId)
+        }
+
+    override suspend fun getInvitations(): Resource<List<Invitation>> = baseMapApiToResource {
+        remote.getUserInvitations()
     }
 
     override suspend fun observeUser(): SharedFlow<UserStatus> {
